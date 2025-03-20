@@ -3,12 +3,20 @@
 const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema({
-  customer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   listing: { type: mongoose.Schema.Types.ObjectId, ref: 'Listing', required: true },
+
   checkInDate: { type: Date, required: true },
   checkOutDate: { type: Date, required: true },
+
+  // TBD if needed or not
+  totalPrice: { type: Number, required: true },
+
   status: { type: String, enum: ['pending', 'confirmed', 'canceled'], default: 'pending' },
-  createdAt: { type: Date, default: Date.now }
+
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 const Booking = mongoose.model('Booking', bookingSchema);

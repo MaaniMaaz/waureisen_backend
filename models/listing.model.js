@@ -1,3 +1,7 @@
+// Relations
+// 1. 1-M with Transactions
+// 2. 1-M with Reviews 
+
 const mongoose = require('mongoose');
 
 // Schema for the Listing Model
@@ -13,16 +17,17 @@ const listingSchema = new mongoose.Schema({
   },
 
   price: { type: Number, required: true },
+
   availability: [{ type: Date }],
+  
   status: {
     type: String,
     enum: ['active', 'pending approval', 'rejected', 'closed', 'deleted'],
     default: 'pending approval'
   },
 
-  // Set According to the source
+  // Set According to the source and according to filters that user will add from the filter model 
   customFields: [{
-
     name: String,
     value: String
   }],
@@ -43,17 +48,20 @@ const listingSchema = new mongoose.Schema({
     required: true
   },
   redirectLink: { type: String, default: null }, // Store URL if it’s from an external platform
-  
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
+
+  // TBD -- Will be a file 
+  termsAndConditions: { type: String },
+
+  // Model or Array? TBD
+  images: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
 
   provider: { type: mongoose.Schema.Types.ObjectId, ref: 'Provider', required: true },
   placeOffers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PlaceOffer' }],
   dogFilters: [{ type: mongoose.Schema.Types.ObjectId, ref: 'DogFilter' }],
   details: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Detail' }],
-  // Model or Array? TBD
-  images: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
 
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 // Create a geo-spatial index for location coordinates
