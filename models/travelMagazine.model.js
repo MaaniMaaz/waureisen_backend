@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 
-const blogSchema = new mongoose.Schema({
+const tracelMagazineSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
@@ -10,5 +10,5 @@ const blogSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-const Blog = mongoose.model('Blog', blogSchema);
-module.exports = Blog;
+const travelMagazine = mongoose.model('travelMagazine', tracelMagazineSchema);
+module.exports = travelMagazine;

@@ -9,7 +9,7 @@ const filterRoutes = require("./routes/filter.routes.js");
 const languageRoutes = require("./routes/language.routes.js");
 const listingRoutes = require("./routes/listing.routes.js");
 const providerRoutes = require("./routes/provider.routes.js");
-const reviewRoutes = require("./routes/review.routes.js");
+// const reviewRoutes = require("./routes/review.routes.js");
 const transactionRoutes = require("./routes/transaction.routes.js");
 const travelMagazineRoutes = require("./routes/travelMagazine.routes.js");
 const voucherRoutes = require("./routes/voucher.routes.js");
@@ -25,14 +25,23 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/admins", adminRoutes);
+
 app.use("/api/users", userRoutes);
+
 app.use("/api/filters", filterRoutes);
+
 app.use("/api/languages", languageRoutes);
+
 app.use("/api/listings", listingRoutes);
+
 app.use("/api/providers", providerRoutes);
-app.use("/api/reviews", reviewRoutes);
+
+//app.use("/api/reviews", reviewRoutes);
+
 app.use("/api/transactions", transactionRoutes);
+
 app.use("/api/travel-magazine", travelMagazineRoutes);
+
 app.use("/api/vouchers", voucherRoutes);
 
 
