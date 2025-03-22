@@ -3,6 +3,7 @@
 // 2. 1-M with Reviews 
 
 const mongoose = require('mongoose');
+const { totalmem } = require('os');
 
 // Schema for the Listing Model
 const listingSchema = new mongoose.Schema({
@@ -164,6 +165,13 @@ const listingSchema = new mongoose.Schema({
     descriptionFilters: [{ name: String, icon: String }],
     dogFilters: [{ name: String, icon: String }]
   },
+
+  // Analytics
+  totalViews: { type: Number, default: 0 }, // Number of views
+  totalBookings: { type: Number, default: 0 }, // Number of bookings
+  totalReviews: { type: Number, default: 0 }, // Number of reviews
+  totalRating: { type: Number, default: 0 }, // Total rating
+  averageRating: { type: Number, default: 0 }, // Average rating
 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
