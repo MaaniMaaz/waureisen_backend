@@ -1,4 +1,5 @@
 const providerService = require('../services/provider.service');
+const listingService = require('../services/listing.service');
 
 exports.getAllProviders = async (req, res, next) => {
   try {
@@ -40,6 +41,37 @@ exports.deleteProvider = async (req, res, next) => {
   try {
     await providerService.deleteProvider(req.params.id);
     res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.addListing = async (req, res, next) => {
+  try {
+    const providerId = req.user.id; // Get provider ID from JWT token
+    const listingData = req.body;
+
+    // Verify if the provider exists
+    const provider = await providerService.getProviderById(providerId);
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
+    // Add owner reference to listing data
+    listingData.owner = providerId;
+    listingData.ownerType = 'Provider';
+    
+    // Create new listing using listing service
+    const newListing = await listingService.createListing(listingData);
+
+    // Add listing reference to provider's listings array
+    provider.listings.push(newListing._id);
+    await provider.save();
+
+    // Return the populated listing data
+    const populatedListing = await listingService.getListingById(newListing._id);
+    
+    res.status(201).json(populatedListing);
   } catch (err) {
     next(err);
   }

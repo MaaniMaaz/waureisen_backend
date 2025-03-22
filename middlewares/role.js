@@ -19,6 +19,16 @@ exports.isAdmin = (req, res, next) => {
   };
   
   /**
+   * Middleware to allow only provider users.
+   */
+  exports.isProvider = (req, res, next) => {
+    if (req.user && req.user.role === 'provider') {
+      return next();
+    }
+    return res.status(403).json({ message: 'Access forbidden: Providers only.' });
+  };
+  
+  /**
    * Generic middleware that checks if the user's role matches the required role.
    * @param {String} role - The required role (e.g., 'admin', 'user').
    */
@@ -30,4 +40,6 @@ exports.isAdmin = (req, res, next) => {
       return res.status(403).json({ message: `Access forbidden: ${role} only.` });
     };
   };
+
+
   

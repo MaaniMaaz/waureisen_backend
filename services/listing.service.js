@@ -1,11 +1,11 @@
 const Listing = require('../models/listing.model');
 
 exports.getAllListings = async () => {
-  return await Listing.find().populate('provider').populate('reviews');
+  return await Listing.find().populate('owner');
 };
 
 exports.getListingById = async (id) => {
-  return await Listing.findById(id).populate('provider').populate('reviews');
+  return await Listing.findById(id).populate('owner');
 };
 
 exports.createListing = async (data) => {

@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const filterSchema = new mongoose.Schema({
   name: { type: String, required: true },
 
-  // General Filters on Details Page like Max Person, No of bathrooms, No of Kitchen, etc.
+  // General Filters on Details Page like Type of accomodation, room type, Max Person, Max dogs, No of rooms,
+  // No of bathrooms, etc.
   generalFilters: [{
     name: { type: String, required: true },
     icon: { type: String, required: true }  // SVG icon as a string or URL
@@ -103,6 +104,30 @@ const filterSchema = new mongoose.Schema({
   // "Accessible elevator in the accommodation", "Elevator directly into the apartment", 
   // "Elevator directly at the apartment door"
   accessibilityFilters: [{
+    name: { type: String, required: true },
+    icon: { type: String, required: true }
+  }],
+
+  // Sightseeing nearby, dogfriendly restaurants nearby, etc.
+  descriptionFilters: [{
+    name: { type: String, required: true },
+    icon: { type: String, required: true }
+  }],
+
+  // Dog Features:
+  // "Dog stays free of charge", "Private garden", "Leash required", "No leash required", 
+  // "Off-leash meadow", "Fenced garden up to 1m", "Fenced garden up to 1.20m", 
+  // "Fenced garden up to 1.50m", "Fenced garden up to 2m", "Fenced terrace", 
+  // "Allowed at the pool area", "Allowed in the restaurant", "Firework-free zone", 
+  // "Dog-friendly beach nearby", "Food bowl", "Water bowl", "Dog bed", "Dog blanket", 
+  // "Dog mat", "Dog shower", "Dog-friendly restaurants nearby", "Dog treats", 
+  // "Dog pool", "Agility area", "Mantrailing", "BARF menus available", 
+  // "Fenced dog park", "Dog forest nearby", "Dog park (not fenced)", 
+  // "Poop bags for free", "Allowed on the bed", "Allowed on the sofa", 
+  // "Dog menu", "Dog trailer (bicycle)", "Dog crate", "Dog house", 
+  // "Dog room service", "Dog physiotherapy", "Dog sitter", "Dog school", "Dog shop"
+  // Dog trainer, Dog Towels, Cage, Organized hikinking tours with dogs, Wellness for dogs, Service dog for free
+  dogFilters: [{
     name: { type: String, required: true },
     icon: { type: String, required: true }
   }],

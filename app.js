@@ -9,6 +9,7 @@ const filterRoutes = require("./routes/filter.routes.js");
 const languageRoutes = require("./routes/language.routes.js");
 const listingRoutes = require("./routes/listing.routes.js");
 const providerRoutes = require("./routes/provider.routes.js");
+const messageRoutes = require('./routes/message.routes');
 // const reviewRoutes = require("./routes/review.routes.js");
 const transactionRoutes = require("./routes/transaction.routes.js");
 const travelMagazineRoutes = require("./routes/travelMagazine.routes.js");
@@ -36,6 +37,7 @@ app.use("/api/listings", listingRoutes);
 
 app.use("/api/providers", providerRoutes);
 
+// TBD
 //app.use("/api/reviews", reviewRoutes);
 
 app.use("/api/transactions", transactionRoutes);
@@ -44,6 +46,11 @@ app.use("/api/travel-magazine", travelMagazineRoutes);
 
 app.use("/api/vouchers", voucherRoutes);
 
+app.use('/api/messages', messageRoutes);
+
+app.get("/", (req, res) => {
+  res.send("Waureisen Backend API Running....");
+});
 
 app.use(errorHandler);
 
