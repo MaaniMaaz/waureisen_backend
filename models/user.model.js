@@ -47,6 +47,12 @@ const userSchema = new mongoose.Schema({
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
   recentlyViewed: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
 
+  profileStatus:{
+    type: String,
+    enum: ['not verified','pending verification', 'verified', 'banned'],
+    default: 'not verified',
+  } ,
+
 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

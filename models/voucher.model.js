@@ -2,9 +2,20 @@ const mongoose = require('mongoose');
 
 const voucherSchema = new mongoose.Schema({
   code: { type: String, required: true, unique: true },
+
   discountPercentage: { type: Number, required: true },
+
   validUntil: { type: Date },
-  status: { type: String, enum: ['active', 'expired'], default: 'active' }
+  status: { type: String, enum: ['active', 'expired'], default: 'active' },
+
+  voucherBy:{
+    type: String,
+    enum: ['admin', 'provider'],
+    required: true
+  },
+
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }  
 });
 
 const Voucher = mongoose.model('Voucher', voucherSchema);

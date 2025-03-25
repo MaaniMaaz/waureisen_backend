@@ -1,3 +1,5 @@
+
+// TBD - Categories can be added by admin 
 const mongoose = require('mongoose');
 
 const filterSchema = new mongoose.Schema({

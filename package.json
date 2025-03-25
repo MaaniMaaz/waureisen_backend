@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/wiki-152/waureisen_backend#readme",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

@@ -8,6 +8,10 @@ exports.getAdminById = async (id) => {
   return await Admin.findById(id);
 };
 
+exports.getAdminByEmail = async (email) => {
+  return await Admin.findOne({ email });
+};
+
 exports.createAdmin = async (data) => {
   const newAdmin = new Admin(data);
   return await newAdmin.save();

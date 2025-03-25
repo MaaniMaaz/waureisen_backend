@@ -37,6 +37,23 @@ exports.updateProvider = async (req, res, next) => {
   }
 };
 
+exports.updateProviderStatus = async (req, res, next) => {
+  try {
+    const status = req.headers['profile-status']?.toLowerCase() || 'banned';
+    if (!['not verified', 'pending verification', 'verified', 'banned'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    const updatedProvider = await providerService.updateProvider(req.params.id, { profileStatus: status });
+    if (!updatedProvider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+    res.json({ message: `Provider status updated to ${status}`, provider: updatedProvider });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.deleteProvider = async (req, res, next) => {
   try {
     await providerService.deleteProvider(req.params.id);

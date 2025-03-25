@@ -36,6 +36,23 @@ exports.updateUser = async (req, res, next) => {
   }
 };
 
+exports.updateUserStatus = async (req, res, next) => {
+  try {
+    const status = req.headers['profile-status']?.toLowerCase() || 'banned';
+    if (!['not verified', 'pending verification', 'verified', 'banned'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    const updatedUser = await userService.updateUser(req.params.id, { profileStatus: status });
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ message: `User status updated to ${status}`, user: updatedUser });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.deleteUser = async (req, res, next) => {
   try {
     await userService.deleteUser(req.params.id);

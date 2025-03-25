@@ -45,3 +45,15 @@ exports.deleteListing = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.closeListing = async (req, res, next) => {
+  try {
+    const listing = await listingService.updateListing(req.params.id, { status: 'closed' });
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found' });
+    }
+    res.json({ message: 'Listing closed successfully', listing });
+  } catch (err) {
+    next(err);
+  }
+};

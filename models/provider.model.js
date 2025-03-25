@@ -32,6 +32,12 @@ const providerSchema = new mongoose.Schema({
 
   role: { type: String, default: 'provider' },
 
+  profileStatus:{
+    type: String,
+    enum: ['not verified','pending verification', 'verified', 'banned'],
+    default: 'not verified',
+  } ,
+
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

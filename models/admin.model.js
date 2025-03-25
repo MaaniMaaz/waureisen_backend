@@ -20,6 +20,13 @@ const adminSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
 
+  // TBD
+  // An array of msgs from provider and user 
+  crispCommunticationNotifications: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'CrispCommunicationNotification' 
+  }],
+
   // TBD if needed or not 
   role: { type: String, default: 'admin' },
 
