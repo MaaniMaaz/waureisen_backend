@@ -6,6 +6,9 @@ const { isProvider } = require('../middlewares/role');
 
 const providerController = require('../controllers/provider.controller');
 
+// Auth routes
+router.post('/signup', providerController.signup);
+router.post('/login', providerController.login);
 
 router.get('/', providerController.getAllProviders);
 

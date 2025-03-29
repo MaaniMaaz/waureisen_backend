@@ -20,3 +20,8 @@ exports.updateProvider = async (id, data) => {
 exports.deleteProvider = async (id) => {
   await Provider.findByIdAndDelete(id);
 };
+
+// Add this new method
+exports.getProviderByEmail = async (email) => {
+    return await Provider.findOne({ email });
+};

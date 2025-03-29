@@ -10,12 +10,14 @@ const languageRoutes = require("./routes/language.routes.js");
 const listingRoutes = require("./routes/listing.routes.js");
 const providerRoutes = require("./routes/provider.routes.js");
 const messageRoutes = require('./routes/message.routes');
-const emailNotificationRoutes = require('./routes/emailNotification.routes');
+const emailNotificationRoutes = require('./routes/emailNotification.routes.js');
 const camperRoutes = require('./routes/camper.routes');
 const transactionRoutes = require("./routes/transaction.routes.js");
 const travelMagazineRoutes = require("./routes/travelMagazine.routes.js");
 const voucherRoutes = require("./routes/voucher.routes.js");
 const bookingRoutes = require("./routes/booking.routes.js");
+const newsletterRoutes = require('./routes/newsletter.routes');
+
 
 // const reviewRoutes = require("./routes/review.routes.js")
 
@@ -54,6 +56,8 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/email-notifications', emailNotificationRoutes);
 
 app.use('/api/campers', camperRoutes);
+
+app.use('/api/newsletters', newsletterRoutes);
 
 app.get("/", (req, res) => {
   res.send("Waureisen Backend API Running....");

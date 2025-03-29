@@ -27,4 +27,9 @@ router.delete('/:id', verifyToken, messageController.deleteMessage);
 // Mark message as read
 router.patch('/:id/read', verifyToken, messageController.markAsRead);
 
+// Add these new routes
+router.post('/listing/:listingId', verifyToken, messageController.sendMessageToListing);
+router.post('/chatbot', verifyToken, messageController.sendMessageToChatbot);
+router.post('/support', verifyToken, messageController.createSupportTicket);
+
 module.exports = router;

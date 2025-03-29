@@ -1,17 +1,37 @@
 const mongoose = require('mongoose');
 
-// MSGs between users and listings owner lofig needs to be added
-
 const messageSchema = new mongoose.Schema({
-  user: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', 
+  sender: { 
+    type: mongoose.Schema.Types.ObjectId,
+    refPath: 'senderType',
     required: true 
+  },
+  senderType: {
+    type: String,
+    enum: ['User', 'Provider', 'Admin'],
+    required: true
+  },
+  receiver: {
+    type: mongoose.Schema.Types.ObjectId,
+    refPath: 'receiverType',
+    required: true
+  },
+  receiverType: {
+    type: String,
+    enum: ['User', 'Provider', 'Admin'],
+    required: true
   },
   listing: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Listing', 
-    required: true 
+    ref: 'Listing',
+    required: function() {
+      return this.messageType === 'listing';
+    }
+  },
+  messageType: {
+    type: String,
+    enum: ['listing', 'support', 'chatbot'],
+    required: true
   },
   content: { 
     type: String, 
@@ -20,6 +40,34 @@ const messageSchema = new mongoose.Schema({
   isRead: { 
     type: Boolean, 
     default: false 
+  },
+  supportTicket: {
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high'],
+      default: 'low'
+    },
+    status: {
+      type: String,
+      enum: ['open', 'in-progress', 'resolved'],
+      default: 'open'
+    },
+    category: {
+      type: String,
+      enum: ['booking', 'payment', 'technical', 'other'],
+      default: 'other'
+    }
+  },
+  chatbotContext: {
+    previousMessages: [{
+      role: String,
+      content: String
+    }],
+    intent: String,
+    resolved: {
+      type: Boolean,
+      default: false
+    }
   },
   createdAt: { 
     type: Date, 
@@ -30,6 +78,10 @@ const messageSchema = new mongoose.Schema({
     default: Date.now 
   }
 });
+
+messageSchema.index({ sender: 1, receiver: 1 });
+messageSchema.index({ listing: 1 });
+messageSchema.index({ messageType: 1 });
 
 const Message = mongoose.model('Message', messageSchema);
 module.exports = Message;

@@ -20,3 +20,43 @@ exports.updateBooking = async (id, data) => {
 exports.deleteBooking = async (id) => {
   await Booking.findByIdAndDelete(id);
 };
+
+exports.getBookingsByUser = async (userId) => {
+  return await Booking.find({ user: userId, type: 'booking' })
+    .populate('listing')
+    .populate('appliedVoucher');
+};
+
+exports.getAppointmentsByUser = async (userId) => {
+  return await Booking.find({ user: userId, type: 'appointment' })
+    .populate('listing');
+};
+
+exports.getBookingsByUserAndDateRange = async (userId, currentDate, type) => {
+  const query = {
+    user: userId,
+    type: 'booking'
+  };
+
+  if (type === 'upcoming') {
+    query.checkInDate = { $gte: currentDate };
+  } else {
+    query.checkOutDate = { $lt: currentDate };
+  }
+
+  return await Booking.find(query)
+    .populate('listing')
+    .populate('appliedVoucher')
+    .sort({ checkInDate: type === 'upcoming' ? 1 : -1 });
+};
+
+exports.getReviewedBookings = async (userId) => {
+  return await Booking.find({
+    user: userId,
+    type: 'booking',
+    'review': { $exists: true }
+  })
+  .populate('listing')
+  .populate('review')
+  .sort({ checkOutDate: -1 });
+};

@@ -1,5 +1,96 @@
 const providerService = require('../services/provider.service');
 const listingService = require('../services/listing.service');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+// Add these new methods at the beginning of the file
+exports.signup = async (req, res, next) => {
+    try {
+        const { username, email, password, phoneNumber, firstName, lastName } = req.body;
+
+        // Check if provider already exists
+        const existingProvider = await providerService.getProviderByEmail(email);
+        if (existingProvider) {
+            return res.status(400).json({ message: 'Provider already exists' });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create provider
+        const newProvider = await providerService.createProvider({
+            username,
+            email,
+            password: hashedPassword,
+            phoneNumber,
+            firstName,
+            lastName,
+            profileStatus: 'not verified'
+        });
+
+        // Generate token
+        const token = jwt.sign(
+            { id: newProvider._id, role: 'provider' },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.status(201).json({
+            message: 'Provider created successfully',
+            token,
+            provider: {
+                id: newProvider._id,
+                username: newProvider.username,
+                email: newProvider.email
+            }
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.login = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+
+        // Find provider
+        const provider = await providerService.getProviderByEmail(email);
+        if (!provider) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Check password
+        const isValidPassword = await bcrypt.compare(password, provider.password);
+        if (!isValidPassword) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Check if provider is banned
+        if (provider.profileStatus === 'banned') {
+            return res.status(403).json({ message: 'Account is banned' });
+        }
+
+        // Generate token
+        const token = jwt.sign(
+            { id: provider._id, role: 'provider' },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.json({
+            message: 'Login successful',
+            token,
+            provider: {
+                id: provider._id,
+                username: provider.username,
+                email: provider.email,
+                profileStatus: provider.profileStatus
+            }
+        });
+    } catch (err) {
+        next(err);
+    }
+};
 
 exports.getAllProviders = async (req, res, next) => {
   try {

@@ -1,4 +1,5 @@
 const messageService = require('../services/message.service');
+const chatbotService = require('../services/chatbot.service');
 const listingService = require('../services/listing.service');
 
 exports.getAllMessages = async (req, res, next) => {
@@ -122,6 +123,66 @@ exports.markAsRead = async (req, res, next) => {
 
     const updatedMessage = await messageService.markAsRead(req.params.id);
     res.json(updatedMessage);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Add these new methods
+exports.sendMessageToListing = async (req, res, next) => {
+  try {
+    const { listingId, content } = req.body;
+    const listing = await listingService.getListingById(listingId);
+    
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found' });
+    }
+
+    const message = await messageService.createMessage({
+      sender: req.user.id,
+      senderType: 'User',
+      receiver: listing.owner,
+      receiverType: 'Provider',
+      listing: listingId,
+      messageType: 'listing',
+      content
+    });
+
+    res.status(201).json(message);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.sendMessageToChatbot = async (req, res, next) => {
+  try {
+    const { message } = req.body;
+    const response = await chatbotService.processMessage(req.user.id, message);
+    res.json(response);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.createSupportTicket = async (req, res, next) => {
+  try {
+    const { content, priority, category } = req.body;
+    
+    const ticket = await messageService.createMessage({
+      sender: req.user.id,
+      senderType: req.user.role,
+      receiver: process.env.ADMIN_SUPPORT_ID,
+      receiverType: 'Admin',
+      messageType: 'support',
+      content,
+      supportTicket: {
+        priority,
+        status: 'open',
+        category
+      }
+    });
+
+    res.status(201).json(ticket);
   } catch (err) {
     next(err);
   }
