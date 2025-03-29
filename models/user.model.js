@@ -7,7 +7,12 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-
+  customerNumber: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  
   username: { type: String, required: true, unique: true },
 
   email: { type: String, required: true, unique: true },
@@ -43,6 +48,10 @@ const userSchema = new mongoose.Schema({
   terms: { type: [String], required: true },
 
   bookings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }],
+  totalBookings: { 
+    type: Number, 
+    default: 0 
+  },
 
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
   recentlyViewed: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
@@ -63,3 +72,26 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;
+
+
+// Generate unique 6-digit customer number
+userSchema.pre('save', async function(next) {
+  if (!this.customerNumber) {
+    let isUnique = false;
+    let customerNumber;
+    
+    while (!isUnique) {
+      // Generate random 6-digit number
+      customerNumber = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Check if number already exists
+      const existingUser = await this.constructor.findOne({ customerNumber });
+      if (!existingUser) {
+        isUnique = true;
+      }
+    }
+    
+    this.customerNumber = customerNumber;
+  }
+  next();
+});
