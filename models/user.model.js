@@ -23,6 +23,17 @@ const userSchema = new mongoose.Schema({
   lastName: { type: String },
   aboutYou: { type: String, default: 'N/A' }, 
   
+  // Added missing fields from frontend
+  dateOfBirth: { type: String, default: '' },
+  nationality: { type: String, default: '' },
+  gender: { type: String, default: '' },
+  isProvider: { type: Boolean, default: false },
+  
+  // Added dogs array
+  dogs: [{
+    name: { type: String, default: '' },
+    gender: { type: String, default: '' }
+  }],
 
   phoneNumber: { type: String }, 
 
@@ -33,7 +44,7 @@ const userSchema = new mongoose.Schema({
   paymentMethod: {
     cardNumber: { type: String, default: 'N/A' },
     cardHolderName: { type: String, default: 'N/A' },
-    street: { type: String, default: 'N/A' },
+    streetNumber: { type: String, default: 'N/A' },
     optional: { type: String, default: 'N/A' },
     postalCode: { type: String, default: 'N/A' },
     city: { type: String, default: 'N/A' },
