@@ -184,3 +184,107 @@ exports.addListing = async (req, res, next) => {
     next(err);
   }
 };
+
+
+exports.getProviderAnalytics = async (req, res, next) => {
+  try {
+    const timeRange = req.query.timeRange || 'month';
+    const providerId = req.user.id;
+    
+    // Get provider's listings
+    const provider = await providerService.getProviderById(providerId);
+    const listingIds = provider.listings.map(listing => listing._id);
+    
+    // Define date ranges based on timeRange
+    const currentDate = new Date();
+    let startDate;
+    
+    switch(timeRange) {
+      case 'week':
+        startDate = new Date(currentDate);
+        startDate.setDate(currentDate.getDate() - 7);
+        break;
+      case 'month':
+        startDate = new Date(currentDate);
+        startDate.setMonth(currentDate.getMonth() - 1);
+        break;
+      case 'year':
+        startDate = new Date(currentDate);
+        startDate.setFullYear(currentDate.getFullYear() - 1);
+        break;
+      default:
+        startDate = new Date(currentDate);
+        startDate.setMonth(currentDate.getMonth() - 1);
+    }
+    
+    // Get bookings for date range
+    // Assuming there's a method to get bookings by date range in booking service
+    const bookings = await Booking.find({
+      listing: { $in: listingIds },
+      createdAt: { $gte: startDate, $lte: currentDate }
+    }).sort({ createdAt: 1 });
+    
+    // Process revenue data
+    const revenueData = processTimeSeriesData(bookings, timeRange, 'revenue');
+    
+    // Process booking count data  
+    const bookingData = processTimeSeriesData(bookings, timeRange, 'bookings');
+    
+    res.json({
+      revenue: revenueData,
+      bookings: bookingData
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Helper function to process time series data
+function processTimeSeriesData(bookings, timeRange, dataType) {
+  // Different date formats based on time range
+  let dateFormat;
+  let groupByFormat;
+  
+  switch(timeRange) {
+    case 'week':
+      dateFormat = { day: 'numeric', month: 'short' };
+      groupByFormat = 'MMM-DD';
+      break;
+    case 'month':
+      dateFormat = { day: 'numeric', month: 'short' };
+      groupByFormat = 'MMM-DD';  
+      break;
+    case 'year':
+      dateFormat = { month: 'short', year: 'numeric' };
+      groupByFormat = 'MMM-YYYY';
+      break;
+    default:
+      dateFormat = { day: 'numeric', month: 'short' };
+      groupByFormat = 'MMM-DD';
+  }
+  
+  // Group data by date
+  const groupedData = {};
+  
+  bookings.forEach(booking => {
+    const date = new Date(booking.createdAt);
+    const dateKey = date.toLocaleDateString('en-US', dateFormat);
+    
+    if (!groupedData[dateKey]) {
+      groupedData[dateKey] = { 
+        date: dateKey,
+        revenue: 0,
+        bookings: 0
+      };
+    }
+    
+    groupedData[dateKey].bookings += 1;
+    groupedData[dateKey].revenue += booking.totalPrice || 0;
+  });
+  
+  // Convert to array and sort by date
+  const result = Object.values(groupedData);
+  result.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  return result;
+}

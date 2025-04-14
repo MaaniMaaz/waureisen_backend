@@ -23,4 +23,8 @@ router.delete('/:id', providerController.deleteProvider);
 // Provider adds a new listing
 router.post('/add-listing', verifyToken, isProvider, providerController.addListing);
 
+
+
+//Added by Maaz
+router.get('/analytics', verifyToken, isProvider, providerController.getProviderAnalytics);
 module.exports = router;
