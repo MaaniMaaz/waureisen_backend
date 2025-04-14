@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   aboutYou: { type: String, default: 'N/A' }, 
   
 
-  phoneNumber: { type: String, required: true }, 
+  phoneNumber: { type: String }, 
 
   //TBD
   stripeAccountId: { type: String, default: 'N/A' }, 
