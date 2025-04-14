@@ -440,6 +440,30 @@ exports.getProviderAnalytics = async (req, res, next) => {
         startDate.setMonth(currentDate.getMonth() - 3);
         break;
       case "year":
+
+exports.getProviderAnalytics = async (req, res, next) => {
+  try {
+    const timeRange = req.query.timeRange || 'month';
+    const providerId = req.user.id;
+    
+    // Get provider's listings
+    const provider = await providerService.getProviderById(providerId);
+    const listingIds = provider.listings.map(listing => listing._id);
+    
+    // Define date ranges based on timeRange
+    const currentDate = new Date();
+    let startDate;
+    
+    switch(timeRange) {
+      case 'week':
+        startDate = new Date(currentDate);
+        startDate.setDate(currentDate.getDate() - 7);
+        break;
+      case 'month':
+        startDate = new Date(currentDate);
+        startDate.setMonth(currentDate.getMonth() - 1);
+        break;
+      case 'year':
         startDate = new Date(currentDate);
         startDate.setFullYear(currentDate.getFullYear() - 1);
         break;
@@ -447,311 +471,25 @@ exports.getProviderAnalytics = async (req, res, next) => {
         startDate = new Date(currentDate);
         startDate.setMonth(currentDate.getMonth() - 1);
     }
-
-    // Find all listings owned by this provider
-    const listings = await Listing.find({
-      owner: providerId,
-      ownerType: "Provider",
-    });
-
-    const listingIds = listings.map((listing) => listing._id);
-
-    // Get bookings for the date range
+    
+    // Get bookings for date range
+    // Assuming there's a method to get bookings by date range in booking service
     const bookings = await Booking.find({
       listing: { $in: listingIds },
-      createdAt: { $gte: startDate, $lte: currentDate },
-    })
-      .populate("listing")
-      .sort({ createdAt: 1 });
-
-    // Get completed transactions for the provider
-    const transactions = await Transaction.find({
-      user: providerId,
-      date: { $gte: startDate, $lte: currentDate },
-      status: "completed",
-    }).sort({ date: 1 });
-
-    // Previous period date range
-    const previousPeriodEndDate = new Date(startDate);
-    previousPeriodEndDate.setDate(startDate.getDate() - 1);
-
-    const previousPeriodStartDate = new Date(previousPeriodEndDate);
-    switch (timeRange) {
-      case "week":
-        previousPeriodStartDate.setDate(previousPeriodEndDate.getDate() - 7);
-        break;
-      case "month":
-        previousPeriodStartDate.setMonth(previousPeriodEndDate.getMonth() - 1);
-        break;
-      case "quarter":
-        previousPeriodStartDate.setMonth(previousPeriodEndDate.getMonth() - 3);
-        break;
-      case "year":
-        previousPeriodStartDate.setFullYear(
-          previousPeriodEndDate.getFullYear() - 1
-        );
-        break;
-      default:
-        previousPeriodStartDate.setMonth(previousPeriodEndDate.getMonth() - 1);
-    }
-
-    // Get previous period bookings
-    const previousBookings = await Booking.find({
-      listing: { $in: listingIds },
-      createdAt: { $gte: previousPeriodStartDate, $lte: previousPeriodEndDate },
-    }).populate("listing");
-
-    // Get previous period transactions
-    const previousTransactions = await Transaction.find({
-      user: providerId,
-      date: { $gte: previousPeriodStartDate, $lte: previousPeriodEndDate },
-      status: "completed",
-    });
-
-    // Calculate performance metrics
-
-    // Total bookings
-    const totalBookingsCurrent = bookings.length;
-    const totalBookingsPrevious = previousBookings.length;
-
-    // Total revenue from transactions
-    const totalRevenueCurrent = transactions.reduce(
-      (sum, transaction) => sum + transaction.amount,
-      0
-    );
-    const totalRevenuePrevious = previousTransactions.reduce(
-      (sum, transaction) => sum + transaction.amount,
-      0
-    );
-
-    // Calculate occupancy rate
-    const totalAvailableDays = listings.length * timeRangeToDays(timeRange);
-    const bookedDays = bookings.reduce((sum, booking) => {
-      // Calculate the number of days for this booking
-      const checkIn = new Date(booking.checkInDate);
-      const checkOut = new Date(booking.checkOutDate);
-      const days = Math.max(
-        1,
-        Math.round((checkOut - checkIn) / (1000 * 60 * 60 * 24))
-      );
-      return sum + days;
-    }, 0);
-
-    const occupancyRateCurrent =
-      totalAvailableDays > 0
-        ? Math.min(Math.round((bookedDays / totalAvailableDays) * 100), 100)
-        : 0;
-
-    const previousBookedDays = previousBookings.reduce((sum, booking) => {
-      const checkIn = new Date(booking.checkInDate);
-      const checkOut = new Date(booking.checkOutDate);
-      const days = Math.max(
-        1,
-        Math.round((checkOut - checkIn) / (1000 * 60 * 60 * 24))
-      );
-      return sum + days;
-    }, 0);
-
-    const occupancyRatePrevious =
-      totalAvailableDays > 0
-        ? Math.min(
-            Math.round((previousBookedDays / totalAvailableDays) * 100),
-            100
-          )
-        : 0;
-
-    // Calculate average nightly rate
-    const averageNightlyRateCurrent =
-      bookedDays > 0 ? Math.round(totalRevenueCurrent / bookedDays) : 0;
-
-    const averageNightlyRatePrevious =
-      previousBookedDays > 0
-        ? Math.round(totalRevenuePrevious / previousBookedDays)
-        : 0;
-
-    // Process time series data for charts
-    const revenueData = processTimeSeriesData(
-      transactions,
-      timeRange,
-      "revenue"
-    );
-    const bookingData = processTimeSeriesData(bookings, timeRange, "bookings");
-
-    // Process listing-specific analytics
-    const listingsAnalytics = await Promise.all(
-      listings.map(async (listing) => {
-        // Get bookings for this listing in the current period
-        const listingBookings = bookings.filter(
-          (booking) =>
-            booking.listing &&
-            booking.listing._id.toString() === listing._id.toString()
-        );
-
-        // Get bookings for this listing in the previous period
-        const previousListingBookings = previousBookings.filter(
-          (booking) =>
-            booking.listing &&
-            booking.listing._id.toString() === listing._id.toString()
-        );
-
-        // Calculate booking change percentage
-        const bookingCount = listingBookings.length;
-        const previousBookingCount = previousListingBookings.length;
-        const bookingChange =
-          previousBookingCount > 0
-            ? Math.round(
-                ((bookingCount - previousBookingCount) / previousBookingCount) *
-                  100
-              )
-            : 0;
-
-        // Calculate revenue for this listing
-        const listingRevenue = listingBookings.reduce((sum, booking) => {
-          return sum + (booking.totalPrice || 0);
-        }, 0);
-
-        // Calculate occupancy rate for this listing
-        const listingBookedDays = listingBookings.reduce((sum, booking) => {
-          const checkIn = new Date(booking.checkInDate);
-          const checkOut = new Date(booking.checkOutDate);
-          const days = Math.max(
-            1,
-            Math.round((checkOut - checkIn) / (1000 * 60 * 60 * 24))
-          );
-          return sum + days;
-        }, 0);
-
-        const listingOccupancyRate = Math.min(
-          Math.round((listingBookedDays / timeRangeToDays(timeRange)) * 100),
-          100
-        );
-
-        // Get reviews for this listing
-        const reviews = await Review.find({
-          listing: listing._id,
-          createdAt: { $gte: startDate, $lte: currentDate },
-        });
-
-        // Calculate average rating
-        const totalRating = reviews.reduce(
-          (sum, review) => sum + review.rating,
-          0
-        );
-        const averageRating =
-          reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
-
-        return {
-          id: listing._id,
-          title: listing.title || "Unnamed Listing",
-          location:
-            listing.location && listing.location.address
-              ? listing.location.address
-              : "Unknown location",
-          image:
-            listing.photos && listing.photos.length > 0
-              ? listing.photos[0]
-              : "/src/assets/i1.png",
-          occupancyRate: listingOccupancyRate,
-          pricing:
-            listing.pricePerNight && listing.pricePerNight.price
-              ? listing.pricePerNight.price
-              : 0,
-          bookings: bookingCount,
-          bookingChange: bookingChange,
-          revenue: listingRevenue,
-          rating: averageRating,
-        };
-      })
-    );
-
-    // Generate insights based on data analysis
-    const insights = [];
-
-    // Revenue trend insight
-    if (
-      totalRevenueCurrent > totalRevenuePrevious &&
-      totalRevenuePrevious > 0
-    ) {
-      const revenueIncrease = Math.round(
-        ((totalRevenueCurrent - totalRevenuePrevious) / totalRevenuePrevious) *
-          100
-      );
-      insights.push({
-        type: "opportunity",
-        message: `Your revenue has increased by ${revenueIncrease}% compared to the previous ${timeRange}. Consider optimizing pricing for popular dates.`,
-      });
-    } else if (
-      totalRevenueCurrent < totalRevenuePrevious &&
-      totalRevenueCurrent > 0
-    ) {
-      const revenueDecrease = Math.round(
-        ((totalRevenuePrevious - totalRevenueCurrent) / totalRevenuePrevious) *
-          100
-      );
-      insights.push({
-        type: "warning",
-        message: `Your revenue has decreased by ${revenueDecrease}% compared to the previous ${timeRange}. Consider reviewing your pricing strategy.`,
-      });
-    }
-
-    // Booking trend insight
-    const decliningListings = listingsAnalytics.filter(
-      (listing) => listing.bookingChange < -10
-    );
-    if (decliningListings.length > 0) {
-      insights.push({
-        type: "warning",
-        message: `${decliningListings[0].title} has ${Math.abs(
-          decliningListings[0].bookingChange
-        )}% fewer bookings compared to the previous ${timeRange}.`,
-      });
-    }
-
-    // Occupancy insight
-    if (occupancyRateCurrent < 50 && listings.length > 0) {
-      insights.push({
-        type: "tip",
-        message:
-          "Your occupancy rate is below 50%. Consider offering special promotions or discounts to attract more bookings.",
-      });
-    }
-
-    // Add general tip
-    insights.push({
-      type: "tip",
-      message:
-        "Adding more high-quality photos and detailed descriptions could increase your listing visibility and booking rates.",
-    });
-
-    // Return analytics data
+      createdAt: { $gte: startDate, $lte: currentDate }
+    }).sort({ createdAt: 1 });
+    
+    // Process revenue data
+    const revenueData = processTimeSeriesData(bookings, timeRange, 'revenue');
+    
+    // Process booking count data  
+    const bookingData = processTimeSeriesData(bookings, timeRange, 'bookings');
+    
     res.json({
-      performance: {
-        totalBookings: {
-          current: totalBookingsCurrent,
-          previous: totalBookingsPrevious,
-        },
-        occupancyRate: {
-          current: occupancyRateCurrent,
-          previous: occupancyRatePrevious,
-        },
-        averageNightlyRate: {
-          current: averageNightlyRateCurrent,
-          previous: averageNightlyRatePrevious,
-        },
-        totalRevenue: {
-          current: totalRevenueCurrent,
-          previous: totalRevenuePrevious,
-        },
-      },
-      charts: {
-        revenue: revenueData.map((item) => item.revenue),
-        bookings: bookingData.map((item) => item.bookings),
-      },
-      listings: listingsAnalytics,
-      insights: insights,
+      revenue: revenueData,
+      bookings: bookingData
     });
   } catch (err) {
-    console.error("Error fetching provider analytics:", err);
     next(err);
   }
 };
@@ -1038,3 +776,51 @@ exports.getPublicProviderListings = async (req, res, next) => {
     next(err);
   }
 };
+function processTimeSeriesData(bookings, timeRange, dataType) {
+  // Different date formats based on time range
+  let dateFormat;
+  let groupByFormat;
+  
+  switch(timeRange) {
+    case 'week':
+      dateFormat = { day: 'numeric', month: 'short' };
+      groupByFormat = 'MMM-DD';
+      break;
+    case 'month':
+      dateFormat = { day: 'numeric', month: 'short' };
+      groupByFormat = 'MMM-DD';  
+      break;
+    case 'year':
+      dateFormat = { month: 'short', year: 'numeric' };
+      groupByFormat = 'MMM-YYYY';
+      break;
+    default:
+      dateFormat = { day: 'numeric', month: 'short' };
+      groupByFormat = 'MMM-DD';
+  }
+  
+  // Group data by date
+  const groupedData = {};
+  
+  bookings.forEach(booking => {
+    const date = new Date(booking.createdAt);
+    const dateKey = date.toLocaleDateString('en-US', dateFormat);
+    
+    if (!groupedData[dateKey]) {
+      groupedData[dateKey] = { 
+        date: dateKey,
+        revenue: 0,
+        bookings: 0
+      };
+    }
+    
+    groupedData[dateKey].bookings += 1;
+    groupedData[dateKey].revenue += booking.totalPrice || 0;
+  })
+  
+  // Convert to array and sort by date
+  const result = Object.values(groupedData);
+  result.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  return result;
+}

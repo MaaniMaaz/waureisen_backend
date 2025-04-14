@@ -186,4 +186,7 @@ router.get("/:id", providerController.getProviderById);
 router.put("/:id", verifyToken, providerController.updateProvider);
 router.delete("/:id", providerController.deleteProvider);
 
+
+//Added by Maaz
+router.get('/analytics', verifyToken, isProvider, providerController.getProviderAnalytics);
 module.exports = router;
