@@ -5,7 +5,7 @@
 const mongoose = require('mongoose');
 const { totalmem } = require('os');
 
-// Schema for the Listing Model
+
 const listingSchema = new mongoose.Schema({
 
   listingType: {
@@ -19,7 +19,6 @@ const listingSchema = new mongoose.Schema({
   checkInTime: { type: Date },
   checkOutTime: { type: Date },
 
-  // Address as whole not in form of street, city, country etc.
   location: {
     address : {
      type: String,
