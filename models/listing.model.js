@@ -10,10 +10,10 @@ const listingSchema = new mongoose.Schema({
 
   listingType: {
     type: String,
-    required: true 
+    //required: true 
   },
 
-  title: { type: String, required: true },
+  title: { type: String}, //required: true },
   description: { type: String },
 
   checkInTime: { type: Date },
@@ -132,18 +132,24 @@ const listingSchema = new mongoose.Schema({
 
   // Model or Array? TBD
   // photos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
-  photos: [{ type: String }], // Store URLs if it's from an external platform
+  images: [{ type: String }], // Store URLs if it's from an external platform
 
   // Owner reference (either admin or provider, but not both)
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
+    //required: true,
     refPath: 'ownerType'
   },
   ownerType: {
     type: String,
-    required: true,
+    //required: true,
     enum: ['Admin', 'Provider']
+  },
+
+  provider: {
+    type: String,
+    enum: ['Waureisen', 'Interhome', 'Europarcs', 'Bergkultur'],
+    default: 'WaureisenD'
   },
 
   // Selected filters for the listing -- TBD if we need to save icon or not
