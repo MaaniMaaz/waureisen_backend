@@ -1,27 +1,56 @@
-const Provider = require('../models/provider.model');
+const mongoose = require('mongoose');
+const Provider = require('../models/provider.model'); // Adjust path as needed
+// If you're using User model instead of a separate Provider model
+// const User = require('../models/user.model');
 
+// Get all providers
 exports.getAllProviders = async () => {
-  return await Provider.find();
+  const providers = await Provider.find();
+  return providers;
 };
 
+// Get provider by ID
 exports.getProviderById = async (id) => {
-  return await Provider.findById(id).populate('listings');
+  // Check if the ID is a valid MongoDB ObjectId before querying
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error('Invalid provider ID format');
+  }
+  const provider = await Provider.findById(id);
+  return provider;
 };
 
-exports.createProvider = async (data) => {
-  const newProvider = new Provider(data);
+// Get provider by email
+exports.getProviderByEmail = async (email) => {
+  const provider = await Provider.findOne({ email });
+  return provider;
+};
+
+// Create a new provider
+exports.createProvider = async (providerData) => {
+  const newProvider = new Provider(providerData);
   return await newProvider.save();
 };
 
-exports.updateProvider = async (id, data) => {
-  return await Provider.findByIdAndUpdate(id, data, { new: true });
+// Update a provider
+exports.updateProvider = async (id, updateData) => {
+  // Check if the ID is a valid MongoDB ObjectId before querying
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error('Invalid provider ID format');
+  }
+  const updatedProvider = await Provider.findByIdAndUpdate(
+    id,
+    updateData,
+    { new: true }
+  );
+  return updatedProvider;
 };
 
+// Delete a provider
 exports.deleteProvider = async (id) => {
+  // Check if the ID is a valid MongoDB ObjectId before querying
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error('Invalid provider ID format');
+  }
   await Provider.findByIdAndDelete(id);
-};
-
-// Add this new method
-exports.getProviderByEmail = async (email) => {
-    return await Provider.findOne({ email });
+  return;
 };

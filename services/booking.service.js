@@ -1,3 +1,5 @@
+// booking.service.js - Make sure this is properly implemented
+
 const Booking = require('../models/booking.model');
 
 exports.getAllBookings = async () => {
@@ -59,4 +61,43 @@ exports.getReviewedBookings = async (userId) => {
   .populate('listing')
   .populate('review')
   .sort({ checkOutDate: -1 });
+};
+
+// Add a more robust method to get bookings for a provider
+exports.getBookingsByProvider = async (providerId, status = 'all', limit = null) => {
+  // First find all listings owned by this provider
+  const Listing = require('../models/listing.model');
+  
+  const listings = await Listing.find({
+    owner: providerId,
+    ownerType: 'Provider'
+  });
+  
+  if (!listings || listings.length === 0) {
+    return [];
+  }
+  
+  const listingIds = listings.map(listing => listing._id);
+  
+  // Build query
+  const query = {
+    listing: { $in: listingIds }
+  };
+  
+  if (status !== 'all') {
+    query.status = status;
+  }
+  
+  // Create query builder
+  let bookingsQuery = Booking.find(query)
+    .populate('user')
+    .populate('listing')
+    .sort({ createdAt: -1 });
+  
+  // Apply limit if needed
+  if (limit && !isNaN(parseInt(limit))) {
+    bookingsQuery = bookingsQuery.limit(parseInt(limit));
+  }
+  
+  return await bookingsQuery.exec();
 };

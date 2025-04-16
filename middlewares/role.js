@@ -1,45 +1,48 @@
-/**
- * Middleware to allow only admin users.
- */
-exports.isAdmin = (req, res, next) => {
-    if (req.user && req.user.role === 'admin') {
-      return next();
+// middlewares/role.js
+const Provider = require('../models/provider.model'); // Adjust path as needed
+const User = require('../models/user.model'); // Import User model
+
+exports.isAdmin = async (req, res, next) => {
+  try {
+    // Check if user exists and has admin role
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied: Not an admin' });
     }
-    return res.status(403).json({ message: 'Access forbidden: Admins only.' });
-  };
-  
-  /**
-   * Middleware to allow only regular users.
-   */
-  exports.isUser = (req, res, next) => {
-    if (req.user && req.user.role === 'user') {
-      return next();
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.isProvider = async (req, res, next) => {
+  try {
+    // Check if user role is provider from JWT token
+    if (!req.user || req.user.role !== 'provider') {
+      return res.status(403).json({ message: 'Access denied: Not a provider' });
     }
-    return res.status(403).json({ message: 'Access forbidden: Users only.' });
-  };
-  
-  /**
-   * Middleware to allow only provider users.
-   */
-  exports.isProvider = (req, res, next) => {
-    if (req.user && req.user.role === 'provider') {
-      return next();
-    }
-    return res.status(403).json({ message: 'Access forbidden: Providers only.' });
-  };
-  
-  /**
-   * Generic middleware that checks if the user's role matches the required role.
-   * @param {String} role - The required role (e.g., 'admin', 'user').
-   */
-  exports.requireRole = (role) => {
-    return (req, res, next) => {
-      if (req.user && req.user.role === role) {
-        return next();
+    
+    // Optional: Validate the ID exists in the Provider collection
+    if (req.user.id) {
+      const provider = await Provider.findById(req.user.id);
+      if (!provider) {
+        return res.status(403).json({ message: 'Provider not found in database' });
       }
-      return res.status(403).json({ message: `Access forbidden: ${role} only.` });
-    };
-  };
+    }
+    
+    next();
+  } catch (err) {
+    console.error('Error in isProvider middleware:', err);
+    return res.status(500).json({ message: 'Server error while checking provider status' });
+  }
+};
 
-
-  
+exports.isUser = async (req, res, next) => {
+  try {
+    if (!req.user || req.user.role !== 'user') {
+      return res.status(403).json({ message: 'Access denied: Not a user' });
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
