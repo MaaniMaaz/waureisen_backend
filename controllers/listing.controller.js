@@ -61,16 +61,21 @@ exports.closeListing = async (req, res, next) => {
 // Search listings by location
 exports.searchListings = async (req, res, next) => {
   try {
-    const { lat, lng, page = 1, pageSize = 10 } = req.query;
+    const { lat, lng, page = 1, pageSize = 10, people, dogs, dateRange } = req.query;
     
     // Convert parameters to numbers
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lng);
     const currentPage = parseInt(page);
     const limit = parseInt(pageSize);
+    const guestCount = people ? parseInt(people) : null;
+    const dogCount = dogs ? parseInt(dogs) : null;
     
     // Log received parameters for debugging
-    console.log('Search parameters:', { latitude, longitude, currentPage, limit });
+    console.log('Search parameters:', { 
+      latitude, longitude, currentPage, limit, 
+      guestCount, dogCount, dateRange 
+    });
     
     // Validate parameters
     if (isNaN(latitude) || isNaN(longitude)) {
@@ -80,43 +85,24 @@ exports.searchListings = async (req, res, next) => {
       });
     }
     
-    // Import the Listing model directly for this function
-    const Listing = require('../models/listing.model');
+    // Use the service to search listings instead of directly using Listing model
+    const searchParams = {
+      latitude,
+      longitude,
+      page: currentPage,
+      limit,
+      guestCount,
+      dogCount,
+      dateRange
+    };
     
-    // Calculate skip value for pagination
-    const skip = (currentPage - 1) * limit;
+    const result = await listingService.searchListings(searchParams);
     
-    // Perform geospatial query
-    const listings = await Listing.find({
-      'location.type': 'Point',
-      'location.coordinates': {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: [longitude, latitude] // GeoJSON uses [lng, lat] order
-          },
-          $maxDistance: 50000 // 50km radius
-        }
-      },
-      'status': 'active' // Only return active listings
-    })
-    .skip(skip)
-    .limit(limit + 1) // Get one extra to check if there are more
-    .lean();
-    
-    console.log(`Found ${listings.length} listings near [${longitude}, ${latitude}]`);
-    
-    // Check if there are more results
-    const hasMore = listings.length > limit;
-    
-    // Remove the extra item if there are more
-    const resultsToReturn = hasMore ? listings.slice(0, limit) : listings;
-    
-    // Return the results in the expected format
+    // Return the results
     res.status(200).json({
       success: true,
-      listings: resultsToReturn,
-      hasMore
+      listings: result.listings,
+      hasMore: result.hasMore
     });
   } catch (error) {
     console.error('Error searching listings:', error);
