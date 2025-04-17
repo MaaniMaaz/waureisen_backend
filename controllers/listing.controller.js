@@ -69,6 +69,9 @@ exports.searchListings = async (req, res, next) => {
     const currentPage = parseInt(page);
     const limit = parseInt(pageSize);
     
+    // Log received parameters for debugging
+    console.log('Search parameters:', { latitude, longitude, currentPage, limit });
+    
     // Validate parameters
     if (isNaN(latitude) || isNaN(longitude)) {
       return res.status(400).json({ 
@@ -76,6 +79,9 @@ exports.searchListings = async (req, res, next) => {
         message: 'Invalid latitude or longitude' 
       });
     }
+    
+    // Import the Listing model directly for this function
+    const Listing = require('../models/listing.model');
     
     // Calculate skip value for pagination
     const skip = (currentPage - 1) * limit;
@@ -98,13 +104,15 @@ exports.searchListings = async (req, res, next) => {
     .limit(limit + 1) // Get one extra to check if there are more
     .lean();
     
+    console.log(`Found ${listings.length} listings near [${longitude}, ${latitude}]`);
+    
     // Check if there are more results
     const hasMore = listings.length > limit;
     
     // Remove the extra item if there are more
     const resultsToReturn = hasMore ? listings.slice(0, limit) : listings;
     
-    // Return the results
+    // Return the results in the expected format
     res.status(200).json({
       success: true,
       listings: resultsToReturn,
