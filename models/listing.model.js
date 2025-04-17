@@ -188,8 +188,8 @@ const listingSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-// Create a geo-spatial index for location coordinates
-listingSchema.index({ location: '2dsphere' });
+// Add a 2dsphere index to the location field for geospatial queries
+listingSchema.index({ 'location.coordinates': '2dsphere' });
 
 const Listing = mongoose.model('Listing', listingSchema);
 module.exports = Listing;
