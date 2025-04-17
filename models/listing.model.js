@@ -8,6 +8,12 @@ const { totalmem } = require('os');
 
 const listingSchema = new mongoose.Schema({
 
+  Code: {
+    type: String,
+    //required: true,
+    unique: true
+  },
+
   listingType: {
     type: String,
     //required: true 

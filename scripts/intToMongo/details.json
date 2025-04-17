@@ -1,0 +1,1301 @@
+{
+  "FI4630.624.1": {
+    "code": "FI4630.624.1",
+    "name": "Kukkalahti",
+    "countryCode": "FI",
+    "country": [
+      {
+        "language": "EN",
+        "content": "Finland"
+      }
+    ],
+    "regionCode": "12",
+    "region": [
+      {
+        "language": "EN",
+        "content": "Southern Savonia"
+      }
+    ],
+    "placeCode": "04630",
+    "place": [
+      {
+        "language": "EN",
+        "content": "Kerimäki"
+      }
+    ],
+    "type": "H",
+    "detailType": "D",
+    "livingSpace": 190,
+    "rooms": {
+      "number": 8
+    },
+    "bedRooms": {
+      "number": 7
+    },
+    "bathRooms": {
+      "number": 1
+    },
+    "toilets": {
+      "number": 1
+    },
+    "pax": 14,
+    "paxByValidity": {
+      "item": [
+        {
+          "value": 14,
+          "validFrom": "2025-04-17",
+          "validTo": "2025-06-09"
+        }
+      ]
+    },
+    "babiesByValidity": {
+      "item": [
+        {
+          "value": 0,
+          "validFrom": "2025-04-17",
+          "validTo": "2025-06-09"
+        }
+      ]
+    },
+    "address": {
+      "postalCode": "58320",
+      "longitude": "29.372929",
+      "latitude": "62.095238",
+      "accuracy": "EXACT"
+    },
+    "evaluation": {
+      "stars": "5"
+    },
+    "attributes": {
+      "attribute": [
+        {
+          "type": "attribute",
+          "name": "boat"
+        },
+        {
+          "type": "attribute",
+          "name": "bathing_at_the_lake"
+        },
+        {
+          "type": "attribute",
+          "name": "bbq"
+        },
+        {
+          "type": "attribute",
+          "name": "dishwasher"
+        },
+        {
+          "type": "attribute",
+          "name": "fireplace"
+        },
+        {
+          "type": "attribute",
+          "name": "microwave"
+        },
+        {
+          "type": "attribute",
+          "name": "nature"
+        },
+        {
+          "type": "attribute",
+          "name": "oven"
+        },
+        {
+          "type": "attribute",
+          "name": "parking"
+        },
+        {
+          "type": "attribute",
+          "name": "pets"
+        },
+        {
+          "type": "attribute",
+          "name": "sauna"
+        },
+        {
+          "type": "attribute",
+          "name": "shower"
+        },
+        {
+          "type": "attribute",
+          "name": "rest_and_relax_summer"
+        },
+        {
+          "type": "attribute",
+          "name": "sunny_position"
+        },
+        {
+          "type": "attribute",
+          "name": "washingmachine"
+        },
+        {
+          "type": "attribute",
+          "name": "fridge"
+        },
+        {
+          "type": "attribute",
+          "name": "heating"
+        },
+        {
+          "type": "attribute",
+          "name": "internet"
+        },
+        {
+          "type": "attribute",
+          "name": "freezer"
+        },
+        {
+          "type": "attribute",
+          "name": "nonsmoking"
+        },
+        {
+          "type": "attribute",
+          "name": "tv"
+        },
+        {
+          "type": "attribute",
+          "name": "wlan"
+        }
+      ]
+    },
+    "distances": {
+      "distance": [
+        {
+          "type": "center",
+          "value": "53000"
+        },
+        {
+          "type": "lake",
+          "value": "60"
+        },
+        {
+          "type": "public_transport",
+          "value": "15000"
+        },
+        {
+          "type": "ski",
+          "value": "0"
+        },
+        {
+          "type": "water",
+          "value": "60"
+        }
+      ]
+    },
+    "themes": {
+      "theme": [
+        "lakeside_town"
+      ]
+    },
+    "descriptions": {
+      "description": [
+        {
+          "type": "inside",
+          "language": "EN",
+          "value": "Kukkalahti is an upscale and spacious rental villa that can accommodate even a larger group for a holiday, use of the hot tub is included in the rent during the summertime (20.4.-30.10). The same owner has a rental cottage 17154 MÄNTYLAHTI next door, in total these two villas can accommodate 28 people, so there is space for a larger group for a holiday or business event if necessary. \r\r53 km northeast of Savonlinna, Orivesi/Paasselkä 60 m, hard, gently deepening sandy bottom, dock, rowing boat, two-seater canoe and sup-board available.\r\rLog cabin 2013, down staris: living room / kitchen, first bedroom with sofa bed for two, second bedroom with double bed, third bedroom with 140 cm sofa bed for two, fourth bedroom with double bed. Bathroom with toilet and shower, hall.\r\rUpstairs: Fifth bedroom with double bed and balcony, sixth bedroom with double bed and cot, seventh bedroom with 120 cm and 80 cm beds. Toilet and shower in the bathroom.\r\rA separate sauna building with a wood stove, a toilet, shower and washing machine in the washroom, a room with a fireplace, a double bed in the loft.\r\rIn the yard, there is a large summer kitchen made of natural stone for outdoor cooking. The buildings are connected by a large terrace area, which is connected to a patio and a dining area for the whole group.\r\rNote: The use of the hot tub is included in the accommodation price ONLY during the summer season 20.4.-30.10. Frost restriction -15 degrees. The customer fills, heats and empties the hot tub himself. If you want to use the bowl already filled and preheated, you can agree on it with the owner for an additional fee of 50 euros, payment to the owner.\r\rNote! During the winter (November - April), the hot tub can only be used pre-filled and preheated for an additional fee of 50 euros, frost restriction -15 degrees. The use and heating of the hot tub must be agreed in advance and payment also straight to the owner. Beautiful landscapes and a lot to see in the vicinity of Savonlinna.\r\rRaikuu Salpa station 11 km, Savonranta village services 15 km, Kerimäki (world's largest wooden church) 31 km, Kolovesi National Park 35 km, Punkaharjun Harjutie 48 km, Pajarinhovi Tourist Center 49 km, Savonlinna (Olavinlinna) 53 km, Kitee 56 km, Heinävesi 65 km, Helsinki 385 km.",
+          "validFrom": "2007-12-15",
+          "validTo": "2099-12-31"
+        }
+      ]
+    },
+    "media": {
+      "mediaItem": []
+    },
+    "arrivalTimes": {
+      "arrivalTime": [
+        {
+          "data": [
+            {
+              "weekdayFrom": 1,
+              "weekdayTo": 7,
+              "onAppointment": true,
+              "timeFrom": "00:00:00",
+              "timeTo": "10:00:00",
+              "type": "D"
+            },
+            {
+              "weekdayFrom": 1,
+              "weekdayTo": 7,
+              "onAppointment": true,
+              "timeFrom": "16:00:00",
+              "timeTo": "19:00:00",
+              "type": "A"
+            }
+          ],
+          "validFrom": "2025-04-17",
+          "validTo": "2099-12-31"
+        }
+      ]
+    },
+    "creationDate": "2024-06-09T01:58:31",
+    "lastModified": "2024-12-22T00:20:55",
+    "brand": "L",
+    "buyingOfficeCode": "000",
+    "domesticCurrency": "EUR",
+    "wwwCapable": true
+  },
+  "FI1250.1439.1": {
+    "code": "FI1250.1439.1",
+    "name": "Villa taikavuosseli",
+    "countryCode": "FI",
+    "country": [
+      {
+        "language": "EN",
+        "content": "Finland"
+      }
+    ],
+    "regionCode": "14",
+    "region": [
+      {
+        "language": "EN",
+        "content": "North Ostrobothnia"
+      }
+    ],
+    "placeCode": "01250",
+    "place": [
+      {
+        "language": "EN",
+        "content": "Kuusamo"
+      }
+    ],
+    "type": "H",
+    "detailType": "D",
+    "livingSpace": 76,
+    "rooms": {
+      "number": 5
+    },
+    "bedRooms": {
+      "number": 4
+    },
+    "bathRooms": {
+      "number": 1
+    },
+    "toilets": {
+      "number": 1
+    },
+    "pax": 8,
+    "paxByValidity": {
+      "item": [
+        {
+          "value": 8,
+          "validFrom": "2025-04-17",
+          "validTo": "2025-07-05"
+        }
+      ]
+    },
+    "babiesByValidity": {
+      "item": [
+        {
+          "value": 0,
+          "validFrom": "2025-04-17",
+          "validTo": "2025-07-05"
+        }
+      ]
+    },
+    "address": {
+      "postalCode": "93830",
+      "longitude": "29.187267",
+      "latitude": "66.16049",
+      "accuracy": "EXACT"
+    },
+    "evaluation": {
+      "stars": "4"
+    },
+    "attributes": {
+      "attribute": [
+        {
+          "type": "attribute",
+          "name": "bathing_at_the_lake"
+        },
+        {
+          "type": "attribute",
+          "name": "dishwasher"
+        },
+        {
+          "type": "attribute",
+          "name": "fireplace"
+        },
+        {
+          "type": "attribute",
+          "name": "hiking_mountains"
+        },
+        {
+          "type": "attribute",
+          "name": "microwave"
+        },
+        {
+          "type": "attribute",
+          "name": "mountains_lakes"
+        },
+        {
+          "type": "attribute",
+          "name": "no_pets_allowed"
+        },
+        {
+          "type": "attribute",
+          "name": "oven"
+        },
+        {
+          "type": "attribute",
+          "name": "parking"
+        },
+        {
+          "type": "attribute",
+          "name": "sauna"
+        },
+        {
+          "type": "attribute",
+          "name": "shower"
+        },
+        {
+          "type": "attribute",
+          "name": "rest_and_relax_summer"
+        },
+        {
+          "type": "attribute",
+          "name": "washingmachine"
+        },
+        {
+          "type": "attribute",
+          "name": "fridge"
+        },
+        {
+          "type": "attribute",
+          "name": "heating"
+        },
+        {
+          "type": "attribute",
+          "name": "internet"
+        },
+        {
+          "type": "attribute",
+          "name": "freezer"
+        },
+        {
+          "type": "attribute",
+          "name": "nonsmoking"
+        },
+        {
+          "type": "attribute",
+          "name": "tv"
+        },
+        {
+          "type": "attribute",
+          "name": "wlan"
+        }
+      ]
+    },
+    "distances": {
+      "distance": [
+        {
+          "type": "center",
+          "value": "25000"
+        },
+        {
+          "type": "public_transport",
+          "value": "200"
+        },
+        {
+          "type": "ski",
+          "value": "900"
+        },
+        {
+          "type": "airport",
+          "name": "OUL",
+          "value": "229535"
+        }
+      ]
+    },
+    "themes": {
+      "theme": [
+        "lakeside_town",
+        "mountains_lakes"
+      ]
+    },
+    "descriptions": {
+      "description": [
+        {
+          "type": "inside",
+          "language": "EN",
+          "value": "Welcome to the beautiful landscapes of Ruka and Kuusamo! The cozy half of semi-detached house, built in 2005, offers excellent amenities for both families and groups of friends. The ground floor features two bedrooms, each with a double bed, and the loft has two bedrooms, each with two single beds. The well-equipped, spacious, living room/kitchen allows for comfortable gatherings.\r\rThe cabin features an electric sauna and a charming wood-heated yard sauna, perfect for relaxation after an active day. The Vuosseli area in Ruka offers an excellent location with easy access to diverse outdoor activities year-round. The Ski bus stop is just 200 meters away, making it effortless to reach Ruka’s services.\r\rFrom the doorstep of the cabin, you can enjoy nature whether you are skiing, cross-country skiing, hiking, or biking. The cozy atmosphere and versatile spaces of the cabin ensure a relaxing and comfortable holiday. This charming semi-detached house in the popular Vuosseli area is the perfect choice for an active family or a group of friends. Book now with Lomarengas! Additional information: The nearest store is Ruka Valley K-market (check the opening hours). The cabin is located 25 km north of Kuusamo.\r\rOther distances: Uuttusuo Taukomaja trail café approx. 200 m by skiing, 500 m by car. Oulanka National Park/Pieni Karhunkierros Trail 28 km.\r\rReservations start at 16:00 and end at 12:00.",
+          "validFrom": "2007-12-15",
+          "validTo": "2099-12-31"
+        }
+      ]
+    },
+    "media": {
+      "mediaItem": []
+    },
+    "arrivalTimes": {
+      "arrivalTime": [
+        {
+          "data": [
+            {
+              "weekdayFrom": 1,
+              "weekdayTo": 7,
+              "onAppointment": true,
+              "timeFrom": "00:00:00",
+              "timeTo": "10:00:00",
+              "type": "D"
+            },
+            {
+              "weekdayFrom": 1,
+              "weekdayTo": 7,
+              "onAppointment": true,
+              "timeFrom": "16:00:00",
+              "timeTo": "19:00:00",
+              "type": "A"
+            }
+          ],
+          "validFrom": "2025-04-17",
+          "validTo": "2099-12-31"
+        }
+      ]
+    },
+    "creationDate": "2024-07-05T02:16:36",
+    "lastModified": "2024-12-19T08:13:29",
+    "brand": "L",
+    "buyingOfficeCode": "000",
+    "domesticCurrency": "EUR",
+    "wwwCapable": true
+  },
+  "CH3906.1143.1": {
+    "code": "CH3906.1143.1",
+    "name": "Snow-Fun B 25",
+    "countryCode": "CH",
+    "country": [
+      {
+        "language": "EN",
+        "content": "Switzerland"
+      }
+    ],
+    "regionCode": "10",
+    "region": [
+      {
+        "language": "EN",
+        "content": "Valais"
+      }
+    ],
+    "placeCode": "03906",
+    "place": [
+      {
+        "language": "EN",
+        "content": "Saas-Fee"
+      }
+    ],
+    "type": "A",
+    "rooms": {
+      "number": 4
+    },
+    "bedRooms": {
+      "number": 3
+    },
+    "bathRooms": {
+      "number": 2
+    },
+    "toilets": {
+      "number": 0
+    },
+    "pax": 6,
+    "paxByValidity": {
+      "item": [
+        {
+          "value": 6,
+          "validFrom": "2025-04-17",
+          "validTo": "2025-10-25"
+        }
+      ]
+    },
+    "babiesByValidity": {
+      "item": [
+        {
+          "value": 0,
+          "validFrom": "2025-04-17",
+          "validTo": "2025-10-25"
+        }
+      ]
+    },
+    "address": {
+      "postalCode": "3906",
+      "longitude": "7.92305231094360",
+      "latitude": "46.10584367725240",
+      "accuracy": "EXACT"
+    },
+    "evaluation": {
+      "stars": "4"
+    },
+    "attributes": {
+      "attribute": [
+        {
+          "type": "attribute",
+          "name": "bath_and_shower"
+        },
+        {
+          "type": "attribute",
+          "name": "mountainbiking"
+        },
+        {
+          "type": "attribute",
+          "name": "elevator"
+        },
+        {
+          "type": "attribute",
+          "name": "golf_courses"
+        },
+        {
+          "type": "attribute",
+          "name": "hiking_plains"
+        },
+        {
+          "type": "attribute",
+          "name": "action_and_fun_sports_summer"
+        },
+        {
+          "type": "attribute",
+          "name": "action_and_fun_sports_winter"
+        },
+        {
+          "type": "attribute",
+          "name": "fridge"
+        },
+        {
+          "type": "attribute",
+          "name": "internet"
+        },
+        {
+          "type": "attribute",
+          "name": "wlan"
+        }
+      ]
+    },
+    "distances": {
+      "distance": [
+        {
+          "type": "bus",
+          "name": "Saas-Fee, Gletscherbrücke",
+          "value": "229"
+        },
+        {
+          "type": "train",
+          "name": "Felskinn",
+          "value": "4157"
+        },
+        {
+          "type": "airport",
+          "name": "GVA",
+          "value": "227491"
+        },
+        {
+          "type": "airport",
+          "name": "ZRH",
+          "value": "231588"
+        }
+      ]
+    },
+    "themes": {
+      "theme": [
+        "mountains_lakes",
+        "nightlife",
+        "ski-winter"
+      ]
+    },
+    "descriptions": {
+      "description": [
+        {
+          "type": "outside",
+          "language": "EN",
+          "value": "Bus stop \"Saas-Fee, Gletscherbrücke\" 0.2 km, railway station \"Felskinn\" 4.2 km.",
+          "validFrom": "2007-12-15",
+          "validTo": "2099-12-31"
+        },
+        {
+          "type": "inside",
+          "language": "EN",
+          "value": "97 m2. More information by the provider: Very nice part of the village, close to the ski slopes.\r\nNice 4-room apartment (100m2). Excellent location right next to the slopes (Ski-in and-out) and 5 minutes from the center away. Sleeps a maximum of 6. It features 3 bedrooms, 1 living room with modern open kitchen, 1 shower/WC, 1 bath/WC and a balcony with stunning views.  Excellent Wifi Connection! A boot room for ski storage is available in the building along with amenities for the washing and drying of clothes. The apartment is non-smoking and no pets are permitted.\r\nHoliday taxes Summer (01.06. -31.10.): CHF 7.-/adults, CHF 3.50/children (age 6 - 15.99) per day. Holiday taxes Winter (01.11. -31.05.): CHF 4.50 for adults, CHF 2.25 for children (age 6 - 15.99) per day. Saastalcard included. Final cleaning, bed linen and towel (except kitchen cleaning) included.",
+          "validFrom": "2007-12-15",
+          "validTo": "2099-12-31"
+        }
+      ]
+    },
+    "media": {
+      "mediaItem": [
+        {
+          "main": true,
+          "season": "s",
+          "uri": "https://test-images-interhome.ncag.ch/CH3906.1143.1/partner-medium/F2D993D000ED1EDAAAAD0E52DF810330",
+          "fileName": "F2D993D000ED1EDAAAAD0E52DF810330",
+          "format": "image",
+          "type": "place",
+          "caption": [
+            {
+              "content": "Outdoor"
+            }
+          ],
+          "lastModified": "2020-06-08T17:28:15",
+          "sortOrder": 1,
+          "sortOrderW": 1
+        },
+        {
+          "main": false,
+          "season": "s",
+          "uri": "https://test-images-interhome.ncag.ch/CH3906.1143.1/partner-medium/F2D993D000ED1EDAAAAD0E52DF868330",
+          "fileName": "F2D993D000ED1EDAAAAD0E52DF868330",
+          "format": "image",
+          "type": "place",
+          "caption": [
+            {
+              "content": "Outdoor"
+            }
+          ],
+          "lastModified": "2020-06-08T17:31:48",
+          "sortOrder": 2,
+          "sortOrderW": 2
+        },
+        {
+          "main": false,
+          "season": "s",
+          "uri": "https://test-images-interhome.ncag.ch/CH3906.1143.1/partner-medium/F2D993D000ED1EDAAAAD0E52DF8EE330",
+          "fileName": "F2D993D000ED1EDAAAAD0E52DF8EE330",
+          "format": "image",
+          "type": "place",
+          "caption": [
+            {
+              "content": "Outdoor"
+            }
+          ],
+          "lastModified": "2020-06-08T17:39:25",
+          "sortOrder": 3,
+          "sortOrderW": 3
+        },
+        {
+          "main": false,
+          "season": "w",
+          "uri": "https://test-images-interhome.ncag.ch/CH3906.1143.1/partner-medium/F2D993D001441EEBBBBE9CE906B7B687",
+          "fileName": "F2D993D001441EEBBBBE9CE906B7B687",
+          "format": "image",
+          "type": "place",
+          "caption": [
+            {
+              "content": "Place"
+            }
+          ],
+          "lastModified": "2021-07-26T09:36:19",
+          "sortOrder": 4,
+          "sortOrderW": 4
+        },
+        {
+          "main": false,
+          "season": "w",
+          "uri": "https://test-images-interhome.ncag.ch/CH3906.1143.1/partner-medium/5A56365000CA1EEBBBBEA07850F827B7",
+          "fileName": "5A56365000CA1EEBBBBEA07850F827B7",
+          "format": "image",
+          "type": "place",
+          "caption": [
+            {
+              "content": "Place"
+            }
+          ],
+          "lastModified": "2021-07-26T09:37:07",
+          "sortOrder": 5,
+          "sortOrderW": 5
+        },
+        {
+          "main": false,
+          "season": "s",
+          "uri": "https://test-images-interhome.ncag.ch/CH3906.1143.1/partner-medium/F2D993D000ED1EDAAAAD0E52DF81E330",
+          "fileName": "F2D993D000ED1EDAAAAD0E52DF81E330",
+          "format": "image",
+          "type": "place",
+          "caption": [
+            {
+              "content": "Place"
+            }
+          ],
+          "lastModified": "2022-07-20T09:09:59",
+          "sortOrder": 6,
+          "sortOrderW": 6
+        },
+        {
+          "main": false,
+          "season": "s",
+          "uri": "https://test-images-interhome.ncag.ch/CH3906.1143.1/partner-medium/F2D993D000ED1EDAAAAD0E52DF8DC330",
+          "fileName": "F2D993D000ED1EDAAAAD0E52DF8DC330",
+          "format": "image",
+          "type": "place",
+          "caption": [
+            {
+              "content": "Place"
+            }
+          ],
+          "lastModified": "2022-07-20T09:10:03",
+          "sortOrder": 7,
+          "sortOrderW": 7
+        }
+      ]
+    },
+    "arrivalTimes": {
+      "arrivalTime": [
+        {
+          "data": [
+            {
+              "weekdayFrom": 1,
+              "weekdayTo": 7,
+              "onAppointment": false,
+              "timeFrom": "00:00:00",
+              "timeTo": "10:00:00",
+              "type": "D"
+            },
+            {
+              "weekdayFrom": 1,
+              "weekdayTo": 7,
+              "onAppointment": false,
+              "timeFrom": "15:00:00",
+              "timeTo": "17:00:00",
+              "type": "A"
+            }
+          ],
+          "validFrom": "2025-04-17",
+          "validTo": "2099-12-31"
+        }
+      ]
+    },
+    "creationDate": "2023-05-26T06:12:21",
+    "lastModified": "2024-10-31T09:46:37",
+    "brand": "FER",
+    "buyingOfficeCode": "000",
+    "domesticCurrency": "CHF",
+    "wwwCapable": true
+  },
+  "FI6010.695.1": {
+    "code": "FI6010.695.1",
+    "name": "Lahdenpoukama",
+    "countryCode": "FI",
+    "country": [
+      {
+        "language": "EN",
+        "content": "Finland"
+      }
+    ],
+    "regionCode": "08",
+    "region": [
+      {
+        "language": "EN",
+        "content": "Päijat-Häme"
+      }
+    ],
+    "placeCode": "06010",
+    "place": [
+      {
+        "language": "EN",
+        "content": "Asikkala"
+      }
+    ],
+    "type": "H",
+    "detailType": "D",
+    "livingSpace": 70,
+    "rooms": {
+      "number": 4
+    },
+    "bedRooms": {
+      "number": 3
+    },
+    "bathRooms": {
+      "number": 1
+    },
+    "toilets": {
+      "number": 1
+    },
+    "pax": 4,
+    "paxByValidity": {
+      "item": [
+        {
+          "value": 4,
+          "validFrom": "2025-04-17",
+          "validTo": "2025-06-09"
+        }
+      ]
+    },
+    "babiesByValidity": {
+      "item": [
+        {
+          "value": 0,
+          "validFrom": "2025-04-17",
+          "validTo": "2025-06-09"
+        }
+      ]
+    },
+    "address": {
+      "postalCode": "17220",
+      "longitude": "25.792658",
+      "latitude": "61.227245",
+      "accuracy": "EXACT"
+    },
+    "evaluation": {
+      "stars": "3"
+    },
+    "attributes": {
+      "attribute": [
+        {
+          "type": "attribute",
+          "name": "boat"
+        },
+        {
+          "type": "attribute",
+          "name": "bathing_at_the_lake"
+        },
+        {
+          "type": "attribute",
+          "name": "bbq"
+        },
+        {
+          "type": "attribute",
+          "name": "fireplace"
+        },
+        {
+          "type": "attribute",
+          "name": "microwave"
+        },
+        {
+          "type": "attribute",
+          "name": "nature"
+        },
+        {
+          "type": "attribute",
+          "name": "oven"
+        },
+        {
+          "type": "attribute",
+          "name": "parking"
+        },
+        {
+          "type": "attribute",
+          "name": "pets"
+        },
+        {
+          "type": "attribute",
+          "name": "sauna"
+        },
+        {
+          "type": "attribute",
+          "name": "shower"
+        },
+        {
+          "type": "attribute",
+          "name": "rest_and_relax_summer"
+        },
+        {
+          "type": "attribute",
+          "name": "sunny_position"
+        },
+        {
+          "type": "attribute",
+          "name": "fridge"
+        },
+        {
+          "type": "attribute",
+          "name": "heating"
+        },
+        {
+          "type": "attribute",
+          "name": "internet"
+        },
+        {
+          "type": "attribute",
+          "name": "freezer"
+        },
+        {
+          "type": "attribute",
+          "name": "nonsmoking"
+        },
+        {
+          "type": "attribute",
+          "name": "tv"
+        },
+        {
+          "type": "attribute",
+          "name": "wlan"
+        }
+      ]
+    },
+    "distances": {
+      "distance": [
+        {
+          "type": "center",
+          "value": "35000"
+        },
+        {
+          "type": "lake",
+          "value": "30"
+        },
+        {
+          "type": "public_transport",
+          "value": "1500"
+        },
+        {
+          "type": "ski",
+          "value": "0"
+        },
+        {
+          "type": "water",
+          "value": "30"
+        },
+        {
+          "type": "airport",
+          "name": "HEL",
+          "value": "127000"
+        }
+      ]
+    },
+    "themes": {
+      "theme": [
+        "lakeside_town"
+      ]
+    },
+    "descriptions": {
+      "description": [
+        {
+          "type": "inside",
+          "language": "EN",
+          "value": "35 km north of Lahti, the Lahdenpoukama cabin is located on the shore of the clear and clean Ruotsalainen lake (30 m). The beach is hard and steadily deepening. Residents have two kayaks on the beach, one single and the other two-seater. Two new SUP boards and a rowing boat. The large, long platform makes it easier to use these hobby tools. In the clear water lake there is something to wonder about even for a snorkeler.\r\rLahdenpoukama is a cozy, clean and well-equipped log cabin (built 1996) with three bedrooms, a spacious living room and a kitchen. The kitchen has a dining table for eight, also with a view of the lake.\r\rThe cottage's three bedrooms comfortably offer your own peace for rest or work. One bedroom has a large double bed, the second has a 120 cm bed and the third has an 80 cm bed. In addition, two thick spare mattresses. In bathroom there is a shower, toilet, mirror cabinet and sink. The cottage has an air source heat pump. There isn't any sauna in the cottage, but there is a lakeside tent sauna available.\r\rOn the cottage's covered terrace, you can enjoy the lake view. An atmospheric barbecue hut allows you to cook outside in the summer protected from the weather, and the new Saunacube tent sauna, which gives good steam, is right next to the beach. After the sauna and swimming, you can cool off at home, fry sausages or grill fish and enjoy sauna drinks. Pretty nice! In addition to the barbecue house, a portable charcoal grill is available. The Vääksy canal, the Kalkkisten center with its wineries and the unique Pulkkilanharju's nature trails are examples of destinations in the area that are worth visiting especially in summer!\r\rVääksy 15 km, Asikkala 21 km, Pulkkilanharju nature trail and landscape route 25 km, Lahti 35 km, Helsinki 141 km.\r\rYou can also arrive at the cottage by motorboat from Päijänte or Vesijärvi via canals, and Heinola can also be reached by water.\r\rThe neighbor's beach sauna is located right on the border of the plot.",
+          "validFrom": "2007-12-15",
+          "validTo": "2099-12-31"
+        }
+      ]
+    },
+    "media": {
+      "mediaItem": []
+    },
+    "arrivalTimes": {
+      "arrivalTime": [
+        {
+          "data": [
+            {
+              "weekdayFrom": 1,
+              "weekdayTo": 7,
+              "onAppointment": true,
+              "timeFrom": "00:00:00",
+              "timeTo": "10:00:00",
+              "type": "D"
+            },
+            {
+              "weekdayFrom": 1,
+              "weekdayTo": 7,
+              "onAppointment": true,
+              "timeFrom": "16:00:00",
+              "timeTo": "19:00:00",
+              "type": "A"
+            }
+          ],
+          "validFrom": "2025-04-17",
+          "validTo": "2099-12-31"
+        }
+      ]
+    },
+    "creationDate": "2024-06-09T01:58:49",
+    "lastModified": "2024-12-24T00:28:32",
+    "brand": "L",
+    "buyingOfficeCode": "000",
+    "domesticCurrency": "EUR",
+    "wwwCapable": true
+  },
+  "FR3317.100.1": {
+    "code": "FR3317.100.1",
+    "name": "Les hameaux de l'Océan",
+    "countryCode": "FR",
+    "country": [
+      {
+        "language": "EN",
+        "content": "France"
+      }
+    ],
+    "regionCode": "50",
+    "region": [
+      {
+        "language": "EN",
+        "content": "Gironde"
+      }
+    ],
+    "placeCode": "03317",
+    "place": [
+      {
+        "language": "EN",
+        "content": "Carcans Plage"
+      }
+    ],
+    "levels": 2,
+    "type": "H",
+    "detailType": "R",
+    "livingSpace": 56,
+    "rooms": {
+      "number": 4,
+      "room": [
+        {
+          "floor": "MainFloor",
+          "type": "rooms",
+          "count": 2
+        },
+        {
+          "floor": "MainFloor",
+          "type": "rooms",
+          "count": 1
+        },
+        {
+          "floor": "MainFloor",
+          "type": "living-dining_room",
+          "count": 1
+        }
+      ]
+    },
+    "bedRooms": {
+      "number": 3
+    },
+    "bathRooms": {
+      "number": 1
+    },
+    "toilets": {
+      "number": 2
+    },
+    "pax": 6,
+    "paxByValidity": {
+      "item": [
+        {
+          "value": 6,
+          "validFrom": "2025-04-17",
+          "validTo": "2025-11-28"
+        }
+      ]
+    },
+    "babiesByValidity": {
+      "item": [
+        {
+          "value": 1,
+          "validFrom": "2025-04-17",
+          "validTo": "2025-11-28"
+        }
+      ]
+    },
+    "address": {
+      "postalCode": "33121",
+      "longitude": "-1.187874",
+      "latitude": "45.083831",
+      "accuracy": "EXACT"
+    },
+    "evaluation": {
+      "stars": "2",
+      "location": "4",
+      "outdoorArea": "2",
+      "interior": "2",
+      "tranquility": "3",
+      "kitchen": "2",
+      "accessRoad": "5"
+    },
+    "attributes": {
+      "attribute": [
+        {
+          "type": "attribute",
+          "name": "cat_of_residence",
+          "value": "RS"
+        },
+        {
+          "type": "attribute",
+          "name": "cots",
+          "value": "1"
+        },
+        {
+          "type": "attribute",
+          "name": "bathing_at_the_sea"
+        },
+        {
+          "type": "attribute",
+          "name": "central"
+        },
+        {
+          "type": "attribute",
+          "name": "dishwasher"
+        },
+        {
+          "type": "attribute",
+          "name": "microwave"
+        },
+        {
+          "type": "attribute",
+          "name": "parking"
+        },
+        {
+          "type": "attribute",
+          "name": "residence"
+        },
+        {
+          "type": "attribute",
+          "name": "shower"
+        },
+        {
+          "type": "attribute",
+          "name": "terrace"
+        },
+        {
+          "type": "attribute",
+          "name": "fridge"
+        },
+        {
+          "type": "attribute",
+          "name": "heating"
+        },
+        {
+          "type": "attribute",
+          "name": "internet"
+        },
+        {
+          "type": "attribute",
+          "name": "kitchenette"
+        },
+        {
+          "type": "attribute",
+          "name": "parking_private_free"
+        },
+        {
+          "type": "attribute",
+          "name": "balcony"
+        },
+        {
+          "type": "attribute",
+          "name": "freezer"
+        },
+        {
+          "type": "attribute",
+          "name": "nonsmoking"
+        },
+        {
+          "type": "attribute",
+          "name": "tv"
+        },
+        {
+          "type": "attribute",
+          "name": "smoke_alarm"
+        },
+        {
+          "type": "attribute",
+          "name": "stove"
+        },
+        {
+          "type": "attribute",
+          "name": "wlan"
+        }
+      ]
+    },
+    "distances": {
+      "distance": [
+        {
+          "type": "beach",
+          "value": "300"
+        },
+        {
+          "type": "center",
+          "value": "0"
+        },
+        {
+          "type": "lake",
+          "value": "5000"
+        },
+        {
+          "type": "sea",
+          "value": "300"
+        },
+        {
+          "type": "golf",
+          "value": "12000"
+        },
+        {
+          "type": "water",
+          "value": "300"
+        },
+        {
+          "type": "bus",
+          "name": "Océan",
+          "value": "155"
+        },
+        {
+          "type": "train",
+          "name": "Lesparre",
+          "value": "30958"
+        },
+        {
+          "type": "ferry",
+          "value": "38286"
+        },
+        {
+          "type": "tram",
+          "name": "Cantinolle",
+          "value": "46164"
+        },
+        {
+          "type": "airport",
+          "name": "BOD",
+          "value": "56000"
+        }
+      ]
+    },
+    "themes": {
+      "theme": [
+        "lso",
+        "sun-beach"
+      ]
+    },
+    "descriptions": {
+      "description": [
+        {
+          "type": "outside",
+          "language": "EN",
+          "value": "Carcans-Plage: Residence \"Les hameaux de l'Océan\". In the centre, 50 m from the edge of the forest, 300 m from the sea, 5 km from the lake, 300 m from the beach, direct access to the beach. Private: terrace, garden furniture, parking space n 92 (for 2 cars). Grocery, restaurant 100 m, tram \"Cantinolle\" 46.2 km, bus stop \"Océan\" 0.2 km, railway station \"Lesparre\" 31.0 km, ferry 38.3 km. Golf course (18 hole) 12 km, surf school 100 m, minigolf 5 km, cycle lane 100 m. Well-known lakes can easily be reached: Hourtin 5 km.",
+          "validFrom": "2007-12-15",
+          "validTo": "2099-12-31"
+        },
+        {
+          "type": "inside",
+          "language": "EN",
+          "value": "4-room terraced house 56 m2 on 2 levels. Practical furnishings: living/dining room with TV. Exit to the terrace. 1 room with 1 french bed (140 cm, length 190 cm). Kitchenette (2 hot plates, mini-oven, dishwasher, microwave, freezer). Sep. WC. Upper floor: 1 room with 1 french bed (140 cm, length 190 cm). Exit to the loggia. 1 room with 2 beds (90 cm, length 190 cm). Shower/WC. Electric heating. Balcony 9 m2, large terrace 20 m2. Facilities: Internet (WiFi, extra). Reserved parking space n 92 + 122. Please note: non-smokers only. Smoke alarm.",
+          "validFrom": "2007-12-15",
+          "validTo": "2099-12-31"
+        }
+      ]
+    },
+    "media": {
+      "mediaItem": []
+    },
+    "arrivalTimes": {
+      "arrivalTime": [
+        {
+          "data": [
+            {
+              "weekdayFrom": 1,
+              "weekdayTo": 7,
+              "onAppointment": false,
+              "timeFrom": "00:00:00",
+              "timeTo": "10:00:00",
+              "type": "D"
+            },
+            {
+              "weekdayFrom": 1,
+              "weekdayTo": 7,
+              "onAppointment": false,
+              "timeFrom": "16:00:00",
+              "timeTo": "18:00:00",
+              "type": "A"
+            }
+          ],
+          "validFrom": "2025-04-17",
+          "validTo": "2099-12-31"
+        }
+      ]
+    },
+    "creationDate": "2024-04-15T16:16:40",
+    "lastModified": "2024-10-31T20:37:09",
+    "activateDate": "2024-04-15",
+    "brand": "I",
+    "buyingOfficeCode": "FR082",
+    "domesticCurrency": "EUR",
+    "occupancyBasedPricing": true,
+    "proprietorStatus": 3,
+    "wwwCapable": true
+  }
+}
