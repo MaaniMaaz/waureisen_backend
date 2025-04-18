@@ -17,6 +17,7 @@ const travelMagazineRoutes = require("./routes/travelMagazine.routes.js");
 const voucherRoutes = require("./routes/voucher.routes.js");
 const bookingRoutes = require("./routes/booking.routes.js");
 const newsletterRoutes = require('./routes/newsletter.routes');
+const interhomeRoutes = require('./routes/interhome.routes');
 
 
 // const reviewRoutes = require("./routes/review.routes.js")
@@ -58,6 +59,8 @@ app.use('/api/email-notifications', emailNotificationRoutes);
 app.use('/api/campers', camperRoutes);
 
 app.use('/api/newsletters', newsletterRoutes);
+
+app.use('/api/interhome', interhomeRoutes);
 
 app.get("/", (req, res) => {
   res.send("Waureisen Backend API Running....");
