@@ -55,7 +55,7 @@ exports.getActiveFilters = async () => {
   let filter = await Filter.findOne().sort({ updatedAt: -1 });
   
   if (!filter) {
-    // Create a default filter with basic subsections
+    // Create a default filter with predefined subsections
     filter = await createDefaultFilter();
   }
   
@@ -86,6 +86,11 @@ exports.addOrUpdateSubsection = async (filterId, subsectionData, subsectionId = 
       throw new Error('Subsection not found');
     }
     
+    // Check if it's a predefined subsection
+    if (filter.subsections[subsectionIndex].predefined) {
+      throw new Error('Cannot modify predefined subsection');
+    }
+    
     filter.subsections[subsectionIndex].name = subsectionData.name;
     filter.subsections[subsectionIndex].description = subsectionData.description;
   } else {
@@ -93,6 +98,7 @@ exports.addOrUpdateSubsection = async (filterId, subsectionData, subsectionId = 
     filter.subsections.push({
       name: subsectionData.name,
       description: subsectionData.description,
+      predefined: false, // Custom subsections are not predefined
       filters: []
     });
   }
@@ -111,6 +117,20 @@ exports.deleteSubsection = async (filterId, subsectionId) => {
   
   if (!filter) {
     throw new Error('Filter not found');
+  }
+  
+  // Find the subsection
+  const subsectionIndex = filter.subsections.findIndex(
+    subsection => subsection._id.toString() === subsectionId
+  );
+  
+  if (subsectionIndex === -1) {
+    throw new Error('Subsection not found');
+  }
+  
+  // Check if it's a predefined subsection
+  if (filter.subsections[subsectionIndex].predefined) {
+    throw new Error('Cannot delete predefined subsection');
   }
   
   filter.subsections = filter.subsections.filter(
@@ -153,14 +173,24 @@ exports.addOrUpdateSubsectionFilter = async (filterId, subsectionId, filterData,
       throw new Error('Filter not found in subsection');
     }
     
+    // Check if it's a predefined filter
+    if (filter.subsections[subsectionIndex].filters[filterIndex].predefined) {
+      throw new Error('Cannot modify predefined filter');
+    }
+    
     filter.subsections[subsectionIndex].filters[filterIndex] = {
       ...filter.subsections[subsectionIndex].filters[filterIndex],
       ...filterData,
+      predefined: false, // Ensure predefined status doesn't change
       _id: filter.subsections[subsectionIndex].filters[filterIndex]._id
     };
   } else {
     // Add new filter
-    filter.subsections[subsectionIndex].filters.push(filterData);
+    const newFilter = {
+      ...filterData,
+      predefined: false // New filters are not predefined
+    };
+    filter.subsections[subsectionIndex].filters.push(newFilter);
   }
   
   return await filter.save();
@@ -188,6 +218,20 @@ exports.deleteSubsectionFilter = async (filterId, subsectionId, subFilterId) => 
     throw new Error('Subsection not found');
   }
   
+  // Find the filter
+  const filterIndex = filter.subsections[subsectionIndex].filters.findIndex(
+    f => f._id.toString() === subFilterId
+  );
+  
+  if (filterIndex === -1) {
+    throw new Error('Filter not found in subsection');
+  }
+  
+  // Check if it's a predefined filter
+  if (filter.subsections[subsectionIndex].filters[filterIndex].predefined) {
+    throw new Error('Cannot delete predefined filter');
+  }
+  
   filter.subsections[subsectionIndex].filters = filter.subsections[subsectionIndex].filters.filter(
     f => f._id.toString() !== subFilterId
   );
@@ -196,35 +240,116 @@ exports.deleteSubsectionFilter = async (filterId, subsectionId, subFilterId) => 
 };
 
 /**
- * Create a default filter document with basic subsections
+ * Create a default filter document with predefined subsections
  * @returns {Promise<Object>} Created filter document
  */
 const createDefaultFilter = async () => {
   const defaultFilter = new Filter({
     subsections: [
+      // Basic Info section
       {
         name: 'Basic Info',
         description: 'Essential details about the accommodation',
+        predefined: true,
         filters: [
-          { name: 'People', type: 'number', required: true },
-          { name: 'Dogs', type: 'number', required: true },
-          { name: 'Bedrooms', type: 'number', required: true },
-          { name: 'Rooms', type: 'number', required: true },
-          { name: 'Washrooms', type: 'number', required: true }
+          { name: 'People', type: 'number', required: true, predefined: true },
+          { name: 'Dogs', type: 'number', required: true, predefined: true },
+          { name: 'Bedrooms', type: 'number', required: true, predefined: true },
+          { name: 'Rooms', type: 'number', required: true, predefined: true },
+          { name: 'Washrooms', type: 'number', required: true, predefined: true },
+          { name: 'Property Type', type: 'select', required: true, predefined: true, 
+            options: ['Studio', 'Apartment', 'House', 'Villa', 'Cabin', 'Chalet', 'Hotel', 
+                     'Holiday Home', 'Tiny House', 'Holiday Apartment', 'Bungalow', 
+                     'House Boat', 'Guest House', 'Yurt', 'Log Cabin', 'Camper Van', 
+                     'Farm House', 'Tent', 'Tree House'] },
+          { name: 'Listing Source', type: 'select', required: true, predefined: true,
+            options: ['Admin', 'Provider', 'Interhome'] }
         ]
       },
+      
+      // Photos section
+      {
+        name: 'Photos',
+        description: 'Images for the accommodation',
+        predefined: true,
+        filters: [
+          { name: 'Main Image', type: 'text', required: true, predefined: true },
+          { name: 'Gallery Images', type: 'text', required: false, predefined: true }
+        ]
+      },
+      
+      // Amenities section
       {
         name: 'Amenities',
         description: 'Available features and facilities',
+        predefined: true,
         filters: [
-          { name: 'Kitchen', type: 'checkbox', required: false },
-          { name: 'Air Conditioning', type: 'checkbox', required: false },
-          { name: 'Parking', type: 'checkbox', required: false },
-          { name: 'WiFi', type: 'checkbox', required: false }
+          { name: 'Kitchen', type: 'checkbox', required: false, predefined: true },
+          { name: 'Air Conditioning', type: 'checkbox', required: false, predefined: true },
+          { name: 'Parking', type: 'checkbox', required: false, predefined: true },
+          { name: 'WiFi', type: 'checkbox', required: false, predefined: true },
+          { name: 'Dedicated Workspace', type: 'checkbox', required: false, predefined: true },
+          { name: 'Firework Free Zone', type: 'checkbox', required: false, predefined: true },
+          { name: 'TV', type: 'checkbox', required: false, predefined: true },
+          { name: 'Swimming Pool', type: 'checkbox', required: false, predefined: true },
+          { name: 'Dogs Allowed', type: 'checkbox', required: false, predefined: true }
+        ]
+      },
+      
+      // Description section
+      {
+        name: 'Description',
+        description: 'Details about the accommodation',
+        predefined: true,
+        filters: [
+          { name: 'Short Description', type: 'text', required: true, predefined: true },
+          { name: 'Full Description', type: 'text', required: true, predefined: true }
+        ]
+      },
+      
+      // Policies & Location section
+      {
+        name: 'Policies & Location',
+        description: 'Rules and geographic information',
+        predefined: true,
+        filters: [
+          { name: 'Full Address', type: 'text', required: true, predefined: true },
+          { name: 'Cancellation Policy', type: 'select', required: true, predefined: true,
+            options: ['flexible', 'moderate', 'strict', 'custom'] },
+          { name: 'No Smoking', type: 'checkbox', required: false, predefined: true },
+          { name: 'No Parties', type: 'checkbox', required: false, predefined: true },
+          { name: 'Quiet Hours', type: 'checkbox', required: false, predefined: true }
+        ]
+      },
+      
+      // Dog Filters section
+      {
+        name: 'Dog Filters',
+        description: 'Dog-friendly features',
+        predefined: true,
+        filters: [
+          { name: 'Firework Free Zone', type: 'checkbox', required: false, predefined: true },
+          { name: 'Dog Parks Nearby', type: 'checkbox', required: false, predefined: true },
+          { name: 'Dog-friendly Restaurants', type: 'checkbox', required: false, predefined: true },
+          { name: 'Pet Supplies Available', type: 'checkbox', required: false, predefined: true }
         ]
       }
     ]
   });
   
   return await defaultFilter.save();
+};
+
+module.exports = {
+  getAllFilters: exports.getAllFilters,
+  getFilterById: exports.getFilterById,
+  createFilter: exports.createFilter,
+  updateFilter: exports.updateFilter,
+  deleteFilter: exports.deleteFilter,
+  getActiveFilters: exports.getActiveFilters,
+  addOrUpdateSubsection: exports.addOrUpdateSubsection,
+  deleteSubsection: exports.deleteSubsection,
+  addOrUpdateSubsectionFilter: exports.addOrUpdateSubsectionFilter,
+  deleteSubsectionFilter: exports.deleteSubsectionFilter,
+  createDefaultFilter
 };

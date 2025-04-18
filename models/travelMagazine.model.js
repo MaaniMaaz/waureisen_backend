@@ -1,55 +1,85 @@
-// This model will handle blog posts in the travel magazine section
-
 const mongoose = require('mongoose');
 
-const tracelMagazineSchema = new mongoose.Schema({
-  
-  title: {
-    content: { type: String, required: true },
-    size: { type: String, enum: ['H1', 'H2'], required: true }
+// Schema for content elements (h1, h2, p, link, cta)
+const contentElementSchema = new mongoose.Schema({
+  type: { 
+    type: String, 
+    enum: ['h1', 'h2', 'p', 'link', 'cta'],
+    required: true 
   },
+  text: { 
+    type: String, 
+    required: true 
+  },
+  url: { 
+    type: String,
+    required: function() {
+      return this.type === 'link' || this.type === 'cta';
+    }
+  }
+}, { _id: true });
 
-  // Content
-  content: { type: String, required: true },
-
-  // TBD Can there be more categories?
+const travelMagazineSchema = new mongoose.Schema({
+  title: { 
+    type: String, 
+    required: true 
+  },
+  description: { 
+    type: String, 
+    required: true 
+  },
   category: {
     type: String,
-    enum: ['Destinations', 'Accomodations', 'Camping', 'Travel Tips', 'Fly', 'Ferry'],
+    enum: ['Destinations', 'Food & Cuisine', 'Travel Tips', 'Pet Travel'],
     required: true
   },
-
-  background: {
-    color: { type: String },
-    image: { type: String },
-    imageOverlay: { 
-      type: String, 
-      enum: ['none', 'dark overlay', 'darker overlay'],
-      default: 'none'
-    },
-    textColor: { type: String }
+  featuredImage: { 
+    type: String,  // Cloudinary URL
+    required: true
   },
-
-  callToAction: {
-    type: String,
-    enum: ['none', 'internal link', 'external link'],
-    default: 'none'
+  imageTitle: { 
+    type: String  // Overlay text on the featured image
   },
-
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
-
-  // Images Array
-  images: [{ type: String }],
-
+  content: [contentElementSchema],
+  author: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Admin',
+    required: true
+  },
   status: {
     type: String,
     enum: ['draft', 'published', 'removed'],
-    default: 'draft'
+    default: 'published'
   },
-
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  publishDate: {
+    type: Date,
+    default: Date.now
+  },
+  excerpt: {
+    type: String,
+    required: true
+  },
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  },
+  updatedAt: { 
+    type: Date, 
+    default: Date.now 
+  }
 });
 
-const travelMagazine = mongoose.model('travelMagazine', tracelMagazineSchema);
-module.exports = travelMagazine;
+// Pre-save middleware to update timestamps
+travelMagazineSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+// Pre-update middleware
+travelMagazineSchema.pre('findOneAndUpdate', function(next) {
+  this.set({ updatedAt: Date.now() });
+  next();
+});
+
+const TravelMagazine = mongoose.model('TravelMagazine', travelMagazineSchema);
+module.exports = TravelMagazine;

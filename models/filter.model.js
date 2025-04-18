@@ -13,6 +13,11 @@ const filterSchema = new mongoose.Schema({
       type: String,
       trim: true
     },
+    // Flag to indicate if this is a predefined subsection that shouldn't be deleted or modified
+    predefined: {
+      type: Boolean,
+      default: false
+    },
     // Filters are specific attributes within each subsection
     filters: [{
       name: { 
@@ -25,6 +30,11 @@ const filterSchema = new mongoose.Schema({
         required: true,
         enum: ['text', 'number', 'checkbox', 'select', 'radio', 'file', 'date'],
         default: 'text'
+      },
+      // Flag to indicate if this is a predefined filter that shouldn't be deleted or modified
+      predefined: {
+        type: Boolean,
+        default: false
       },
       required: {
         type: Boolean,

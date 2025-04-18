@@ -89,6 +89,9 @@ exports.addSubsection = async (req, res, next) => {
     const updatedFilter = await filterService.addOrUpdateSubsection(filterId, subsectionData);
     res.status(201).json(updatedFilter);
   } catch (err) {
+    if (err.message === 'Cannot modify predefined subsection') {
+      return res.status(403).json({ message: err.message });
+    }
     next(err);
   }
 };
@@ -104,6 +107,9 @@ exports.updateSubsection = async (req, res, next) => {
     const updatedFilter = await filterService.addOrUpdateSubsection(filterId, subsectionData, subsectionId);
     res.json(updatedFilter);
   } catch (err) {
+    if (err.message === 'Cannot modify predefined subsection') {
+      return res.status(403).json({ message: err.message });
+    }
     next(err);
   }
 };
@@ -118,6 +124,9 @@ exports.deleteSubsection = async (req, res, next) => {
     const updatedFilter = await filterService.deleteSubsection(filterId, subsectionId);
     res.json(updatedFilter);
   } catch (err) {
+    if (err.message === 'Cannot delete predefined subsection') {
+      return res.status(403).json({ message: err.message });
+    }
     next(err);
   }
 };
@@ -153,6 +162,9 @@ exports.updateSubsectionFilter = async (req, res, next) => {
     );
     res.json(updatedFilter);
   } catch (err) {
+    if (err.message === 'Cannot modify predefined filter') {
+      return res.status(403).json({ message: err.message });
+    }
     next(err);
   }
 };
@@ -171,6 +183,9 @@ exports.deleteSubsectionFilter = async (req, res, next) => {
     );
     res.json(updatedFilter);
   } catch (err) {
+    if (err.message === 'Cannot delete predefined filter') {
+      return res.status(403).json({ message: err.message });
+    }
     next(err);
   }
 };
