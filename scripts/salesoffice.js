@@ -4382,7 +4382,7 @@ const fetch = require('node-fetch');  // npm install node-fetch@2
 
 // Helper to fetch one code
 async function fetchFor(code, accommodationCode) {
-    const url = `${API_BASE}/${accommodationCode}?SalesOffice=${encodeURIComponent(code)}&Los=true&Currency=CHF`;
+    const url = `${API_BASE}/${accommodationCode}?SalesOffice=${encodeURIComponent(code)}&Los=true&Currency=CHF&RangeFromDate=2025-05-03`;
     const res = await fetch(url, {
         headers: {
             'Token': TOKEN,
