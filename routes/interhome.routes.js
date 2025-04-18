@@ -26,8 +26,8 @@ router.get('/prices/:accommodationCode', async (req, res) => {
 
     // Format the checkInDate to YYYY-MM-DD
     const formattedCheckInDate = checkInDate ? new Date(checkInDate + 'T00:00:00Z').toISOString().split('T')[0] : null;
-    console.log('Original checkInDate:', checkInDate);
-    console.log('Formatted date:', formattedCheckInDate);
+    //console.log('Original checkInDate:', checkInDate);
+    //console.log('Formatted date:', formattedCheckInDate);
 
     // Filter the price data for weekly durations and specific check-in date
     const filteredPrices = response.data?.priceList?.prices?.price?.filter(price => 
