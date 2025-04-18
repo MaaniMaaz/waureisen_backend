@@ -6,8 +6,10 @@ const { isAdmin } = require('../middlewares/role');
 
 // Public routes (no authentication required)
 router.get('/public', camperController.getAvailableCampers);
-router.get('/public/:id', camperController.getCamperById);
+// FIXED: More specific route with fixed segments should come BEFORE routes with parameters
 router.get('/public/category/:category', camperController.getCampersByCategory);
+// This route should come AFTER more specific routes
+router.get('/public/:id', camperController.getCamperById);
 
 // Admin-only routes (authentication required)
 router.get('/', verifyToken, isAdmin, camperController.getAllCampers);

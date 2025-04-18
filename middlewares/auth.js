@@ -9,14 +9,26 @@ exports.verifyToken = (req, res, next) => {
     const actualToken = tokenParts.length === 2 ? tokenParts[1] : token;
 
     jwt.verify(actualToken, process.env.JWT_SECRET, (err, decoded) => {
-        if (err)
+        if (err) {
+            console.error('Token verification error:', err.message);
             return res.status(401).json({ message: "Unauthorized! Invalid token." });
+        }
         
-        // Assuming the decoded token contains the user ID as 'id'
-        req.user = decoded;
+        // Ensure decoded is properly formatted with role and id
+        if (!decoded || !decoded.id || !decoded.role) {
+            console.error('Invalid token payload:', decoded);
+            return res.status(401).json({ message: "Unauthorized! Invalid token payload." });
+        }
         
-        // Optionally, you can explicitly pass the user ID if needed
-        req.user.id = decoded.id; // Ensure this is the correct field in your JWT payload
+        // Set the complete user object in the request
+        req.user = {
+            id: decoded.id,
+            role: decoded.role
+        };
+        
+        // Log successful authentication
+        console.log(`Authenticated user: ID ${req.user.id}, Role: ${req.user.role}`);
+        
         next();
     });
 };

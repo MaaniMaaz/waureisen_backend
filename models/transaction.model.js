@@ -13,7 +13,7 @@ const transactionSchema = new mongoose.Schema({
     eur: { type: Number, default: 0 }
   },
 
-  // TBD 
+  
   status: { type: String, enum: ['paid', 'pending', 'failed', 'refunded', 'canceled', 'confirmed'], default: 'pending' },
   date: { type: Date, default: Date.now },
   method: { type: String, required: true },
