@@ -5,10 +5,13 @@ const listingController = require('../controllers/listing.controller');
 // Get all listings
 router.get('/', listingController.getAllListings);
 
-// Search listings by location - MOVED BEFORE /:id route
+// Search listings by location
 router.get('/search', listingController.searchListings);
 
-// Get listing by ID - MOVED AFTER /search route
+// NEW: Search listings by map bounds
+router.get('/map', listingController.searchListingsByMap);
+
+// Get listing by ID
 router.get('/:id', listingController.getListingById);
 
 // Create a new listing
