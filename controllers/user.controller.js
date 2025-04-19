@@ -257,31 +257,17 @@ exports.getUserProfile = async (req, res, next) => {
   }
 };
 
-// Add this new controller method for updating user profile
+// Add or update this controller method
 exports.updateUserProfile = async (req, res, next) => {
   try {
     // Get the user ID from the authenticated request
     const userId = req.user.id;
     
-    console.log('Updating profile for user:', userId);
-    console.log('Update data:', req.body);
-    
-    // Make sure we're handling all the fields from the frontend
-    const updateData = {
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      aboutYou: req.body.aboutYou,
-      dateOfBirth: req.body.dateOfBirth,
-      nationality: req.body.nationality,
-      gender: req.body.gender,
-      isProvider: req.body.isProvider,
-      dogs: req.body.dogs,
-      travellers: req.body.travellers,
-      paymentMethod: req.body.paymentMethod
-    };
+    // console.log('Updating profile for user:', userId);
+    // console.log('Update data received:', req.body);
     
     // Use the existing service to update the user
-    const updatedUser = await userService.updateUser(userId, updateData);
+    const updatedUser = await userService.updateUser(userId, req.body);
     
     if (!updatedUser) {
       return res.status(404).json({ message: 'User profile not found' });
