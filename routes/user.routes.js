@@ -17,6 +17,7 @@ router.post('/', userController.createUser);
 router.put('/:id', verifyToken, userController.updateUser);
 router.delete('/:id', verifyToken, userController.deleteUser);
 
+
 // Booking Management Routes
 // Make sure to send all things according to model
 router.post('/bookings', verifyToken, isUser, bookingController.createBooking);

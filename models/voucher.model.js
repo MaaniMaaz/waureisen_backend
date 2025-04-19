@@ -4,6 +4,11 @@ const voucherSchema = new mongoose.Schema({
   code: { type: String, required: true, unique: true },
 
   discountPercentage: { type: Number, required: true },
+  
+  discountMoney: {
+    chf: { type: Number, default: 0 },
+    eur: { type: Number, default: 0 }
+  },
 
   validUntil: { type: Date },
   status: { type: String, enum: ['active', 'expired'], default: 'active' },

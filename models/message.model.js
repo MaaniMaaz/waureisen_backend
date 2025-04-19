@@ -8,7 +8,7 @@ const messageSchema = new mongoose.Schema({
   },
   senderType: {
     type: String,
-    enum: ['User', 'Provider', 'Admin'],
+    enum: ['User', 'Provider', 'Admin'],  // Capital letters for user types
     required: true
   },
   receiver: {
@@ -18,7 +18,7 @@ const messageSchema = new mongoose.Schema({
   },
   receiverType: {
     type: String,
-    enum: ['User', 'Provider', 'Admin'],
+    enum: ['User', 'Provider', 'Admin'],  // Capital letters for user types
     required: true
   },
   listing: { 

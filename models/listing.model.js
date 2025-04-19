@@ -5,21 +5,26 @@
 const mongoose = require('mongoose');
 const { totalmem } = require('os');
 
-// Schema for the Listing Model
+
 const listingSchema = new mongoose.Schema({
+
+  Code: {
+    type: String,
+    //required: true,
+    unique: true
+  },
 
   listingType: {
     type: String,
-    required: true 
+    //required: true 
   },
 
-  title: { type: String, required: true },
+  title: { type: String}, //required: true },
   description: { type: String },
 
   checkInTime: { type: Date },
   checkOutTime: { type: Date },
 
-  // Address as whole not in form of street, city, country etc.
   location: {
     address : {
      type: String,
@@ -132,18 +137,24 @@ const listingSchema = new mongoose.Schema({
 
   // Model or Array? TBD
   // photos: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Image' }],
-  photos: [{ type: String }], // Store URLs if it's from an external platform
+  images: [{ type: String }], // Store URLs if it's from an external platform
 
   // Owner reference (either admin or provider, but not both)
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
+    //required: true,
     refPath: 'ownerType'
   },
   ownerType: {
     type: String,
-    required: true,
+    //required: true,
     enum: ['Admin', 'Provider']
+  },
+
+  provider: {
+    type: String,
+    enum: ['Waureisen', 'Interhome', 'Europarcs', 'Bergkultur'],
+    default: 'WaureisenD'
   },
 
   // Selected filters for the listing -- TBD if we need to save icon or not
@@ -177,8 +188,8 @@ const listingSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-// Create a geo-spatial index for location coordinates
-listingSchema.index({ location: '2dsphere' });
+// Add a 2dsphere index to the location field for geospatial queries
+listingSchema.index({ 'location.coordinates': '2dsphere' });
 
 const Listing = mongoose.model('Listing', listingSchema);
 module.exports = Listing;

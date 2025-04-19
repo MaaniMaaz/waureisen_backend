@@ -13,23 +13,26 @@ exports.verifyToken = (req, res, next) => {
     const tokenParts = authHeader.split(" ");
     const token = tokenParts.length === 2 ? tokenParts[1] : authHeader;
 
-    // For debugging
-    console.log("Processing token:", token.substring(0, 15) + "...");
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    jwt.verify(actualToken, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
-            console.error("Token verification error:", err.message);
-            return res.status(401).json({ 
-                message: "Unauthorized! Invalid token.",
-                details: err.message
-            });
+            console.error('Token verification error:', err.message);
+            return res.status(401).json({ message: "Unauthorized! Invalid token." });
         }
         
-        // Add the decoded user info to the request
-        req.user = decoded;
+        // Ensure decoded is properly formatted with role and id
+        if (!decoded || !decoded.id || !decoded.role) {
+            console.error('Invalid token payload:', decoded);
+            return res.status(401).json({ message: "Unauthorized! Invalid token payload." });
+        }
         
-        // Log successful token verification (for debugging)
-        console.log("Token verified successfully for user:", req.user.id, "role:", req.user.role);
+        // Set the complete user object in the request
+        req.user = {
+            id: decoded.id,
+            role: decoded.role
+        };
+        
+        // Log successful authentication
+        console.log(`Authenticated user: ID ${req.user.id}, Role: ${req.user.role}`);
         
         next();
     });

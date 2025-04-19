@@ -57,3 +57,59 @@ exports.closeListing = async (req, res, next) => {
     next(err);
   }
 };
+
+// Search listings by location
+exports.searchListings = async (req, res, next) => {
+  try {
+    const { lat, lng, page = 1, pageSize = 10, people, dogs, dateRange } = req.query;
+    
+    // Convert parameters to numbers
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    const currentPage = parseInt(page);
+    const limit = parseInt(pageSize);
+    const guestCount = people ? parseInt(people) : null;
+    const dogCount = dogs ? parseInt(dogs) : null;
+    
+    // Log received parameters for debugging
+    console.log('Search parameters:', { 
+      latitude, longitude, currentPage, limit, 
+      guestCount, dogCount, dateRange 
+    });
+    
+    // Validate parameters
+    if (isNaN(latitude) || isNaN(longitude)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid latitude or longitude' 
+      });
+    }
+    
+    // Use the service to search listings instead of directly using Listing model
+    const searchParams = {
+      latitude,
+      longitude,
+      page: currentPage,
+      limit,
+      guestCount,
+      dogCount,
+      dateRange
+    };
+    
+    const result = await listingService.searchListings(searchParams);
+    
+    // Return the results
+    res.status(200).json({
+      success: true,
+      listings: result.listings,
+      hasMore: result.hasMore
+    });
+  } catch (error) {
+    console.error('Error searching listings:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error searching listings',
+      error: error.message
+    });
+  }
+};
