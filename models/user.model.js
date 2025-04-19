@@ -34,6 +34,13 @@ const userSchema = new mongoose.Schema({
     name: { type: String, default: '' },
     gender: { type: String, default: '' }
   }],
+  
+  // Add travellers array to match frontend data
+  travellers: [{
+    name: { type: String, default: '' },
+    gender: { type: String, default: '' },
+    relationship: { type: String, default: '' }
+  }],
 
   phoneNumber: { type: String }, 
 

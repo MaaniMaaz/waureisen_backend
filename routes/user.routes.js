@@ -11,6 +11,11 @@ router.post('/signup', userController.signup);
 router.post('/login', userController.login);
 
 // Protected routes
+// Add these routes before other user routes
+router.get('/profile', verifyToken, userController.getUserProfile);
+router.put('/profile', verifyToken, userController.updateUserProfile);
+
+// Protected routes
 router.get('/', userController.getAllUsers);
 router.get('/:id', userController.getUserById);
 router.post('/', userController.createUser);
