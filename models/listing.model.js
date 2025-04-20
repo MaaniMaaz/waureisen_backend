@@ -43,8 +43,8 @@ const listingSchema = new mongoose.Schema({
 
 
   pricePerNight: { 
-    price: { type: Number, required: true },
-    currency: { type: String, required: true }
+    price: { type: Number, required: true, default: 0 },
+    currency: { type: String, required: true , default: 'CHF'},
   }, 
   
   // Optional -- Can Be Empty or Array
