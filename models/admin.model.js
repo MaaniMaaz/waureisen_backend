@@ -27,11 +27,35 @@ const adminSchema = new mongoose.Schema({
     ref: 'CrispCommunicationNotification' 
   }],
 
+  // New recommendation arrays - each limited to 3 items
+  topRecommendations: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Listing',
+    validate: [arrayLimit, '{PATH} exceeds the limit of 3']
+  }],
+  
+  popularAccommodations: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Listing',
+    validate: [arrayLimit, '{PATH} exceeds the limit of 3']
+  }],
+  
+  exclusiveFinds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Listing',
+    validate: [arrayLimit, '{PATH} exceeds the limit of 3']
+  }],
+
   // TBD if needed or not 
   role: { type: String, default: 'admin' },
 
   createdAt: { type: Date, default: Date.now }
 });
+
+// Validator function to limit array size to 3
+function arrayLimit(val) {
+  return val.length <= 3;
+}
 
 const Admin = mongoose.model('Admin', adminSchema);
 module.exports = Admin;

@@ -6,8 +6,13 @@ const userController = require('../controllers/user.controller');
 const providerController = require('../controllers/provider.controller');
 const transactionController = require('../controllers/transaction.controller');
 const travelMagazineController = require('../controllers/travelMagazine.controller');
+// Add these routes to your existing admin routes file
+
+// Import required middleware
 const { verifyToken } = require('../middlewares/auth');
 const { isAdmin } = require('../middlewares/role');
+
+
 const emailNotificationController = require('../controllers/emailNotification.controller');
 const filterRoutes = require('./filter.routes');
 const voucherRoutes = require('./voucher.routes');
@@ -175,5 +180,12 @@ router.delete('/del-voucher/:id', verifyToken, isAdmin, (req, res, next) => {
 router.get('/view-camper/:id', verifyToken, isAdmin, camperController.getCamperById);
 router.put('/update-camper/:id', verifyToken, isAdmin, camperController.updateCamper);
 router.delete('/del-camper/:id', verifyToken, isAdmin, camperController.deleteCamper);
+
+// Recommendation routes
+router.get('/recommendations', adminController.getRecommendations); // verifyToken, isAdmin, Public ROute
+
+router.put('/recommendations/top', verifyToken, isAdmin, adminController.updateTopRecommendations);
+router.put('/recommendations/popular', verifyToken, isAdmin, adminController.updatePopularAccommodations);
+router.put('/recommendations/exclusive', verifyToken, isAdmin, adminController.updateExclusiveFinds);
 
 module.exports = router;
