@@ -96,30 +96,54 @@ exports.getBookingUserDetails = async (userId) => {
     .select('username firstName lastName email');
 };
 
-// Get unavailable dates
 exports.getUnavailableDates = async (providerId, filters = {}) => {
-  const query = {};
-  
-  if (filters.listingId) {
-    query.listing = filters.listingId;
-  } else {
-    const listings = await Listing.find({ 
-      owner: providerId,
-      ownerType: 'Provider'
-    }).select('_id');
-    query.listing = { $in: listings.map(l => l._id) };
+  try {
+    let query = {};
+    
+    // If listingId is provided, filter by specific listing
+    if (filters.listingId) {
+      query.listing = filters.listingId;
+    } else {
+      // Otherwise, get all provider's listings
+      const listings = await Listing.find({
+        owner: providerId,
+        ownerType: 'Provider'
+      }).select('_id');
+      
+      const listingIds = listings.map(listing => listing._id);
+      query.listing = { $in: listingIds };
+    }
+    
+    // Add date range filters if provided
+    if (filters.startDate && filters.endDate) {
+      query.date = { 
+        $gte: new Date(filters.startDate),
+        $lte: new Date(filters.endDate)
+      };
+    } else if (filters.startDate) {
+      query.date = { $gte: new Date(filters.startDate) };
+    } else if (filters.endDate) {
+      query.date = { $lte: new Date(filters.endDate) };
+    }
+    
+    // Get all unavailable dates matching the query
+    const unavailableDates = await UnavailableDate.find(query)
+      .populate('listing', 'title')
+      .sort({ date: 1 });
+    
+    // Transform dates for easier frontend handling
+    return unavailableDates.map(record => ({
+      id: record._id,
+      date: record.date.toISOString().split('T')[0],
+      listing: record.listing._id || record.listing,
+      listingId: record.listing._id || record.listing,
+      listingTitle: record.listing.title || 'Property',
+      reason: record.reason
+    }));
+  } catch (error) {
+    console.error('Error getting unavailable dates:', error);
+    throw error;
   }
-
-  if (filters.startDate) {
-    query.date = { $gte: new Date(filters.startDate) };
-  }
-  if (filters.endDate) {
-    query.date = { ...query.date, $lte: new Date(filters.endDate) };
-  }
-
-  return await UnavailableDate.find(query)
-    .select('date listing reason')
-    .sort({ date: 1 });
 };
 
 // Block dates
