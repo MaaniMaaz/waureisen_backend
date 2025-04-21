@@ -3,93 +3,92 @@ const listingService = require('../services/listing.service');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Add these new methods at the beginning of the file
 exports.signup = async (req, res, next) => {
-    try {
-        const { username, email, password, phoneNumber, firstName, lastName } = req.body;
+  try {
+      const { username, email, password, phoneNumber, firstName, lastName } = req.body;
 
-        // Check if provider already exists
-        const existingProvider = await providerService.getProviderByEmail(email);
-        if (existingProvider) {
-            return res.status(400).json({ message: 'Provider already exists' });
-        }
+      // Check if provider already exists
+      const existingProvider = await providerService.getProviderByEmail(email);
+      if (existingProvider) {
+          return res.status(400).json({ message: 'Provider already exists' });
+      }
 
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create provider
-        const newProvider = await providerService.createProvider({
-            username,
-            email,
-            password: hashedPassword,
-            phoneNumber,
-            firstName,
-            lastName,
-            profileStatus: 'not verified'
-        });
+      // Create provider
+      const newProvider = await providerService.createProvider({
+          username,
+          email,
+          password: hashedPassword,
+          phoneNumber,
+          firstName,
+          lastName,
+          profileStatus: 'not verified'
+      });
 
-        // Generate token
-        const token = jwt.sign(
-            { id: newProvider._id, role: 'provider' },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
+      // Generate token
+      const token = jwt.sign(
+          { id: newProvider._id, role: 'provider' },
+          process.env.JWT_SECRET,
+          { expiresIn: '24h' }
+      );
 
-        res.status(201).json({
-            message: 'Provider created successfully',
-            token,
-            provider: {
-                id: newProvider._id,
-                username: newProvider.username,
-                email: newProvider.email
-            }
-        });
-    } catch (err) {
-        next(err);
-    }
+      res.status(201).json({
+          message: 'Provider created successfully',
+          token,
+          provider: {
+              id: newProvider._id,
+              username: newProvider.username,
+              email: newProvider.email
+          }
+      });
+  } catch (err) {
+      next(err);
+  }
 };
 
 exports.login = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
+  try {
+      const { email, password } = req.body;
 
-        // Find provider
-        const provider = await providerService.getProviderByEmail(email);
-        if (!provider) {
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
+      // Find provider
+      const provider = await providerService.getProviderByEmail(email);
+      if (!provider) {
+          return res.status(401).json({ message: 'Invalid credentials' });
+      }
 
-        // Check password
-        const isValidPassword = await bcrypt.compare(password, provider.password);
-        if (!isValidPassword) {
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
+      // Check password
+      const isValidPassword = await bcrypt.compare(password, provider.password);
+      if (!isValidPassword) {
+          return res.status(401).json({ message: 'Invalid credentials' });
+      }
 
-        // Check if provider is banned
-        if (provider.profileStatus === 'banned') {
-            return res.status(403).json({ message: 'Account is banned' });
-        }
+      // Check if provider is banned
+      if (provider.profileStatus === 'banned') {
+          return res.status(403).json({ message: 'Account is banned' });
+      }
 
-        // Generate token
-        const token = jwt.sign(
-            { id: provider._id, role: 'provider' },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
+      // Generate token
+      const token = jwt.sign(
+          { id: provider._id, role: 'provider' },
+          process.env.JWT_SECRET,
+          { expiresIn: '24h' }
+      );
 
-        res.json({
-            message: 'Login successful',
-            token,
-            provider: {
-                id: provider._id,
-                username: provider.username,
-                email: provider.email,
-                profileStatus: provider.profileStatus
-            }
-        });
-    } catch (err) {
-        next(err);
-    }
+      res.json({
+          message: 'Login successful',
+          token,
+          provider: {
+              id: provider._id,
+              username: provider.username,
+              email: provider.email,
+              profileStatus: provider.profileStatus
+          }
+      });
+  } catch (err) {
+      next(err);
+  }
 };
 
 exports.getAllProviders = async (req, res, next) => {
@@ -128,6 +127,19 @@ exports.updateProvider = async (req, res, next) => {
   }
 };
 
+exports.updateListing = async (req, res, next) => {
+  try {
+      const listing = await listingService.getListingById(req.params.id);
+      if (!listing || listing.owner.toString() !== req.user.id) {
+          return res.status(404).json({ message: 'Listing not found or not owned by provider' });
+      }
+      const updatedListing = await listingService.updateListing(req.params.id, req.body);
+      res.json(updatedListing);
+  } catch (err) {
+      next(err);
+  }
+};
+
 exports.updateProviderStatus = async (req, res, next) => {
   try {
     const status = req.headers['profile-status']?.toLowerCase() || 'banned';
@@ -156,31 +168,104 @@ exports.deleteProvider = async (req, res, next) => {
 
 exports.addListing = async (req, res, next) => {
   try {
-    const providerId = req.user.id; // Get provider ID from JWT token
-    const listingData = req.body;
-
-    // Verify if the provider exists
-    const provider = await providerService.getProviderById(providerId);
-    if (!provider) {
-      return res.status(404).json({ message: 'Provider not found' });
-    }
-
-    // Add owner reference to listing data
-    listingData.owner = providerId;
-    listingData.ownerType = 'Provider';
-    
-    // Create new listing using listing service
-    const newListing = await listingService.createListing(listingData);
-
-    // Add listing reference to provider's listings array
-    provider.listings.push(newListing._id);
-    await provider.save();
-
-    // Return the populated listing data
-    const populatedListing = await listingService.getListingById(newListing._id);
-    
-    res.status(201).json(populatedListing);
+      const providerId = req.user.id;
+      const listingData = {
+          ...req.body,
+          owner: providerId,
+          ownerType: 'Provider'
+      };
+      const newListing = await listingService.createListing(listingData);
+      res.status(201).json(newListing);
   } catch (err) {
-    next(err);
+      next(err);
+  }
+};
+
+exports.getListingDetails = async (req, res, next) => {
+  try {
+      const listing = await providerService.getListingDetails(req.params.id, req.user.id);
+      if (!listing) {
+          return res.status(404).json({ message: 'Listing not found' });
+      }
+      res.json(listing);
+  } catch (err) {
+      next(err);
+  }
+};
+
+
+
+exports.deleteProviderListing = async (req, res, next) => {
+  try {
+      const listing = await listingService.getListingById(req.params.id);
+      if (!listing || listing.owner.toString() !== req.user.id) {
+          return res.status(404).json({ message: 'Listing not found or not owned by provider' });
+      }
+      await listingService.deleteListing(req.params.id);
+      res.status(204).send();
+  } catch (err) {
+      next(err);
+  }
+};
+
+
+exports.getBookingDetails = async (req, res, next) => {
+  try {
+      const booking = await providerService.getBookingDetails(req.params.id, req.user.id);
+      if (!booking) {
+          return res.status(404).json({ message: 'Booking not found' });
+      }
+      
+      // Get user details for the booking
+      const userDetails = await providerService.getBookingUserDetails(booking.user);
+      booking.userDetails = userDetails;
+      
+      res.json(booking);
+  } catch (err) {
+      next(err);
+  }
+};
+
+
+
+exports.blockDates = async (req, res, next) => {
+  try {
+      const blockData = {
+          listingId: req.body.listingId,
+          dates: req.body.dates,
+          reason: req.body.reason
+      };
+      const blockedDates = await providerService.blockDates(req.user.id, blockData);
+      res.status(201).json(blockedDates);
+  } catch (err) {
+      next(err);
+  }
+};
+
+
+// Public Routes
+exports.getPublicProviderProfile = async (req, res, next) => {
+  try {
+      const provider = await providerService.getProviderById(req.params.id);
+      if (!provider) {
+          return res.status(404).json({ message: 'Provider not found' });
+      }
+      // Remove sensitive information
+      const { password, ...publicProfile } = provider.toObject();
+      res.json(publicProfile);
+  } catch (err) {
+      next(err);
+  }
+};
+
+
+exports.getPublicProviderListings = async (req, res, next) => {
+  try {
+      const listings = await providerService.getProviderListings(req.params.id);
+      // Filter only active listings for public view
+      const activeListings = listings.filter(listing => listing.status === 'active');
+      res.json(activeListings);
+  } catch (err) {
+      next(err);
   }
 };

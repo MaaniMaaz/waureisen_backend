@@ -173,3 +173,31 @@ exports.searchListings = async (params) => {
     throw error;
   }
 };
+
+
+/**
+ * Delete a listing by ID for a specific provider
+ * @param {string} listingId - The listing ID
+ * @param {string} providerId - The provider ID (for ownership verification)
+ * @returns {Promise<boolean>} Success indicator
+ */
+exports.deleteProviderListing = async (listingId, providerId) => {
+  try {
+    // First verify the listing belongs to this provider
+    const listing = await Listing.findOne({
+      _id: listingId,
+      owner: providerId,
+      ownerType: 'Provider'
+    });
+    
+    if (!listing) {
+      throw new Error('Listing not found or not owned by this provider');
+    }
+    
+    await Listing.findByIdAndDelete(listingId);
+    return true;
+  } catch (error) {
+    console.error('Error deleting provider listing:', error);
+    throw error;
+  }
+};

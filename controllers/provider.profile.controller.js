@@ -2,287 +2,187 @@
 const Provider = require('../models/provider.model');
 const Booking = require('../models/booking.model');
 const Listing = require('../models/listing.model');
+const providerService = require('../services/provider.service');
+const messageService = require('../services/message.service');
 
 exports.getProviderProfile = async (req, res, next) => {
   try {
-    const providerId = req.user.id;
-    
-    const provider = await Provider.findById(providerId)
-      .select('-password') // Exclude password
-      .populate('listings', 'title description images location status');
-    
-    if (!provider) {
-      return res.status(404).json({ message: 'Provider not found' });
-    }
-    
-    res.json(provider);
+      const provider = await providerService.getProviderById(req.user.id);
+      if (!provider) {
+          return res.status(404).json({ message: 'Provider profile not found' });
+      }
+      // Remove sensitive information
+      const { password, ...providerProfile } = provider.toObject();
+      res.json(providerProfile);
   } catch (err) {
-    next(err);
+      next(err);
   }
 };
 
 exports.updateProviderProfile = async (req, res, next) => {
   try {
-    const providerId = req.user.id;
-    
-    // Don't allow updating of sensitive fields
-    const {
-      password, listings, role, profileStatus, ...updateData
-    } = req.body;
-    
-    const provider = await Provider.findByIdAndUpdate(
-      providerId,
-      { ...updateData, updatedAt: Date.now() },
-      { new: true }
-    ).select('-password');
-    
-    if (!provider) {
-      return res.status(404).json({ message: 'Provider not found' });
-    }
-    
-    res.json(provider);
+      const updatedProvider = await providerService.updateProvider(req.user.id, req.body);
+      if (!updatedProvider) {
+          return res.status(404).json({ message: 'Provider profile not found' });
+      }
+      const { password, ...providerProfile } = updatedProvider.toObject();
+      res.json(providerProfile);
   } catch (err) {
-    next(err);
+      next(err);
   }
 };
 
 exports.getProviderListings = async (req, res, next) => {
   try {
-    const providerId = req.user.id;
-    
-    const listings = await Listing.find({ 
-      owner: providerId,
-      ownerType: 'Provider'
-    });
-    
-    res.json(listings);
+      const listings = await providerService.getProviderListings(req.user.id);
+      res.json(listings);
   } catch (err) {
-    next(err);
+      next(err);
   }
 };
 
 exports.getProviderBookings = async (req, res, next) => {
   try {
-    const providerId = req.user.id;
-    const { status, limit } = req.query;
-    
-    // Build query
-    let query = {
-      'listing.owner': providerId 
-    };
-    
-    // Add status filter if provided
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-    
-    // Find bookings for listings owned by this provider
-    const bookings = await Booking.find(query)
-      .populate('user', 'username firstName lastName email')
-      .populate('listing')
-      .sort({ createdAt: -1 })
-      .limit(limit ? parseInt(limit) : null);
-    
-    res.json(bookings);
+      const { status, limit } = req.query;
+      const bookings = await providerService.getProviderBookings(req.user.id, { status, limit });
+      res.json(bookings);
   } catch (err) {
-    next(err);
+      next(err);
   }
 };
 
 exports.acceptBooking = async (req, res, next) => {
   try {
-    const providerId = req.user.id;
-    const bookingId = req.params.id;
+    // First try to get the booking directly by ID
+    let booking = await Booking.findById(req.params.id);
     
-    const booking = await Booking.findById(bookingId)
-      .populate('listing');
+    if (!booking) {
+      // If not found directly, try to get booking details using the service
+      booking = await providerService.getBookingDetails(req.params.id, req.user.id);
+    }
     
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
     
-    // Verify this provider owns the listing
-    if (booking.listing.owner.toString() !== providerId) {
-      return res.status(403).json({ message: 'Not authorized to manage this booking' });
+    // Check if the booking belongs to a listing owned by this provider
+    if (booking.listing) {
+      // Get the listing ID, handling both populated and non-populated cases
+      const listingId = booking.listing._id || booking.listing;
+      
+      // Get provider's listings to verify ownership
+      const listings = await Listing.find({
+        owner: req.user.id,
+        ownerType: 'Provider'
+      }).select('_id');
+      
+      // Check if this booking's listing belongs to the provider
+      const isProvidersListing = listings.some(listing => 
+        listing._id.toString() === listingId.toString()
+      );
+      
+      if (!isProvidersListing) {
+        return res.status(403).json({ message: 'Not authorized to modify this booking' });
+      }
     }
     
-    // Update booking status
     booking.status = 'confirmed';
     await booking.save();
     
     res.json(booking);
   } catch (err) {
+    console.error('Error accepting booking:', err);
     next(err);
   }
 };
 
 exports.rejectBooking = async (req, res, next) => {
   try {
-    const providerId = req.user.id;
-    const bookingId = req.params.id;
+    // First try to get the booking directly by ID
+    let booking = await Booking.findById(req.params.id);
     
-    const booking = await Booking.findById(bookingId)
-      .populate('listing');
+    if (!booking) {
+      // If not found directly, try to get booking details using the service
+      booking = await providerService.getBookingDetails(req.params.id, req.user.id);
+    }
     
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
     
-    // Verify this provider owns the listing
-    if (booking.listing.owner.toString() !== providerId) {
-      return res.status(403).json({ message: 'Not authorized to manage this booking' });
+    // Check if the booking belongs to a listing owned by this provider
+    if (booking.listing) {
+      // Get the listing ID, handling both populated and non-populated cases
+      const listingId = booking.listing._id || booking.listing;
+      
+      // Get provider's listings to verify ownership
+      const listings = await Listing.find({
+        owner: req.user.id,
+        ownerType: 'Provider'
+      }).select('_id');
+      
+      // Check if this booking's listing belongs to the provider
+      const isProvidersListing = listings.some(listing => 
+        listing._id.toString() === listingId.toString()
+      );
+      
+      if (!isProvidersListing) {
+        return res.status(403).json({ message: 'Not authorized to modify this booking' });
+      }
     }
     
-    // Update booking status
     booking.status = 'canceled';
     await booking.save();
     
     res.json(booking);
   } catch (err) {
+    console.error('Error rejecting booking:', err);
     next(err);
   }
 };
 
 exports.getProviderAnalytics = async (req, res, next) => {
   try {
-    const providerId = req.user.id;
-    const { timeRange = 'month' } = req.query;
-    
-    // Get all provider's listings
-    const listings = await Listing.find({ 
-      owner: providerId,
-      ownerType: 'Provider'
-    });
-    
-    const listingIds = listings.map(listing => listing._id);
-    
-    // Calculate date range
-    const now = new Date();
-    let startDate;
-    
-    switch(timeRange) {
-      case 'week':
-        startDate = new Date(now.setDate(now.getDate() - 7));
-        break;
-      case 'month':
-        startDate = new Date(now.setMonth(now.getMonth() - 1));
-        break;
-      case 'year':
-        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
-        break;
-      default:
-        startDate = new Date(now.setMonth(now.getMonth() - 1));
-    }
-    
-    // Get bookings in the date range for these listings
-    const bookings = await Booking.find({
-      listing: { $in: listingIds },
-      createdAt: { $gte: startDate }
-    }).populate('listing');
-    
-    // Calculate analytics
-    let totalRevenue = 0;
-    let totalBookings = bookings.length;
-    
-    // Tallies for each listing
-    const listingStats = {};
-    
-    bookings.forEach(booking => {
-      totalRevenue += booking.totalPrice || 0;
-      
-      // Per listing data
-      const listingId = booking.listing._id.toString();
-      if (!listingStats[listingId]) {
-        listingStats[listingId] = {
-          id: listingId,
-          title: booking.listing.title,
-          bookings: 0,
-          revenue: 0
-        };
-      }
-      
-      listingStats[listingId].bookings += 1;
-      listingStats[listingId].revenue += booking.totalPrice || 0;
-    });
-    
-    // Calculate occupancy rate (simplified)
-    const totalDays = Math.ceil((new Date() - startDate) / (1000 * 60 * 60 * 24));
-    const occupancyRate = listings.length > 0 ? 
-      (totalBookings / (listings.length * totalDays)) * 100 : 0;
-    
-    // Get previous period for comparison
-    const previousStartDate = new Date(startDate);
-    previousStartDate.setDate(previousStartDate.getDate() - totalDays);
-    
-    const previousBookings = await Booking.find({
-      listing: { $in: listingIds },
-      createdAt: { $gte: previousStartDate, $lt: startDate }
-    });
-    
-    const previousTotalBookings = previousBookings.length;
-    let previousTotalRevenue = 0;
-    
-    previousBookings.forEach(booking => {
-      previousTotalRevenue += booking.totalPrice || 0;
-    });
-    
-    const previousOccupancyRate = listings.length > 0 ? 
-      (previousTotalBookings / (listings.length * totalDays)) * 100 : 0;
-    
-    // Prepare the response
-    const response = {
-      performance: {
-        totalBookings: {
-          current: totalBookings,
-          previous: previousTotalBookings
-        },
-        occupancyRate: {
-          current: Math.round(occupancyRate),
-          previous: Math.round(previousOccupancyRate)
-        },
-        averageNightlyRate: {
-          current: totalBookings > 0 ? Math.round(totalRevenue / totalBookings) : 0,
-          previous: previousTotalBookings > 0 ? Math.round(previousTotalRevenue / previousTotalBookings) : 0
-        },
-        totalRevenue: {
-          current: totalRevenue,
-          previous: previousTotalRevenue
-        }
-      },
-      charts: {
-        revenue: [],
-        bookings: []
-      },
-      listings: Object.values(listingStats),
-      insights: [
-        {
-          type: 'opportunity',
-          message: 'Based on market trends, consider adding more high-quality photos to increase booking conversion rates.'
-        }
-      ]
-    };
-    
-    // Create chart data (simplified)
-    // This would be more sophisticated in a real implementation
-    const weeklyBookings = [0, 0, 0, 0];
-    const weeklyRevenue = [0, 0, 0, 0];
-    
-    bookings.forEach(booking => {
-      const bookingDate = new Date(booking.createdAt);
-      const weekIndex = Math.floor((new Date() - bookingDate) / (7 * 24 * 60 * 60 * 1000));
-      
-      if (weekIndex >= 0 && weekIndex < 4) {
-        weeklyBookings[3 - weekIndex]++;
-        weeklyRevenue[3 - weekIndex] += booking.totalPrice || 0;
-      }
-    });
-    
-    response.charts.bookings = weeklyBookings;
-    response.charts.revenue = weeklyRevenue;
-    
-    res.json(response);
+      const { timeRange = 'month' } = req.query;
+      const analytics = await providerService.getProviderAnalytics(req.user.id, timeRange);
+      res.json(analytics);
   } catch (err) {
-    next(err);
+      next(err);
+  }
+};
+
+
+exports.sendMessage = async (req, res, next) => {
+  try {
+      const message = await messageService.createMessage({
+          sender: req.user.id,
+          senderType: 'Provider',
+          receiver: req.body.userId,
+          receiverType: 'User',
+          content: req.body.content,
+          messageType: req.body.messageType || 'support'
+      });
+      res.status(201).json(message);
+  } catch (err) {
+      next(err);
+  }
+};
+
+exports.getProviderMessages = async (req, res, next) => {
+  try {
+      const messages = await messageService.getProviderMessages(req.user.id);
+      res.json(messages);
+  } catch (err) {
+      next(err);
+  }
+};
+
+exports.getMessageThread = async (req, res, next) => {
+  try {
+      const messages = await messageService.getMessageThread(req.user.id, req.params.userId);
+      res.json(messages);
+  } catch (err) {
+      next(err);
   }
 };
 
@@ -392,4 +292,43 @@ exports.getProviderTransactions = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+
+exports.getUnavailableDates = async (req, res, next) => {
+  try {
+      const filters = {
+          listingId: req.query.listingId,
+          startDate: req.query.startDate,
+          endDate: req.query.endDate
+      };
+      const unavailableDates = await providerService.getUnavailableDates(req.user.id, filters);
+      res.json(unavailableDates);
+  } catch (err) {
+      next(err);
+  }
+};
+  
+  /**
+   * Block dates for a listing
+   */
+  exports.blockDates = async (req, res, next) => {
+    try {
+        const blockedDates = await providerService.blockDates(req.user.id, req.body);
+        res.status(201).json(blockedDates);
+    } catch (err) {
+        next(err);
+    }
+};
+  
+  /**
+   * Unblock dates for a listing
+   */
+  exports.unblockDates = async (req, res, next) => {
+    try {
+        await providerService.unblockDates(req.user.id, req.body.listingId, req.body.dates);
+        res.status(204).send();
+    } catch (err) {
+        next(err);
+    }
 };
