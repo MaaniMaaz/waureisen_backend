@@ -2,8 +2,9 @@
 // 1. 1-M with Transactions
 // 2. 1-M with Reviews 
 
+const { count } = require('console');
 const mongoose = require('mongoose');
-const { totalmem } = require('os');
+const { totalmem, type } = require('os');
 
 
 const listingSchema = new mongoose.Schema({
@@ -20,7 +21,13 @@ const listingSchema = new mongoose.Schema({
   },
 
   title: { type: String}, //required: true },
-  description: { type: String },
+
+  // Inside and Outside For Interhome and General for common
+  description: {
+    general: { type: String },
+    inside: { type: String },
+    outside: { type: String },
+  },
 
   checkInTime: { type: Date },
   checkOutTime: { type: Date },
@@ -89,6 +96,27 @@ const listingSchema = new mongoose.Schema({
       // closeTime: { type: String }  // Format: "HH:mm"
     }]
   }],
+
+  bedRooms: {
+    type: Number,
+    default: 0, 
+  },
+
+  rooms: {
+    number: { type: Number, default: 0 },
+    room: [{
+        floor: { type: String },
+        type: { type: String },
+        count: { type: Number }, 
+    }]
+  },
+
+  washrooms: {
+    type: Number,
+    default: 0,
+  },
+
+
   
   // TBD
   status: {
@@ -103,6 +131,11 @@ const listingSchema = new mongoose.Schema({
   //   value: String
   // }],
 
+  //Details with Icons For Interhome Only 
+  attributes: [{
+    name: { type: String },
+  }],
+
   // Documents 
 
   legal : {
@@ -110,9 +143,6 @@ const listingSchema = new mongoose.Schema({
 
       // TBD -- Will be a file 
       termsAndConditions: { type: String },
-
-
-    
   },
 
   
@@ -123,6 +153,17 @@ const listingSchema = new mongoose.Schema({
   //   rating: { type: Number, min: 1, max: 5 },
   //   createdAt: { type: Date, default: Date.now }
   // }],
+
+  countryCode: { type: String },
+  country: {
+    language: { type: String },
+    content: { type: String }
+  },
+
+
+
+
+
 
   // TBD
   source:{

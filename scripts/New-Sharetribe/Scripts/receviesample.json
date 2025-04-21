@@ -1,0 +1,629 @@
+{
+    "accommodation": {
+        "code": "DK9990.650.1",
+        "altCode": "10-0074",
+        "name": "\"Gunulf\" - 150m from the sea",
+        "countryCode": "DK",
+        "country": [
+            {
+                "language": "EN",
+                "content": "Denmark"
+            }
+        ],
+        "regionCode": "24",
+        "region": [
+            {
+                "language": "EN",
+                "content": "Northwest Jutland"
+            }
+        ],
+        "placeCode": "09990",
+        "place": [
+            {
+                "language": "EN",
+                "content": "Skagen"
+            }
+        ],
+        "type": "H",
+        "detailType": "H",
+        "livingSpace": 100,
+        "rooms": {
+            "number": 3,
+            "room": [
+                {
+                    "floor": "MainFloor",
+                    "type": "rooms",
+                    "count": 1
+                },
+                {
+                    "floor": "UpperFloor",
+                    "type": "living_room",
+                    "count": 1
+                },
+                {
+                    "floor": "MainFloor",
+                    "type": "rooms",
+                    "count": 1
+                },
+                {
+                    "floor": "MainFloor",
+                    "type": "living_room",
+                    "count": 1
+                }
+            ]
+        },
+        "bedRooms": {
+            "number": 2
+        },
+        "bathRooms": {
+            "number": 1
+        },
+        "toilets": {
+            "number": 1
+        },
+        "pax": 6,
+        "paxByValidity": {
+            "item": [
+                {
+                    "value": 6,
+                    "validFrom": "2025-04-21",
+                    "validTo": "2026-01-01"
+                }
+            ]
+        },
+        "babiesByValidity": {
+            "item": [
+                {
+                    "value": 0,
+                    "validFrom": "2025-04-21",
+                    "validTo": "2026-01-01"
+                }
+            ]
+        },
+        "address": {
+            "postalCode": "9990",
+            "longitude": "10.602262",
+            "latitude": "57.725147",
+            "accuracy": "EXACT"
+        },
+        "evaluation": {
+            "stars": "3"
+        },
+        "attributes": {
+            "attribute": [
+                {
+                    "type": "attribute",
+                    "name": "cots",
+                    "value": "1"
+                },
+                {
+                    "type": "attribute",
+                    "name": "pets_max",
+                    "value": "1"
+                },
+                {
+                    "type": "attribute",
+                    "name": "studio",
+                    "value": "S"
+                },
+                {
+                    "type": "attribute",
+                    "name": "cleaning"
+                },
+                {
+                    "type": "attribute",
+                    "name": "cook"
+                },
+                {
+                    "type": "attribute",
+                    "name": "dishwasher"
+                },
+                {
+                    "type": "attribute",
+                    "name": "parking"
+                },
+                {
+                    "type": "attribute",
+                    "name": "pets"
+                },
+                {
+                    "type": "attribute",
+                    "name": "familyfriendly_summer"
+                },
+                {
+                    "type": "attribute",
+                    "name": "shower"
+                },
+                {
+                    "type": "attribute",
+                    "name": "terrace"
+                },
+                {
+                    "type": "attribute",
+                    "name": "washingmachine"
+                },
+                {
+                    "type": "attribute",
+                    "name": "fridge"
+                },
+                {
+                    "type": "attribute",
+                    "name": "heating"
+                },
+                {
+                    "type": "attribute",
+                    "name": "kitchen"
+                },
+                {
+                    "type": "attribute",
+                    "name": "no_youth_groups"
+                },
+                {
+                    "type": "attribute",
+                    "name": "freezer"
+                },
+                {
+                    "type": "attribute",
+                    "name": "nonsmoking"
+                },
+                {
+                    "type": "attribute",
+                    "name": "tv"
+                },
+                {
+                    "type": "attribute",
+                    "name": "stove"
+                },
+                {
+                    "type": "attribute",
+                    "name": "wlan"
+                }
+            ]
+        },
+        "distances": {
+            "distance": [
+                {
+                    "type": "distance",
+                    "name": "sea",
+                    "value": "150",
+                    "assignment": ""
+                },
+                {
+                    "type": "distance",
+                    "name": "water",
+                    "value": "150",
+                    "assignment": ""
+                },
+                {
+                    "type": "distance to airport",
+                    "name": "CPH",
+                    "value": "529083",
+                    "assignment": "place"
+                },
+                {
+                    "type": "distance to airport",
+                    "name": "AAL",
+                    "value": "103457",
+                    "assignment": "place"
+                }
+            ]
+        },
+        "themes": {
+            "theme": [
+                "sun-beach"
+            ]
+        },
+        "descriptions": {
+            "description": [
+                {
+                    "type": "outside",
+                    "language": "EN",
+                    "value": "Single-family house, built in 1844. 150 m from the sea. For shared use: garden. Private: natural state property 280 m2, garden (fenced). Terrace (100 m2). In the house: washing machine. Parking at the house. Grocery 200 m. The owner does not accept any youth groups.",
+                    "validFrom": "2024-05-21",
+                    "validTo": "2026-05-21"
+                },
+                {
+                    "type": "inside",
+                    "language": "EN",
+                    "value": "\"Gunulf\" - 150m from the sea\", 3-room house 100 m2. Object suitable for 6 adults. Living room with TV and radio. 1 room with 1 double bed. Kitchen (oven, dishwasher, 4 induction hot plates, freezer). Shower/WC. Upper floor: living room with 1 double bed. 1 room with 2 beds. Facilities: Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. Bookings accepted for holiday purposes only. 813-175937",
+                    "validFrom": "2024-05-21",
+                    "validTo": "2026-05-21"
+                }
+            ]
+        },
+        "media": {
+            "mediaItem": [
+                {
+                    "main": true,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA44CA96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA44CA96",
+                    "format": "image",
+                    "type": "outside",
+                    "caption": [
+                        {
+                            "content": "House"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:29:01",
+                    "sortOrder": 1,
+                    "sortOrderW": 1
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA44EA96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA44EA96",
+                    "format": "image",
+                    "type": "outside",
+                    "caption": [
+                        {
+                            "content": "Terrace"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:29:08",
+                    "sortOrder": 2,
+                    "sortOrderW": 2
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA450A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA450A96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Living Room"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:29:14",
+                    "sortOrder": 3,
+                    "sortOrderW": 3
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA452A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA452A96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Living Room"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:29:20",
+                    "sortOrder": 4,
+                    "sortOrderW": 4
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA454A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA454A96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Kitchen / Dining Room"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:29:26",
+                    "sortOrder": 5,
+                    "sortOrderW": 5
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA456A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA456A96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Bathroom / Wellness"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:29:32",
+                    "sortOrder": 6,
+                    "sortOrderW": 6
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA458A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA458A96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Bedroom"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:29:38",
+                    "sortOrder": 7,
+                    "sortOrderW": 7
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA45AA96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA45AA96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Bedroom"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:29:44",
+                    "sortOrder": 8,
+                    "sortOrderW": 8
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA45CA96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA45CA96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Bedroom"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:29:50",
+                    "sortOrder": 9,
+                    "sortOrderW": 9
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA45EA96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA45EA96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Bedroom"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:29:56",
+                    "sortOrder": 10,
+                    "sortOrderW": 10
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA460A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA460A96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Living Room"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:30:03",
+                    "sortOrder": 11,
+                    "sortOrderW": 11
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA462A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA462A96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Inside other"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:30:09",
+                    "sortOrder": 12,
+                    "sortOrderW": 12
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA464A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA464A96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Living Room"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:30:15",
+                    "sortOrder": 13,
+                    "sortOrderW": 13
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA466A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA466A96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Kitchen / Dining Room"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:30:21",
+                    "sortOrder": 14,
+                    "sortOrderW": 14
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA468A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA468A96",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Kitchen / Dining Room"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:30:27",
+                    "sortOrder": 15,
+                    "sortOrderW": 15
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA46AA96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA46AA96",
+                    "format": "image",
+                    "type": "outside",
+                    "caption": [
+                        {
+                            "content": "Terrace"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:30:34",
+                    "sortOrder": 16,
+                    "sortOrderW": 16
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA46CA96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA46CA96",
+                    "format": "image",
+                    "type": "outside",
+                    "caption": [
+                        {
+                            "content": "Terrace"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:35:00",
+                    "sortOrder": 17,
+                    "sortOrderW": 17
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA46EA96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA46EA96",
+                    "format": "image",
+                    "type": "outside",
+                    "caption": [
+                        {
+                            "content": "Terrace"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:35:06",
+                    "sortOrder": 18,
+                    "sortOrderW": 18
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA470A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA470A96",
+                    "format": "image",
+                    "type": "outside",
+                    "caption": [
+                        {
+                            "content": "House"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:35:12",
+                    "sortOrder": 19,
+                    "sortOrderW": 19
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA472A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA472A96",
+                    "format": "image",
+                    "type": "outside",
+                    "caption": [
+                        {
+                            "content": "Aerial photography"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:35:19",
+                    "sortOrder": 20,
+                    "sortOrderW": 20
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA474A96",
+                    "fileName": "5A56365000CA1EEDAEA13C55DA474A96",
+                    "format": "image",
+                    "type": "outside",
+                    "caption": [
+                        {
+                            "content": "Aerial photography"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:35:25",
+                    "sortOrder": 21,
+                    "sortOrderW": 21
+                },
+                {
+                    "main": false,
+                    "season": "s",
+                    "uri": "https://images.interhome.com/DK9990.650.1/partner-medium/D1EDF379EB701EDF8EDB649BAC5432B9",
+                    "fileName": "D1EDF379EB701EDF8EDB649BAC5432B9",
+                    "format": "image",
+                    "type": "inside",
+                    "caption": [
+                        {
+                            "content": "Floorplan"
+                        }
+                    ],
+                    "lastModified": "2025-03-19T17:36:34",
+                    "sortOrder": 22,
+                    "sortOrderW": 22
+                }
+            ]
+        },
+        "arrivalTimes": {
+            "arrivalTime": [
+                {
+                    "data": [
+                        {
+                            "weekdayFrom": 1,
+                            "weekdayTo": 7,
+                            "onAppointment": false,
+                            "timeFrom": "00:00:00",
+                            "timeTo": "10:00:00",
+                            "type": "D"
+                        },
+                        {
+                            "weekdayFrom": 1,
+                            "weekdayTo": 7,
+                            "onAppointment": false,
+                            "timeFrom": "16:00:00",
+                            "timeTo": "00:00:00",
+                            "type": "A"
+                        }
+                    ],
+                    "validFrom": "2025-04-21",
+                    "validTo": "2099-12-31"
+                }
+            ]
+        },
+        "creationDate": "2023-03-02T15:52:43",
+        "lastModified": "2025-04-21T15:58:43",
+        "activateDate": "2023-03-02",
+        "rating": {
+            "overAllRating": "3.8",
+            "nbrOfReviews": 10
+        },
+        "brand": "SOL",
+        "buyingOfficeCode": "000",
+        "domesticCurrency": "DKK",
+        "housingLicense": "813-175937",
+        "wwwCapable": true
+    }
+}

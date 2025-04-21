@@ -6,7 +6,7 @@ const path = require('path');
 require('dotenv').config();
 
 // ───────── MongoDB Setup ─────────
-const MONGO_URI = 'mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenInterhomeDBLatest?retryWrites=true&w=majority&appName=ClusterWork';
+const MONGO_URI = 'mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenInterhomeDBLatestt?retryWrites=true&w=majority&appName=ClusterWork';
 
 // ───────── API Endpoints ─────────
 const API_BASE = 'https://ws.interhome.com/ih/b2b/V0100';
@@ -127,6 +127,7 @@ async function fetchMedia(code) {
 }
 
 // Update the mapToListing function to properly handle images and additionalServices
+// Update the mapToListing function to properly handle all fields
 function mapToListing(sharetribeListing, detail, mediaItems) {
   // Extract data from Sharetribe listing
   const publicData = JSON.parse(sharetribeListing.PublicData || '{}');
@@ -136,12 +137,37 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
   const name = detail?.name || detail?.Name || '';
   const type = detail?.type || detail?.Type || '';
   
-  // Get descriptions
+  // Get country information
+  const countryCode = detail?.countryCode || detail?.CountryCode || '';
+  const country = detail?.country?.[0]?.content || 
+                 detail?.Country?.[0]?.content || '';
+  
+  // Get room information - fix the mapping to match the schema
+  const rooms = detail?.rooms?.number || detail?.Rooms?.number || 0;
+  const bedRooms = detail?.bedRooms?.number || detail?.BedRooms?.number || 0;
+  const bathRooms = detail?.bathRooms?.number || detail?.BathRooms?.number || 0;
+  const toilets = detail?.toilets?.number || detail?.Toilets?.number || 0;
+  
+  // Get descriptions - separate inside and outside descriptions
   const descriptions = detail?.descriptions?.description || 
                       detail?.Descriptions?.Description || [];
-  const descriptionObj = descriptions.find(d => d.Type === 'outside' || d.type === 'outside') || 
-                        descriptions[0] || {};
-  const desc = descriptionObj?.Value || descriptionObj?.value || '';
+  
+  let insideDescription = '';
+  let outsideDescription = '';
+  
+  descriptions.forEach(desc => {
+    const type = desc.type || desc.Type || '';
+    const value = desc.value || desc.Value || '';
+    
+    if (type.toLowerCase() === 'inside') {
+      insideDescription = value;
+    } else if (type.toLowerCase() === 'outside') {
+      outsideDescription = value;
+    }
+  });
+  
+  // Combine descriptions for general use
+  const generalDescription = outsideDescription + (outsideDescription && insideDescription ? ' ' : '') + insideDescription;
 
   // Get coordinates
   const address = detail?.address || detail?.Address || {};
@@ -152,10 +178,14 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
   const place = detail?.place || detail?.Place || [];
   const placeContent = place[0]?.content || place[0]?.Content || '';
   
-  // Extract amenities from attributes
+  // Extract attributes properly - create objects with name property
   const attributes = detail?.attributes?.attribute || 
                     detail?.Attributes?.Attribute || [];
-  const amenities = attributes.map(attr => attr.name || attr.Name).filter(Boolean);
+  const mappedAttributes = attributes.map(attr => ({
+    name: attr.name || attr.Name || ''
+  })).filter(attr => attr.name);
+  
+  console.log(`Mapped ${mappedAttributes.length} attributes for listing ${code}`);
   
   // Extract images from media items - handle all possible property names
   const images = mediaItems.map(item => {
@@ -168,33 +198,27 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
   
   console.log(`Mapped ${images.length} images for listing ${code}`);
   
-  // Make sure additionalServices is an array, not ObjectIds
-  let additionalServices = [];
-  if (publicData.additionalServices) {
-    try {
-      // If it's a string, try to parse it
-      if (typeof publicData.additionalServices === 'string') {
-        additionalServices = JSON.parse(publicData.additionalServices);
-      } else if (Array.isArray(publicData.additionalServices)) {
-        // If it's already an array, use it directly but ensure it's not ObjectIds
-        additionalServices = publicData.additionalServices.map(service => {
-          if (typeof service === 'object' && service !== null) {
-            return service;
-          }
-          return {}; // Return empty object for invalid services
-        });
-      }
-    } catch (e) {
-      console.error(`Error parsing additionalServices: ${e.message}`);
-      additionalServices = [];
-    }
+  // Create room details if available
+  const roomDetails = [];
+  if (detail?.rooms?.room) {
+    detail.rooms.room.forEach(room => {
+      roomDetails.push({
+        floor: room.floor || '',
+        type: room.type || '',
+        count: room.count || 1
+      });
+    });
   }
   
   return {
     Code: code,
     listingType: publicData.listingType || 'interhomeaccommocation',
     title: sharetribeListing.Title || name,
-    description: desc,
+    description: {
+      general: generalDescription,
+      inside: insideDescription,
+      outside: outsideDescription
+    },
     checkInTime: publicData.detailsCheckInTime || null,
     checkOutTime: publicData.detailsCheckOutTime || null,
     location: {
@@ -210,6 +234,13 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
     specialPrices: [],
     additionalServices: [], // Set to empty array to avoid ObjectId issues
     availability: [],
+    // Add these fields that were missing in your original mapping
+    bedRooms: bedRooms,
+    rooms: {
+      number: rooms,
+      room: roomDetails
+    },
+    washrooms: bathRooms || toilets || 0,
     status: 'active',
     legal: {
       cancellationPolicy: publicData.documentPolicy || '',
@@ -220,7 +251,8 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
       redirectLink: sharetribeListing.PriceOnRequestLink || publicData.priceOnRequest || ''
     },
     images: images,
-    amenities: amenities,
+    // Fix the attributes mapping to match the schema
+    attributes: mappedAttributes,
     provider: 'Interhome',
     selectedFilters: {},
     totalViews: 0,

@@ -3,7 +3,11 @@
     "Code": "DK6960.670.1",
     "listingType": "interhomeaccommocation",
     "title": "Ferienhaus \"Signhild\" - from the sea",
-    "description": "Single-family house, built in 1985. 400 m from the sea. Private: natural state property 1'200 m2. Terrace (74 m2), children's playground. In the house: sauna. Parking at the house. Grocery 2 km.",
+    "description": {
+      "general": "Single-family house, built in 1985. 400 m from the sea. Private: natural state property 1'200 m2. Terrace (74 m2), children's playground. In the house: sauna. Parking at the house. Grocery 2 km. \"Signhild\" - from the sea\", 3-room house 67 m2. Object suitable for 6 adults. Living room with TV, video, radio, CD-player and hi-fi system. 1 room with 1 double bed. 1 room with 1 x 2 bunk beds. 1 room with 1 double bed. Kitchen (4 hot plates, oven, dishwasher, microwave, freezer). Shower/WC. Terrace 20 m2, roofed. Facilities: Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. 760-14223",
+      "inside": "\"Signhild\" - from the sea\", 3-room house 67 m2. Object suitable for 6 adults. Living room with TV, video, radio, CD-player and hi-fi system. 1 room with 1 double bed. 1 room with 1 x 2 bunk beds. 1 room with 1 double bed. Kitchen (4 hot plates, oven, dishwasher, microwave, freezer). Shower/WC. Terrace 20 m2, roofed. Facilities: Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. 760-14223",
+      "outside": "Single-family house, built in 1985. 400 m from the sea. Private: natural state property 1'200 m2. Terrace (74 m2), children's playground. In the house: sauna. Parking at the house. Grocery 2 km."
+    },
     "checkInTime": "1400",
     "checkOutTime": "1000",
     "location": {
@@ -22,6 +26,23 @@
     "specialPrices": [],
     "additionalServices": [],
     "availability": [],
+    "bedRooms": 3,
+    "rooms": {
+      "number": 3,
+      "room": [
+        {
+          "floor": "MainFloor",
+          "type": "rooms",
+          "count": 3
+        },
+        {
+          "floor": "MainFloor",
+          "type": "living_room",
+          "count": 1
+        }
+      ]
+    },
+    "washrooms": 1,
     "status": "active",
     "legal": {
       "cancellationPolicy": "Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.",
@@ -64,30 +85,76 @@
       "https://images.interhome.com/DK6960.670.1/partner-medium/B5FB3FD8F2441EEF8DF96DDCCAF91959",
       "https://images.interhome.com/DK6960.670.1/partner-medium/FB6DD225384D1EDF8EDB5DA9509036B2"
     ],
-    "amenities": [
-      "cots",
-      "pets_max",
-      "studio",
-      "playground",
-      "cleaning",
-      "dishwasher",
-      "fireplace",
-      "microwave",
-      "oven",
-      "parking",
-      "pets",
-      "sauna",
-      "familyfriendly_summer",
-      "shower",
-      "terrace",
-      "fridge",
-      "heating",
-      "kitchen",
-      "freezer",
-      "nonsmoking",
-      "tv",
-      "stove",
-      "wlan"
+    "attributes": [
+      {
+        "name": "cots"
+      },
+      {
+        "name": "pets_max"
+      },
+      {
+        "name": "studio"
+      },
+      {
+        "name": "playground"
+      },
+      {
+        "name": "cleaning"
+      },
+      {
+        "name": "dishwasher"
+      },
+      {
+        "name": "fireplace"
+      },
+      {
+        "name": "microwave"
+      },
+      {
+        "name": "oven"
+      },
+      {
+        "name": "parking"
+      },
+      {
+        "name": "pets"
+      },
+      {
+        "name": "sauna"
+      },
+      {
+        "name": "familyfriendly_summer"
+      },
+      {
+        "name": "shower"
+      },
+      {
+        "name": "terrace"
+      },
+      {
+        "name": "fridge"
+      },
+      {
+        "name": "heating"
+      },
+      {
+        "name": "kitchen"
+      },
+      {
+        "name": "freezer"
+      },
+      {
+        "name": "nonsmoking"
+      },
+      {
+        "name": "tv"
+      },
+      {
+        "name": "stove"
+      },
+      {
+        "name": "wlan"
+      }
     ],
     "provider": "Interhome",
     "selectedFilters": {},
@@ -96,14 +163,18 @@
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-20T15:49:08.137Z",
-    "updatedAt": "2025-04-20T15:49:08.137Z"
+    "createdAt": "2025-04-21T17:52:59.873Z",
+    "updatedAt": "2025-04-21T17:52:59.873Z"
   },
   {
     "Code": "DK6960.611.1",
     "listingType": "interhomeaccommocation",
     "title": "Ferienhaus \"Skev\" - 200m to the inlet",
-    "description": "Single-family house, built in 1999. 950 m from the sea. Private: natural state property 2'198 m2. Terrace (80 m2), barbecue. In the house: sauna, washing machine, tumble dryer. Parking at the house. Grocery 2 km.",
+    "description": {
+      "general": "Single-family house, built in 1999. 950 m from the sea. Private: natural state property 2'198 m2. Terrace (80 m2), barbecue. In the house: sauna, washing machine, tumble dryer. Parking at the house. Grocery 2 km. \"Skev\" - 200m to the inlet\", 3-room house 96 m2. Object suitable for 6 adults. Living room with TV and CD-player. 1 room with 2 beds. 1 room with 1 double bed. 1 room with 1 double bed. Kitchen (oven, dishwasher, 4 ceramic glass hob hotplates, microwave, freezer). Shower/WC, hydro massage bath. Terrace 4 m2, roofed. Facilities: Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. 760-14791",
+      "inside": "\"Skev\" - 200m to the inlet\", 3-room house 96 m2. Object suitable for 6 adults. Living room with TV and CD-player. 1 room with 2 beds. 1 room with 1 double bed. 1 room with 1 double bed. Kitchen (oven, dishwasher, 4 ceramic glass hob hotplates, microwave, freezer). Shower/WC, hydro massage bath. Terrace 4 m2, roofed. Facilities: Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. 760-14791",
+      "outside": "Single-family house, built in 1999. 950 m from the sea. Private: natural state property 2'198 m2. Terrace (80 m2), barbecue. In the house: sauna, washing machine, tumble dryer. Parking at the house. Grocery 2 km."
+    },
     "checkInTime": "1400",
     "checkOutTime": "1000",
     "location": {
@@ -122,6 +193,23 @@
     "specialPrices": [],
     "additionalServices": [],
     "availability": [],
+    "bedRooms": 3,
+    "rooms": {
+      "number": 3,
+      "room": [
+        {
+          "floor": "MainFloor",
+          "type": "rooms",
+          "count": 3
+        },
+        {
+          "floor": "MainFloor",
+          "type": "living_room",
+          "count": 1
+        }
+      ]
+    },
+    "washrooms": 1,
     "status": "active",
     "legal": {
       "cancellationPolicy": "Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.",
@@ -164,32 +252,82 @@
       "https://images.interhome.com/DK6960.611.1/partner-medium/07235D67CE761EEF80E07CF263749959",
       "https://images.interhome.com/DK6960.611.1/partner-medium/FB6DD225384D1EDF8EDB5AB58DBB76B2"
     ],
-    "amenities": [
-      "cots",
-      "pets_max",
-      "studio",
-      "bbq",
-      "cleaning",
-      "cook",
-      "dishwasher",
-      "tumbler",
-      "fireplace",
-      "microwave",
-      "parking",
-      "pets",
-      "sauna",
-      "familyfriendly_summer",
-      "shower",
-      "terrace",
-      "washingmachine",
-      "fridge",
-      "heating",
-      "kitchen",
-      "freezer",
-      "nonsmoking",
-      "tv",
-      "stove",
-      "wlan"
+    "attributes": [
+      {
+        "name": "cots"
+      },
+      {
+        "name": "pets_max"
+      },
+      {
+        "name": "studio"
+      },
+      {
+        "name": "bbq"
+      },
+      {
+        "name": "cleaning"
+      },
+      {
+        "name": "cook"
+      },
+      {
+        "name": "dishwasher"
+      },
+      {
+        "name": "tumbler"
+      },
+      {
+        "name": "fireplace"
+      },
+      {
+        "name": "microwave"
+      },
+      {
+        "name": "parking"
+      },
+      {
+        "name": "pets"
+      },
+      {
+        "name": "sauna"
+      },
+      {
+        "name": "familyfriendly_summer"
+      },
+      {
+        "name": "shower"
+      },
+      {
+        "name": "terrace"
+      },
+      {
+        "name": "washingmachine"
+      },
+      {
+        "name": "fridge"
+      },
+      {
+        "name": "heating"
+      },
+      {
+        "name": "kitchen"
+      },
+      {
+        "name": "freezer"
+      },
+      {
+        "name": "nonsmoking"
+      },
+      {
+        "name": "tv"
+      },
+      {
+        "name": "stove"
+      },
+      {
+        "name": "wlan"
+      }
     ],
     "provider": "Interhome",
     "selectedFilters": {},
@@ -198,14 +336,18 @@
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-20T15:49:08.533Z",
-    "updatedAt": "2025-04-20T15:49:08.533Z"
+    "createdAt": "2025-04-21T17:53:00.281Z",
+    "updatedAt": "2025-04-21T17:53:00.281Z"
   },
   {
     "Code": "DK9990.650.1",
     "listingType": "interhomeaccommocation",
     "title": "Ferienhaus \"Gunulf\" - 150m from the sea",
-    "description": "Single-family house, built in 1844. 150 m from the sea. For shared use: garden. Private: natural state property 280 m2, garden (fenced). Terrace (100 m2). In the house: washing machine. Parking at the house. Grocery 200 m. The owner does not accept any youth groups.",
+    "description": {
+      "general": "Single-family house, built in 1844. 150 m from the sea. For shared use: garden. Private: natural state property 280 m2, garden (fenced). Terrace (100 m2). In the house: washing machine. Parking at the house. Grocery 200 m. The owner does not accept any youth groups. \"Gunulf\" - 150m from the sea\", 3-room house 100 m2. Object suitable for 6 adults. Living room with TV and radio. 1 room with 1 double bed. Kitchen (oven, dishwasher, 4 induction hot plates, freezer). Shower/WC. Upper floor: living room with 1 double bed. 1 room with 2 beds. Facilities: Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. Bookings accepted for holiday purposes only. 813-175937",
+      "inside": "\"Gunulf\" - 150m from the sea\", 3-room house 100 m2. Object suitable for 6 adults. Living room with TV and radio. 1 room with 1 double bed. Kitchen (oven, dishwasher, 4 induction hot plates, freezer). Shower/WC. Upper floor: living room with 1 double bed. 1 room with 2 beds. Facilities: Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. Bookings accepted for holiday purposes only. 813-175937",
+      "outside": "Single-family house, built in 1844. 150 m from the sea. For shared use: garden. Private: natural state property 280 m2, garden (fenced). Terrace (100 m2). In the house: washing machine. Parking at the house. Grocery 200 m. The owner does not accept any youth groups."
+    },
     "checkInTime": "1400",
     "checkOutTime": "1000",
     "location": {
@@ -224,6 +366,33 @@
     "specialPrices": [],
     "additionalServices": [],
     "availability": [],
+    "bedRooms": 2,
+    "rooms": {
+      "number": 3,
+      "room": [
+        {
+          "floor": "MainFloor",
+          "type": "rooms",
+          "count": 1
+        },
+        {
+          "floor": "UpperFloor",
+          "type": "living_room",
+          "count": 1
+        },
+        {
+          "floor": "MainFloor",
+          "type": "rooms",
+          "count": 1
+        },
+        {
+          "floor": "MainFloor",
+          "type": "living_room",
+          "count": 1
+        }
+      ]
+    },
+    "washrooms": 1,
     "status": "active",
     "legal": {
       "cancellationPolicy": "Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.",
@@ -257,28 +426,70 @@
       "https://images.interhome.com/DK9990.650.1/partner-medium/5A56365000CA1EEDAEA13C55DA474A96",
       "https://images.interhome.com/DK9990.650.1/partner-medium/D1EDF379EB701EDF8EDB649BAC5432B9"
     ],
-    "amenities": [
-      "cots",
-      "pets_max",
-      "studio",
-      "cleaning",
-      "cook",
-      "dishwasher",
-      "parking",
-      "pets",
-      "familyfriendly_summer",
-      "shower",
-      "terrace",
-      "washingmachine",
-      "fridge",
-      "heating",
-      "kitchen",
-      "no_youth_groups",
-      "freezer",
-      "nonsmoking",
-      "tv",
-      "stove",
-      "wlan"
+    "attributes": [
+      {
+        "name": "cots"
+      },
+      {
+        "name": "pets_max"
+      },
+      {
+        "name": "studio"
+      },
+      {
+        "name": "cleaning"
+      },
+      {
+        "name": "cook"
+      },
+      {
+        "name": "dishwasher"
+      },
+      {
+        "name": "parking"
+      },
+      {
+        "name": "pets"
+      },
+      {
+        "name": "familyfriendly_summer"
+      },
+      {
+        "name": "shower"
+      },
+      {
+        "name": "terrace"
+      },
+      {
+        "name": "washingmachine"
+      },
+      {
+        "name": "fridge"
+      },
+      {
+        "name": "heating"
+      },
+      {
+        "name": "kitchen"
+      },
+      {
+        "name": "no_youth_groups"
+      },
+      {
+        "name": "freezer"
+      },
+      {
+        "name": "nonsmoking"
+      },
+      {
+        "name": "tv"
+      },
+      {
+        "name": "stove"
+      },
+      {
+        "name": "wlan"
+      }
     ],
     "provider": "Interhome",
     "selectedFilters": {},
@@ -287,14 +498,18 @@
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-20T15:49:08.932Z",
-    "updatedAt": "2025-04-20T15:49:08.932Z"
+    "createdAt": "2025-04-21T17:53:00.707Z",
+    "updatedAt": "2025-04-21T17:53:00.707Z"
   },
   {
     "Code": "DK6960.604.1",
     "listingType": "interhomeaccommocation",
     "title": "Ferienhaus \"Gottfreda\" - 330m to the inlet",
-    "description": "Single-family house, built in 1991. 930 m from the sea. Private: natural state property 2'500 m2. Terrace (32 m2), children's playground (swing). In the house: sauna, washing machine, tumble dryer. Parking at the house. E-charging station. Grocery 3 km. The owner does not accept any youth groups.",
+    "description": {
+      "general": "Single-family house, built in 1991. 930 m from the sea. Private: natural state property 2'500 m2. Terrace (32 m2), children's playground (swing). In the house: sauna, washing machine, tumble dryer. Parking at the house. E-charging station. Grocery 3 km. The owner does not accept any youth groups. \"Gottfreda\" - 330m to the inlet\", 4-room house 125 m2. Object suitable for 10 adults + 1 child. Living room with TV, radio, CD-player, hi-fi system and DVD. 1 room with 1 double bed. 1 room with 2 x 2 bunk beds. 1 room with 1 double bed. 1 room with 1 double bed. Kitchen (oven, dishwasher, 4 ceramic glass hob hotplates, microwave, freezer). 2 showers/WC, hydro massage bath. Terrace 18 m2, roofed. Facilities: children's high chair, baby cot. Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. 760-15458",
+      "inside": "\"Gottfreda\" - 330m to the inlet\", 4-room house 125 m2. Object suitable for 10 adults + 1 child. Living room with TV, radio, CD-player, hi-fi system and DVD. 1 room with 1 double bed. 1 room with 2 x 2 bunk beds. 1 room with 1 double bed. 1 room with 1 double bed. Kitchen (oven, dishwasher, 4 ceramic glass hob hotplates, microwave, freezer). 2 showers/WC, hydro massage bath. Terrace 18 m2, roofed. Facilities: children's high chair, baby cot. Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. 760-15458",
+      "outside": "Single-family house, built in 1991. 930 m from the sea. Private: natural state property 2'500 m2. Terrace (32 m2), children's playground (swing). In the house: sauna, washing machine, tumble dryer. Parking at the house. E-charging station. Grocery 3 km. The owner does not accept any youth groups."
+    },
     "checkInTime": "1400",
     "checkOutTime": "1000",
     "location": {
@@ -313,6 +528,23 @@
     "specialPrices": [],
     "additionalServices": [],
     "availability": [],
+    "bedRooms": 4,
+    "rooms": {
+      "number": 4,
+      "room": [
+        {
+          "floor": "MainFloor",
+          "type": "rooms",
+          "count": 4
+        },
+        {
+          "floor": "MainFloor",
+          "type": "living_room",
+          "count": 1
+        }
+      ]
+    },
+    "washrooms": 2,
     "status": "active",
     "legal": {
       "cancellationPolicy": "Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.",
@@ -359,35 +591,91 @@
       "https://images.interhome.com/DK6960.604.1/partner-medium/098AADC441DC1EDEBDFE5602EEA6B2B9",
       "https://images.interhome.com/DK6960.604.1/partner-medium/6B7798187DEF1FE086A8276160AED9CB"
     ],
-    "amenities": [
-      "cots",
-      "electric_vehiclecharging_stat",
-      "pets_max",
-      "studio",
-      "playground",
-      "cleaning",
-      "cook",
-      "dishwasher",
-      "tumbler",
-      "fireplace",
-      "microwave",
-      "parking",
-      "pets",
-      "sauna",
-      "familyfriendly_summer",
-      "shower",
-      "terrace",
-      "washingmachine",
-      "dvdplayer",
-      "fridge",
-      "heating",
-      "kitchen",
-      "no_youth_groups",
-      "freezer",
-      "nonsmoking",
-      "tv",
-      "stove",
-      "wlan"
+    "attributes": [
+      {
+        "name": "cots"
+      },
+      {
+        "name": "electric_vehiclecharging_stat"
+      },
+      {
+        "name": "pets_max"
+      },
+      {
+        "name": "studio"
+      },
+      {
+        "name": "playground"
+      },
+      {
+        "name": "cleaning"
+      },
+      {
+        "name": "cook"
+      },
+      {
+        "name": "dishwasher"
+      },
+      {
+        "name": "tumbler"
+      },
+      {
+        "name": "fireplace"
+      },
+      {
+        "name": "microwave"
+      },
+      {
+        "name": "parking"
+      },
+      {
+        "name": "pets"
+      },
+      {
+        "name": "sauna"
+      },
+      {
+        "name": "familyfriendly_summer"
+      },
+      {
+        "name": "shower"
+      },
+      {
+        "name": "terrace"
+      },
+      {
+        "name": "washingmachine"
+      },
+      {
+        "name": "dvdplayer"
+      },
+      {
+        "name": "fridge"
+      },
+      {
+        "name": "heating"
+      },
+      {
+        "name": "kitchen"
+      },
+      {
+        "name": "no_youth_groups"
+      },
+      {
+        "name": "freezer"
+      },
+      {
+        "name": "nonsmoking"
+      },
+      {
+        "name": "tv"
+      },
+      {
+        "name": "stove"
+      },
+      {
+        "name": "wlan"
+      }
     ],
     "provider": "Interhome",
     "selectedFilters": {},
@@ -396,14 +684,18 @@
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-20T15:49:09.411Z",
-    "updatedAt": "2025-04-20T15:49:09.411Z"
+    "createdAt": "2025-04-21T17:53:01.116Z",
+    "updatedAt": "2025-04-21T17:53:01.116Z"
   },
   {
     "Code": "DK6792.626.1",
     "listingType": "interhomeaccommocation",
     "title": "Ferienhaus \"Heralda\" - 3.3km from the sea",
-    "description": "Single-family house, built in 1990. 3.3 km from the sea. Private: natural state property 2'600 m2. Terrace (50 m2), children's playground (swing). In the house: sauna, washing machine. Parking at the house. Grocery 1.1 km. The owner does not accept any youth groups.",
+    "description": {
+      "general": "Single-family house, built in 1990. 3.3 km from the sea. Private: natural state property 2'600 m2. Terrace (50 m2), children's playground (swing). In the house: sauna, washing machine. Parking at the house. Grocery 1.1 km. The owner does not accept any youth groups. \"Heralda\" - 3.3km from the sea\", 4-room house 105 m2. Object suitable for 8 adults. Living room with 1 double bed, TV, video and radio. 1 room with 1 double bed. 1 room with 2 beds. 1 room with 1 double bed. Kitchen (4 hot plates, oven, dishwasher, microwave, freezer). Shower/WC. Terrace 6 m2, roofed. Facilities: children's high chair. Internet (WiFi). Please note: non-smokers only. Maximum 3 pets/ dogs allowed. 550-9662",
+      "inside": "\"Heralda\" - 3.3km from the sea\", 4-room house 105 m2. Object suitable for 8 adults. Living room with 1 double bed, TV, video and radio. 1 room with 1 double bed. 1 room with 2 beds. 1 room with 1 double bed. Kitchen (4 hot plates, oven, dishwasher, microwave, freezer). Shower/WC. Terrace 6 m2, roofed. Facilities: children's high chair. Internet (WiFi). Please note: non-smokers only. Maximum 3 pets/ dogs allowed. 550-9662",
+      "outside": "Single-family house, built in 1990. 3.3 km from the sea. Private: natural state property 2'600 m2. Terrace (50 m2), children's playground (swing). In the house: sauna, washing machine. Parking at the house. Grocery 1.1 km. The owner does not accept any youth groups."
+    },
     "checkInTime": "1400",
     "checkOutTime": "1000",
     "location": {
@@ -422,6 +714,23 @@
     "specialPrices": [],
     "additionalServices": [],
     "availability": [],
+    "bedRooms": 3,
+    "rooms": {
+      "number": 4,
+      "room": [
+        {
+          "floor": "MainFloor",
+          "type": "rooms",
+          "count": 3
+        },
+        {
+          "floor": "MainFloor",
+          "type": "living_room",
+          "count": 1
+        }
+      ]
+    },
+    "washrooms": 2,
     "status": "active",
     "legal": {
       "cancellationPolicy": "Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.",
@@ -461,31 +770,79 @@
       "https://images.interhome.com/DK6792.626.1/partner-medium/F2D993D001441EEDAAAED71C37C2D5B2",
       "https://images.interhome.com/DK6792.626.1/partner-medium/B711B55044371EDFBBBADDAC70F2331A"
     ],
-    "amenities": [
-      "cots",
-      "pets_max",
-      "studio",
-      "cleaning",
-      "dishwasher",
-      "fireplace",
-      "microwave",
-      "oven",
-      "parking",
-      "pets",
-      "sauna",
-      "familyfriendly_summer",
-      "shower",
-      "terrace",
-      "washingmachine",
-      "fridge",
-      "heating",
-      "kitchen",
-      "no_youth_groups",
-      "freezer",
-      "nonsmoking",
-      "tv",
-      "stove",
-      "wlan"
+    "attributes": [
+      {
+        "name": "cots"
+      },
+      {
+        "name": "pets_max"
+      },
+      {
+        "name": "studio"
+      },
+      {
+        "name": "cleaning"
+      },
+      {
+        "name": "dishwasher"
+      },
+      {
+        "name": "fireplace"
+      },
+      {
+        "name": "microwave"
+      },
+      {
+        "name": "oven"
+      },
+      {
+        "name": "parking"
+      },
+      {
+        "name": "pets"
+      },
+      {
+        "name": "sauna"
+      },
+      {
+        "name": "familyfriendly_summer"
+      },
+      {
+        "name": "shower"
+      },
+      {
+        "name": "terrace"
+      },
+      {
+        "name": "washingmachine"
+      },
+      {
+        "name": "fridge"
+      },
+      {
+        "name": "heating"
+      },
+      {
+        "name": "kitchen"
+      },
+      {
+        "name": "no_youth_groups"
+      },
+      {
+        "name": "freezer"
+      },
+      {
+        "name": "nonsmoking"
+      },
+      {
+        "name": "tv"
+      },
+      {
+        "name": "stove"
+      },
+      {
+        "name": "wlan"
+      }
     ],
     "provider": "Interhome",
     "selectedFilters": {},
@@ -494,7 +851,7 @@
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-20T15:49:09.814Z",
-    "updatedAt": "2025-04-20T15:49:09.814Z"
+    "createdAt": "2025-04-21T17:53:01.525Z",
+    "updatedAt": "2025-04-21T17:53:01.525Z"
   }
 ]
