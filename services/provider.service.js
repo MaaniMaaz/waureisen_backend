@@ -219,7 +219,32 @@ exports.getProviderByEmail = async (email) => {
 };
 
 
-// Provider analytics
+
+// Simple format Date function to format dates for charts
+function formatDate(date, format) {
+  
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  if (format === 'YYYY-MM-DD') {
+    return `${year}-${month}-${day}`;
+  } else if (format === 'YYYY-MM') {
+    return `${year}-${month}`;
+  } else if (format === 'DD MMM') {
+    return `${day} ${monthNames[d.getMonth()]}`;
+  } else if (format === 'MMM YYYY') {
+    return `${monthNames[d.getMonth()]} ${year}`;
+  }
+  
+  return `${year}-${month}-${day}`; // Default
+}
+
+
+
 exports.getProviderAnalytics = async (providerId, timeRange = 'month') => {
   try {
     // Get provider's listings
@@ -232,46 +257,168 @@ exports.getProviderAnalytics = async (providerId, timeRange = 'month') => {
     
     // Determine date range
     const now = new Date();
+    now.setHours(23, 59, 59, 999); // End of current day
+    
     let startDate = new Date();
+    let dateFormat; // Format for grouping dates
+    let numPoints; // Number of data points on x-axis
     
     switch(timeRange) {
       case 'week':
-        startDate.setDate(now.getDate() - 7);
+        startDate.setDate(now.getDate() - 6); // Last 7 days (including today)
+        startDate.setHours(0, 0, 0, 0); // Start of day
+        dateFormat = 'YYYY-MM-DD'; // Daily format
+        numPoints = 7;
         break;
       case 'month':
-        startDate.setMonth(now.getMonth() - 1);
+        startDate.setDate(now.getDate() - 29); // Last 30 days (including today)
+        startDate.setHours(0, 0, 0, 0);
+        dateFormat = 'YYYY-MM-DD'; // Daily format
+        numPoints = 30;
         break;
       case 'year':
         startDate.setFullYear(now.getFullYear() - 1);
+        startDate.setDate(startDate.getDate() + 1); // Last 365 days (including today)
+        startDate.setHours(0, 0, 0, 0);
+        dateFormat = 'YYYY-MM'; // Monthly format
+        numPoints = 12;
         break;
       default:
-        startDate.setMonth(now.getMonth() - 1); // Default to month
+        startDate.setDate(now.getDate() - 29); // Default to month
+        startDate.setHours(0, 0, 0, 0);
+        dateFormat = 'YYYY-MM-DD';
+        numPoints = 30;
     }
     
-    // Get bookings for date range
+    // Get all confirmed bookings for this provider's listings in the date range
     const bookings = await Booking.find({
       listing: { $in: listingIds },
-      createdAt: { $gte: startDate }
-    });
+      status: 'confirmed',
+      // At least part of the booking falls within our date range
+      $or: [
+        { checkInDate: { $gte: startDate, $lte: now } }, // Starts in range
+        { checkOutDate: { $gte: startDate, $lte: now } }, // Ends in range
+        { $and: [ // Spans the entire range
+          { checkInDate: { $lte: startDate } },
+          { checkOutDate: { $gte: now } }
+        ]}
+      ]
+    }).populate('listing', 'title');
     
-    // Calculate basic metrics
+    // Calculate basic metrics for the dashboard
     const totalBookings = {
       current: bookings.length,
-      previous: Math.floor(bookings.length * 0.8) // Mock previous period data
+      previous: Math.floor(bookings.length * 0.8) // Simplistic previous period calculation
     };
     
-    // Calculate revenue
+    // Calculate total revenue
     let totalRevenue = 0;
     bookings.forEach(booking => {
       totalRevenue += booking.totalPrice || 0;
     });
     
-    const revenue = {
-      current: totalRevenue,
-      previous: Math.floor(totalRevenue * 0.85) // Mock previous period data
-    };
+    // Create data structures for the charts
+    // Initialize date-based maps to hold our data
+    const revenueByDate = new Map();
+    const bookingsByDate = new Map();
     
-    // Mock occupancy rate and other metrics
+    // Initialize all dates in the range
+    let dateLabels = [];
+    if (timeRange === 'year') {
+      // For yearly view, initialize months
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now);
+        d.setMonth(now.getMonth() - 11 + i);
+        const monthLabel = formatDate(d, 'YYYY-MM');
+        revenueByDate.set(monthLabel, 0);
+        bookingsByDate.set(monthLabel, 0);
+        dateLabels.push(formatDate(d, 'MMM YYYY')); // Formatted month name for display
+      }
+    } else {
+      // For daily view (week or month)
+      for (let i = 0; i < numPoints; i++) {
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + i);
+        const dateLabel = formatDate(d, 'YYYY-MM-DD');
+        revenueByDate.set(dateLabel, 0);
+        bookingsByDate.set(dateLabel, 0);
+        dateLabels.push(formatDate(d, 'DD MMM')); // Formatted day for display
+      }
+    }
+    
+    // Process each booking and distribute revenue across days
+    bookings.forEach(booking => {
+      const checkIn = new Date(booking.checkInDate);
+      const checkOut = new Date(booking.checkOutDate);
+      
+      // Calculate number of days in booking
+      const totalDays = Math.max(1, Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24)));
+      
+      // Calculate revenue per day
+      const revenuePerDay = (booking.totalPrice || 0) / totalDays;
+      
+      // For each day of the booking, add the daily revenue
+      for (let day = new Date(Math.max(checkIn, startDate)); 
+           day <= new Date(Math.min(checkOut, now)); 
+           day.setDate(day.getDate() + 1)) {
+        
+        let dateKey;
+        if (timeRange === 'year') {
+          dateKey = formatDate(day, 'YYYY-MM');
+        } else {
+          dateKey = formatDate(day, 'YYYY-MM-DD');
+        }
+        
+        // Add revenue for this day/month if the key exists
+        if (revenueByDate.has(dateKey)) {
+          revenueByDate.set(dateKey, revenueByDate.get(dateKey) + revenuePerDay);
+        }
+      }
+      
+      // For booking count, we count a booking in every period it spans
+      if (timeRange === 'year') {
+        // Count by month
+        const startMonth = new Date(Math.max(checkIn, startDate));
+        const endMonth = new Date(Math.min(checkOut, now));
+        
+        // Set startMonth to the 1st of the month
+        startMonth.setDate(1);
+        
+        // Set endMonth to the 1st of the next month
+        endMonth.setDate(1);
+        if (endMonth.getMonth() === 11) {
+          endMonth.setFullYear(endMonth.getFullYear() + 1);
+          endMonth.setMonth(0);
+        } else {
+          endMonth.setMonth(endMonth.getMonth() + 1);
+        }
+        
+        // Count booking for each month it spans
+        for (let month = new Date(startMonth); month < endMonth; month.setMonth(month.getMonth() + 1)) {
+          const monthKey = formatDate(month, 'YYYY-MM');
+          if (bookingsByDate.has(monthKey)) {
+            bookingsByDate.set(monthKey, bookingsByDate.get(monthKey) + 1);
+          }
+        }
+      } else {
+        // Count by day
+        for (let day = new Date(Math.max(checkIn, startDate)); 
+             day <= new Date(Math.min(checkOut, now)); 
+             day.setDate(day.getDate() + 1)) {
+          
+          const dateKey = formatDate(day, 'YYYY-MM-DD');
+          if (bookingsByDate.has(dateKey)) {
+            bookingsByDate.set(dateKey, bookingsByDate.get(dateKey) + 1);
+          }
+        }
+      }
+    });
+    
+    // Convert to arrays for charting
+    const revenueData = Array.from(revenueByDate.values());
+    const bookingsData = Array.from(bookingsByDate.values());
+    
+    // Calculate other statistics
     const occupancyRate = {
       current: bookings.length > 0 ? Math.min(85, 35 + bookings.length * 5) : 0,
       previous: bookings.length > 0 ? Math.min(80, 30 + bookings.length * 5) : 0
@@ -282,24 +429,27 @@ exports.getProviderAnalytics = async (providerId, timeRange = 'month') => {
       previous: totalRevenue > 0 && bookings.length > 0 ? Math.round((totalRevenue / bookings.length) * 0.9) : 0
     };
     
-    // Create sample chart data
-    const days = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 12;
-    const chartData = {
-      revenue: Array.from({ length: days }, () => Math.floor(Math.random() * 500) + 100),
-      bookings: Array.from({ length: days }, () => Math.floor(Math.random() * 3))
-    };
-    
     return {
+      timeRange,
       performance: {
         totalBookings,
-        totalRevenue: revenue,
+        totalRevenue: {
+          current: totalRevenue,
+          previous: Math.floor(totalRevenue * 0.85)
+        },
         occupancyRate,
         averageNightlyRate
       },
-      charts: chartData
+      charts: {
+        labels: dateLabels,
+        revenue: revenueData,
+        bookings: bookingsData
+      }
     };
   } catch (error) {
-    console.error('Error getting provider analytics:', error);
+    console.error('Error calculating provider analytics:', error);
     throw error;
   }
 };
+
+
