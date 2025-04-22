@@ -4407,7 +4407,7 @@ async function fetchFor(code, accommodationCode) {
 
     for (const code of salesOfficeCodes) {
         try {
-            const accommodationCode = 'DK6960.670.1'; // Saas-fee venetz v1 was CH3906.866.1
+            const accommodationCode = 'DK6960.611.1'; // Saas-fee venetz v1 was CH3906.866.1
             const json = await fetchFor(code, accommodationCode);
             results.push({
                 salesOffice: code,
