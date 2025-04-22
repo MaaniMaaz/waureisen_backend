@@ -25,8 +25,7 @@ exports.getListingDetails = async (listingId, providerId) => {
   });
 };
 
-// Get bookings list (basic info)
-// Find this function in provider.service.js and check its implementation
+
 exports.getProviderBookings = async (providerId, filters = {}) => {
   try {
     // Get provider's listings first
@@ -51,13 +50,31 @@ exports.getProviderBookings = async (providerId, filters = {}) => {
       query.listing = filters.listingId;
     }
     
-    // Get bookings
+    // Pagination parameters
+    const page = parseInt(filters.page) || 1;
+    const limit = parseInt(filters.limit) || 10;
+    const skip = (page - 1) * limit;
+    
+    // Get total count for pagination
+    const totalCount = await Booking.countDocuments(query);
+    
+    // Get bookings with pagination
     const bookings = await Booking.find(query)
       .populate('user', 'username firstName lastName email')
       .populate('listing', 'title location images')
-      .sort({ checkInDate: 1 });
+      .sort({ checkInDate: filters.sortOrder === 'desc' ? -1 : 1 })
+      .skip(skip)
+      .limit(limit);
     
-    return bookings;
+    return {
+      bookings,
+      pagination: {
+        totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    };
   } catch (error) {
     console.error('Error getting provider bookings:', error);
     throw error;
@@ -245,9 +262,11 @@ function formatDate(date, format) {
 
 
 
+
+
 exports.getProviderAnalytics = async (providerId, timeRange = 'month') => {
   try {
-    // Get provider's listings
+    
     const listings = await Listing.find({
       owner: providerId,
       ownerType: 'Provider'
@@ -290,10 +309,9 @@ exports.getProviderAnalytics = async (providerId, timeRange = 'month') => {
         numPoints = 30;
     }
     
-    // Get all confirmed bookings for this provider's listings in the date range
+    // Get all bookings for this provider's listings in the date range
     const bookings = await Booking.find({
       listing: { $in: listingIds },
-      status: 'confirmed',
       // At least part of the booking falls within our date range
       $or: [
         { checkInDate: { $gte: startDate, $lte: now } }, // Starts in range
@@ -305,17 +323,43 @@ exports.getProviderAnalytics = async (providerId, timeRange = 'month') => {
       ]
     }).populate('listing', 'title');
     
+    // Get confirmed bookings only for revenue calculation
+    const confirmedBookings = bookings.filter(booking => booking.status === 'confirmed');
+    
     // Calculate basic metrics for the dashboard
     const totalBookings = {
       current: bookings.length,
       previous: Math.floor(bookings.length * 0.8) // Simplistic previous period calculation
     };
     
-    // Calculate total revenue
+    // Calculate total revenue from confirmed bookings only
     let totalRevenue = 0;
-    bookings.forEach(booking => {
+    confirmedBookings.forEach(booking => {
       totalRevenue += booking.totalPrice || 0;
     });
+    
+    // Calculate occupancy rate
+    // First, get the total available days in the period for all listings
+    const periodLength = Math.ceil((now - startDate) / (1000 * 60 * 60 * 24));
+    const totalAvailableDays = periodLength * listings.length;
+    
+    // Next, calculate the total booked days
+    let totalBookedDays = 0;
+    confirmedBookings.forEach(booking => {
+      const bookingStart = new Date(Math.max(booking.checkInDate, startDate));
+      const bookingEnd = new Date(Math.min(booking.checkOutDate, now));
+      
+      if (bookingEnd >= bookingStart) {
+        const days = Math.ceil((bookingEnd - bookingStart) / (1000 * 60 * 60 * 24));
+        totalBookedDays += days;
+      }
+    });
+    
+    // Calculate occupancy rate (prevent divide by zero)
+    const occupancyRate = {
+      current: totalAvailableDays > 0 ? Math.round((totalBookedDays / totalAvailableDays) * 100) : 0,
+      previous: totalAvailableDays > 0 ? Math.round(((totalBookedDays / totalAvailableDays) * 100) * 0.9) : 0 // Assuming 10% less in previous period
+    };
     
     // Create data structures for the charts
     // Initialize date-based maps to hold our data
@@ -347,7 +391,7 @@ exports.getProviderAnalytics = async (providerId, timeRange = 'month') => {
     }
     
     // Process each booking and distribute revenue across days
-    bookings.forEach(booking => {
+    confirmedBookings.forEach(booking => {
       const checkIn = new Date(booking.checkInDate);
       const checkOut = new Date(booking.checkOutDate);
       
@@ -394,7 +438,7 @@ exports.getProviderAnalytics = async (providerId, timeRange = 'month') => {
         }
         
         // Count booking for each month it spans
-        for (let month = new Date(startMonth); month < endMonth; month.setMonth(month.getMonth() + 1)) {
+        for (let month = new Date(startMonth); month < endMonth; month.setMonth(month.getMonth() + a)) {
           const monthKey = formatDate(month, 'YYYY-MM');
           if (bookingsByDate.has(monthKey)) {
             bookingsByDate.set(monthKey, bookingsByDate.get(monthKey) + 1);
@@ -418,17 +462,6 @@ exports.getProviderAnalytics = async (providerId, timeRange = 'month') => {
     const revenueData = Array.from(revenueByDate.values());
     const bookingsData = Array.from(bookingsByDate.values());
     
-    // Calculate other statistics
-    const occupancyRate = {
-      current: bookings.length > 0 ? Math.min(85, 35 + bookings.length * 5) : 0,
-      previous: bookings.length > 0 ? Math.min(80, 30 + bookings.length * 5) : 0
-    };
-    
-    const averageNightlyRate = {
-      current: totalRevenue > 0 && bookings.length > 0 ? Math.round(totalRevenue / bookings.length) : 0,
-      previous: totalRevenue > 0 && bookings.length > 0 ? Math.round((totalRevenue / bookings.length) * 0.9) : 0
-    };
-    
     return {
       timeRange,
       performance: {
@@ -437,8 +470,7 @@ exports.getProviderAnalytics = async (providerId, timeRange = 'month') => {
           current: totalRevenue,
           previous: Math.floor(totalRevenue * 0.85)
         },
-        occupancyRate,
-        averageNightlyRate
+        occupancyRate
       },
       charts: {
         labels: dateLabels,

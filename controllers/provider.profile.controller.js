@@ -43,11 +43,17 @@ exports.getProviderListings = async (req, res, next) => {
 
 exports.getProviderBookings = async (req, res, next) => {
   try {
-      const { status, limit } = req.query;
-      const bookings = await providerService.getProviderBookings(req.user.id, { status, limit });
-      res.json(bookings);
+    const { status, page, limit, sortOrder } = req.query;
+    const bookings = await providerService.getProviderBookings(req.user.id, { 
+      status, 
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 10,
+      sortOrder
+    });
+    res.json(bookings);
   } catch (err) {
-      next(err);
+    console.error('Error getting provider bookings:', err);
+    next(err);
   }
 };
 

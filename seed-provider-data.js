@@ -28,7 +28,6 @@ const generateListingCode = () => {
   return 'WR' + Math.random().toString(36).substring(2, 7).toUpperCase();
 };
 
-// Create bookings with better distribution for analytics
 const createDistributedBookings = async (listings, customers) => {
   const bookings = [];
   const now = new Date();
@@ -53,6 +52,9 @@ const createDistributedBookings = async (listings, customers) => {
       
       const bookingAmount = duration * listing.pricePerNight.price;
       
+      // Make more bookings confirmed to improve analytics data
+      const isConfirmed = Math.random() > 0.3; // 70% chance of being confirmed
+      
       bookings.push({
         user: customer._id,
         listing: listing._id,
@@ -60,7 +62,7 @@ const createDistributedBookings = async (listings, customers) => {
         checkInDate: startDate,
         checkOutDate: endDate,
         totalPrice: bookingAmount,
-        status: Math.random() > 0.2 ? 'confirmed' : 'pending',
+        status: isConfirmed ? 'confirmed' : 'pending',
         capacity: {
           people: Math.floor(Math.random() * 3) + 1,
           dogs: Math.floor(Math.random() * 2)
@@ -91,7 +93,7 @@ const createDistributedBookings = async (listings, customers) => {
       checkInDate: startDate,
       checkOutDate: endDate,
       totalPrice: bookingAmount,
-      status: Math.random() > 0.5 ? 'confirmed' : 'pending',
+      status: Math.random() > 0.3 ? 'confirmed' : 'pending',
       capacity: {
         people: Math.floor(Math.random() * 3) + 1,
         dogs: Math.floor(Math.random() * 2)
