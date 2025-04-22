@@ -113,3 +113,73 @@ exports.searchListings = async (req, res, next) => {
     });
   }
 };
+
+// Search listings by map bounds
+exports.searchListingsByMap = async (req, res, next) => {
+  try {
+    const { 
+      lat, lng, radius = 10, 
+      neLat, neLng, swLat, swLng,
+      page = 1, limit = 10, 
+      people, dogs, dateRange 
+    } = req.query;
+    
+    // Convert parameters to numbers
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    const searchRadius = parseFloat(radius);
+    const currentPage = parseInt(page);
+    const resultsLimit = parseInt(limit);
+    const guestCount = people ? parseInt(people) : null;
+    const dogCount = dogs ? parseInt(dogs) : null;
+    
+    // Log received parameters for debugging
+    console.log('Map search parameters:', { 
+      latitude, longitude, searchRadius,
+      bounds: neLat ? { neLat, neLng, swLat, swLng } : 'Not provided',
+      currentPage, resultsLimit, 
+      guestCount, dogCount, dateRange 
+    });
+    
+    // Validate parameters
+    if (isNaN(latitude) || isNaN(longitude)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid latitude or longitude' 
+      });
+    }
+    
+    // Use the service to search listings
+    const searchParams = {
+      latitude,
+      longitude,
+      radius: searchRadius,
+      bounds: neLat ? {
+        ne: { lat: parseFloat(neLat), lng: parseFloat(neLng) },
+        sw: { lat: parseFloat(swLat), lng: parseFloat(swLng) }
+      } : null,
+      page: currentPage,
+      limit: resultsLimit,
+      guestCount,
+      dogCount,
+      dateRange
+    };
+    
+    const result = await listingService.searchListingsByMap(searchParams);
+    
+    // Return the results
+    res.status(200).json({
+      success: true,
+      listings: result.listings,
+      hasMore: result.hasMore,
+      total: result.total
+    });
+  } catch (error) {
+    console.error('Error searching listings by map:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error searching listings by map',
+      error: error.message
+    });
+  }
+};

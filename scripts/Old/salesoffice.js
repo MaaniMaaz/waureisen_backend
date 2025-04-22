@@ -4380,7 +4380,7 @@ const PARTNER = 'CH1002557';
 
 const fetch = require('node-fetch');  // npm install node-fetch@2
 
-// Helper to fetch one code
+// Helper to fet339 one code
 async function fetchFor(code, accommodationCode) {
     const url = `${API_BASE}/${accommodationCode}?SalesOffice=${encodeURIComponent(code)}&Los=true&Currency=CHF&RangeFromDate=2025-05-03`;
     const res = await fetch(url, {
@@ -4407,7 +4407,7 @@ async function fetchFor(code, accommodationCode) {
 
     for (const code of salesOfficeCodes) {
         try {
-            const accommodationCode = 'CH3906.866.4'; // Saas-fee venetz v1 was CH3906.866.1
+            const accommodationCode = 'DK6960.670.1'; // Saas-fee venetz v1 was CH3906.866.1
             const json = await fetchFor(code, accommodationCode);
             results.push({
                 salesOffice: code,

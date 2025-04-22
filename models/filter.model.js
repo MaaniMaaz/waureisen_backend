@@ -55,70 +55,70 @@ const filterSchema = new mongoose.Schema({
   
   // For compatibility with existing code - these can be gradually migrated
   // to the new structure above
-  generalFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }  // SVG icon as a string or URL
-  }],
-  mainFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  accomodationFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  kitchenFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  poolFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  wellnessFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  kidsFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  waterFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  cateringFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  parkingFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  viewFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  sportFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  smokingFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  accessibilityFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  descriptionFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
-  dogFilters: [{
-    name: { type: String, required: true },
-    icon: { type: String, required: true }
-  }],
+  // generalFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }  // SVG icon as a string or URL
+  // }],
+  // mainFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // accomodationFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // kitchenFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // poolFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // wellnessFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // kidsFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // waterFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // cateringFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // parkingFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // viewFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // sportFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // smokingFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // accessibilityFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // descriptionFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
+  // dogFilters: [{
+  //   name: { type: String, required: true },
+  //   icon: { type: String, required: true }
+  // }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

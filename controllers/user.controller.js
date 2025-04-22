@@ -237,3 +237,45 @@ exports.getNewsletterSubscriptions = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getUserProfile = async (req, res, next) => {
+  try {
+    // Get the user ID from the authenticated request
+    const userId = req.user.id;
+    
+    // Use the existing service to get the user by ID
+    const user = await userService.getUserById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User profile not found' });
+    }
+    
+    res.json(user);
+  } catch (err) {
+    console.error('Error fetching user profile:', err);
+    next(err);
+  }
+};
+
+// Add or update this controller method
+exports.updateUserProfile = async (req, res, next) => {
+  try {
+    // Get the user ID from the authenticated request
+    const userId = req.user.id;
+    
+    // console.log('Updating profile for user:', userId);
+    // console.log('Update data received:', req.body);
+    
+    // Use the existing service to update the user
+    const updatedUser = await userService.updateUser(userId, req.body);
+    
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User profile not found' });
+    }
+    
+    res.json(updatedUser);
+  } catch (err) {
+    console.error('Error updating user profile:', err);
+    next(err);
+  }
+};

@@ -15,7 +15,7 @@ const providerSchema = new mongoose.Schema({
 
   bio: { type: String },
 
-  // TBD Better take info at verirfication step -- or at lsiting also ok 
+  
   payoutDetails: {
 
     providerType: {

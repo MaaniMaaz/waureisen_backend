@@ -11,6 +11,10 @@ exports.getBookingById = async (id) => {
 };
 
 exports.createBooking = async (data) => {
+  
+  // to check if the listing is available for the selected dates or is that specific listing is blocked on that specific date by that specific provider
+  await validateBookingDates(data.listing, data.checkInDate, data.checkOutDate);
+  
   const newBooking = new Booking(data);
   return await newBooking.save();
 };
@@ -63,6 +67,7 @@ exports.getReviewedBookings = async (userId) => {
   .sort({ checkOutDate: -1 });
 };
 
+<<<<<<< HEAD
 // Add a more robust method to get bookings for a provider
 exports.getBookingsByProvider = async (providerId, status = 'all', limit = null) => {
   // First find all listings owned by this provider
@@ -101,3 +106,21 @@ exports.getBookingsByProvider = async (providerId, status = 'all', limit = null)
   
   return await bookingsQuery.exec();
 };
+=======
+const validateBookingDates = async (listingId, checkInDate, checkOutDate) => {
+  
+  const unavailableDates = await UnavailableDate.find({
+    listing: listingId,
+    date: {
+      $gte: new Date(checkInDate),
+      $lte: new Date(checkOutDate)
+    }
+  });
+  
+  if (unavailableDates.length > 0) {
+    throw new Error('Some selected dates are unavailable for booking');
+  }
+  
+  return true;
+};
+>>>>>>> dev

@@ -34,7 +34,7 @@ const connectMongo = async () => {
 };
 
 // ───────── Load Listing Model ─────────
-const Listing = require('../../models/listing.model'); // <-- adjust path if needed
+const Listing = require('../../../models/listing.model'); // <-- adjust path if needed
 
 // ───────── Fetch Functions ─────────
 async function fetchList() {

@@ -32,7 +32,7 @@ exports.verifyToken = (req, res, next) => {
         };
         
         // Log successful authentication
-        console.log(`Authenticated user: ID ${req.user.id}, Role: ${req.user.role}`);
+        // console.log(`Authenticated user: ID ${req.user.id}, Role: ${req.user.role}`);
         
         next();
     });

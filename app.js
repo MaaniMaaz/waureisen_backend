@@ -51,6 +51,7 @@ app.use((req, res, next) => {
 // API Routes
 app.use("/api/admins", adminRoutes);
 app.use("/api/users", userRoutes);
+
 app.use("/api/filters", filterRoutes);
 app.use("/api/languages", languageRoutes);
 app.use("/api/listings", listingRoutes);
@@ -62,6 +63,8 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/email-notifications', emailNotificationRoutes);
 app.use('/api/campers', camperRoutes);
 app.use('/api/newsletters', newsletterRoutes);
+
+app.use('/api/providers', providerRoutes);
 
 app.use('/api/interhome', interhomeRoutes);
 app.use('/api/chat', chatRoutes); // Add this for chat routes

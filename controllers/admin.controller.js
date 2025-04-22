@@ -135,3 +135,143 @@ exports.login = async (req, res, next) => {
     next(err);
   }
 };
+
+// Add these functions to your existing admin controller
+
+// Get recommendations
+exports.getRecommendations = async (req, res, next) => {
+  try {
+    const adminId = req.user.id;
+    const admin = await Admin.findById(adminId)
+      .populate('topRecommendations')
+      .populate('popularAccommodations')
+      .populate('exclusiveFinds');
+    
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+    
+    res.json({
+      topRecommendations: admin.topRecommendations,
+      popularAccommodations: admin.popularAccommodations,
+      exclusiveFinds: admin.exclusiveFinds
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Update top recommendations
+exports.updateTopRecommendations = async (req, res, next) => {
+  try {
+    const adminId = req.user.id;
+    const { listingIds } = req.body;
+    
+    // Validate input
+    if (!Array.isArray(listingIds) || listingIds.length > 3) {
+      return res.status(400).json({ 
+        message: 'Invalid input. Please provide an array of up to 3 listing IDs.' 
+      });
+    }
+    
+    // Verify all listings exist
+    for (const id of listingIds) {
+      const listing = await Listing.findById(id);
+      if (!listing) {
+        return res.status(404).json({ message: `Listing with ID ${id} not found` });
+      }
+    }
+    
+    const admin = await Admin.findByIdAndUpdate(
+      adminId,
+      { topRecommendations: listingIds },
+      { new: true, runValidators: true }
+    ).populate('topRecommendations');
+    
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+    
+    res.json({ topRecommendations: admin.topRecommendations });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Update popular accommodations
+exports.updatePopularAccommodations = async (req, res, next) => {
+  try {
+    const adminId = req.user.id;
+    const { listingIds } = req.body;
+    
+    // Validate input
+    if (!Array.isArray(listingIds) || listingIds.length > 3) {
+      return res.status(400).json({ 
+        message: 'Invalid input. Please provide an array of up to 3 listing IDs.' 
+      });
+    }
+    
+    // Verify all listings exist
+    for (const id of listingIds) {
+      const listing = await Listing.findById(id);
+      if (!listing) {
+        return res.status(404).json({ message: `Listing with ID ${id} not found` });
+      }
+    }
+    
+    const admin = await Admin.findByIdAndUpdate(
+      adminId,
+      { popularAccommodations: listingIds },
+      { new: true, runValidators: true }
+    ).populate('popularAccommodations');
+    
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+    
+    res.json({ popularAccommodations: admin.popularAccommodations });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Update exclusive finds
+exports.updateExclusiveFinds = async (req, res, next) => {
+  try {
+    const adminId = req.user.id;
+    const { listingIds } = req.body;
+    
+    // Validate input
+    if (!Array.isArray(listingIds) || listingIds.length > 3) {
+      return res.status(400).json({ 
+        message: 'Invalid input. Please provide an array of up to 3 listing IDs.' 
+      });
+    }
+    
+    // Verify all listings exist
+    for (const id of listingIds) {
+      const listing = await Listing.findById(id);
+      if (!listing) {
+        return res.status(404).json({ message: `Listing with ID ${id} not found` });
+      }
+    }
+    
+    const admin = await Admin.findByIdAndUpdate(
+      adminId,
+      { exclusiveFinds: listingIds },
+      { new: true, runValidators: true }
+    ).populate('exclusiveFinds');
+    
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+    
+    res.json({ exclusiveFinds: admin.exclusiveFinds });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Don't forget to add the Listing model import at the top
+const Admin = require('../models/admin.model');
+const Listing = require('../models/listing.model');
