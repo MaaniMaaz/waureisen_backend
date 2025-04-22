@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const http = require("http"); // Add this for socket.io
+// const bodyParser = require('body-parser');
 const connectDB = require("./configs/database");
 const socketServer = require("./socketServer"); // Add this for socket.io
 
@@ -19,7 +20,11 @@ const travelMagazineRoutes = require("./routes/travelMagazine.routes.js");
 const voucherRoutes = require("./routes/voucher.routes.js");
 const bookingRoutes = require("./routes/booking.routes.js");
 const newsletterRoutes = require('./routes/newsletter.routes');
+const paymentRoutes = require('./routes/payment.routes.js');
 const interhomeRoutes = require('./routes/interhome.routes');
+const stripe = require("stripe")(process.env.STRIPE_SECRET);
+const {handlePayment} = require('./functions/webhook.js');
+
 
 
 // const reviewRoutes = require("./routes/review.routes.js")
@@ -39,6 +44,54 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// webhook
+
+const endpointSecret = process.env.WEBHOOK_SECRET;
+console.log(endpointSecret)
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  async (request, response) => {
+    const sig = request.headers["stripe-signature"];
+
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+      console.log(event?.type );
+    } catch (err) {
+      response.status(400).send(`Webhook Error: ${err.message}`);
+      console.log(event?.type, err );
+      return;
+    }
+    console.log(event?.type );
+    // Handle the event
+    switch (event.type) {
+      case "payment_intent.succeeded":
+        const paymentIntentSucceeded = event.data.object;
+
+        await handlePayment("success", paymentIntentSucceeded.metadata);
+        break;
+      case "payment_intent.canceled":
+        const paymentIntentCanceled = event.data.object;
+        await handlePayment("canceled", paymentIntentCanceled.metadata);
+        break;
+      case "payment_intent.payment_failed":
+        const paymentIntentFailed = event.data.object;
+        await handlePayment("failed", paymentIntentFailed.metadata);
+        break;
+      // ... handle other event types
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    // Return a 200 response to acknowledge receipt of the event
+    response.send({ received: true });
+  }
+);
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -47,6 +100,8 @@ app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
+
+
 
 // API Routes
 app.use("/api/admins", adminRoutes);
@@ -63,6 +118,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/email-notifications', emailNotificationRoutes);
 app.use('/api/campers', camperRoutes);
 app.use('/api/newsletters', newsletterRoutes);
+app.use('/api/payment', paymentRoutes);
 
 app.use('/api/providers', providerRoutes);
 
