@@ -94,4 +94,98 @@ router.get('/prices/:accommodationCode', async (req, res) => {
   }
 });
 
+// New route for availability
+router.get('/availability/:accommodationCode', async (req, res) => {
+  const { accommodationCode } = req.params;
+  const { checkInDate } = req.query;
+
+  try {
+    const response = await axios.get(`https://ws.interhome.com/ih/b2b/V0100/accommodation/pricelistalldur/${accommodationCode}`, {
+      params: {
+        SalesOffice: '0505',
+        Currency: 'CHF',
+        Los: true,
+        RangeFromDate: checkInDate || undefined
+      },
+      headers: {
+        'Token': 'XD1mZXqcC6',
+        'PartnerId': 'CH1002557'
+      }
+    });
+
+    // Get all prices from the response
+    const allPrices = response.data?.priceList?.prices?.price || [];
+    
+    // Sort prices by check-in date
+    allPrices.sort((a, b) => new Date(a.checkInDate) - new Date(b.checkInDate));
+    
+    // Filter for only 7-day duration options
+    const weeklyPrices = allPrices.filter(price => price.duration === 7);
+    
+    if (weeklyPrices.length === 0) {
+      return res.json({
+        availableDates: [],
+        message: "No weekly availability found"
+      });
+    }
+    
+    // Get the first available date
+    const firstAvailableDate = weeklyPrices[0].checkInDate;
+    
+    // Get the last available date from the JSON
+    const lastAvailableDate = weeklyPrices[weeklyPrices.length - 1].checkInDate;
+    
+    // Create a map of available dates for quick lookup
+    const availableDatesMap = new Map();
+    weeklyPrices.forEach(price => {
+      // If multiple entries exist for same date with different paxUpTo, 
+      // keep the one with lowest price
+      const existingEntry = availableDatesMap.get(price.checkInDate);
+      if (!existingEntry || price.price < existingEntry.price) {
+        availableDatesMap.set(price.checkInDate, {
+          checkInDate: price.checkInDate,
+          price: price.price,
+          duration: price.duration,
+          paxUpTo: price.paxUpTo
+        });
+      }
+    });
+    
+    // Create the availability array
+    const availableDates = [];
+    
+    // Start with the first available date
+    let currentDate = new Date(firstAvailableDate);
+    const lastDate = new Date(lastAvailableDate);
+    
+    // Continue checking dates until we reach or exceed the last date in the JSON
+    while (currentDate <= lastDate) {
+      // Format the current date as YYYY-MM-DD
+      const currentDateStr = currentDate.toISOString().split('T')[0];
+      
+      // Check if this date exists in our map
+      const dateEntry = availableDatesMap.get(currentDateStr);
+      if (dateEntry) {
+        availableDates.push(dateEntry);
+      }
+      
+      // Add 7 days to current date for next iteration
+      currentDate.setDate(currentDate.getDate() + 7);
+    }
+    
+    // Return the availability data
+    res.json({
+      code: response.data?.priceList?.code,
+      currency: response.data?.priceList?.currency,
+      firstAvailableDate,
+      lastAvailableDate,
+      availableDates
+    });
+
+  } catch (error) {
+    console.error('Error fetching Interhome availability:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
