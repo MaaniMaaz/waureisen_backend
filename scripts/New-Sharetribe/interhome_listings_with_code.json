@@ -336,22 +336,6 @@
     "Code": "CH3920.961.2"
   },
   {
-    "Id": "67c5b6fb-f60c-4550-af99-d0d27ea03d70",
-    "CreatedAt": "2025-03-03T14:04:43Z",
-    "Title": "Ferienhaus Villa Jaume",
-    "PriceAmount": "",
-    "PriceCurrency": "",
-    "AuthorId": "67ade551-ad4e-4efb-ae68-1b8d04704c46",
-    "State": "published",
-    "ImageCount": "35",
-    "CurrentStockQuantity": "",
-    "PublicData": "{\"additionalServices\":[{\"additionalServicesChargeType\":\"perStay\",\"additionalServicesType\":\"included\",\"price\":{\"amount\":0,\"currency\":\"CHF\"},\"title\":\"Endreinigung (Grundreinigung vor Abreise stets durch den Kunden)\"},{\"additionalServicesChargeType\":\"perStay\",\"additionalServicesType\":\"included\",\"price\":{\"amount\":0,\"currency\":\"CHF\"},\"title\":\"Babybett (bis 2 Jahre) / Kinderhochstuhl\"},{\"additionalServicesChargeType\":\"perStay\",\"additionalServicesType\":\"included\",\"price\":{\"amount\":0,\"currency\":\"CHF\"},\"title\":\"Bettwäsche und Handtücher (Betten bei Ankunft bezogen)\"},{\"additionalServicesChargeType\":\"perStay\",\"additionalServicesType\":\"included\",\"price\":{\"amount\":0,\"currency\":\"CHF\"},\"title\":\"Kurtaxe\"},{\"additionalServicesChargeType\":\"perStay\",\"additionalServicesType\":\"mandatory\",\"price\":{\"amount\":60000,\"currency\":\"CHF\"},\"title\":\"Kaution (vor Ort)\"},{\"additionalServicesChargeType\":\"perStay\",\"additionalServicesType\":\"mandatory\",\"price\":{\"amount\":3000,\"currency\":\"CHF\"},\"title\":\"Hundegebühr (pro Hund; pro Woche)\"}],\"detailsAccomodationType\":\"holidayHome\",\"detailsBathrooms\":6,\"detailsBeds\":10,\"detailsCheckInTime\":\"1400\",\"detailsCheckOutTime\":\"1000\",\"detailsMaxDogs\":3,\"detailsMaxPeoples\":16,\"detailsRooms\":11,\"documentPolicy\":\"Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.\",\"dogFacilities\":[\"privategarden\",\"Noleashrequired\",\"off-leashmeadow\",\"fencedgarden1\",\"allowedatthepoolarea\",\"fencedterrace\"],\"facilitiesCatering\":[\"none\"],\"facilitiesParking\":[\"outdoor\",\"parkingattheaccommodation\"],\"facilitiesaccommodationfeatures\":[\"tv\",\"freewifi\",\"nocarpet\",\"terrace\",\"standalone\",\"grill\",\"kitchen\",\"washingmachine\"],\"facilitieskids\":[\"kidsfriendly\",\"kidschair\",\"babybed\"],\"facilitieskitchen\":[\"dishwasher\",\"microwave\",\"backingoven\",\"coffeemachine\"],\"facilitiesmainfilters\":[\"fencedgarden\",\"parkingattheaccommodation\",\"privatepool\",\"kidsfriendly\"],\"facilitiespool\":[\"sharedpool\",\"privatepool\"],\"facilitiespricefrom\":22,\"facilitiessport\":[\"sail\",\"tennis\",\"golf\",\"minigolf\",\"horseriding\",\"hikingtour\",\"bicyclepath\",\"biketour\"],\"facilitiestodonearby\":[\"sea\"],\"facilitiesview\":[\"poolview\",\"gardenview\"],\"listingType\":\"interhomeaccommocation\",\"location\":{\"address\":\"66700 Argelès-sur-Mer, Frankreich\",\"building\":\"\"},\"priceOnRequest\":\"https://www.interhome.ch/frankreich/pyrenees-orientales/argeles-sur-mer/ferienhaus-villa-jaume-fr6669.626.1/?partnerid=CH1002557&iframe=true&layout=footer&color-thm=0096DB&color-cta=E63957\",\"priceType\":\"onRequest\",\"seasonalPrices\":[],\"termandcondition\":\"https://www.waureisen.com/uploads/interhome-agb-1741011180559.pdf\",\"transactionProcessAlias\":\"default-booking/release-1\",\"unitType\":\"night\"}",
-    "PrivateData": "{}",
-    "Metadata": "null",
-    "PriceOnRequestLink": "https://www.interhome.ch/frankreich/pyrenees-orientales/argeles-sur-mer/ferienhaus-villa-jaume-fr6669.626.1/?partnerid=CH1002557&iframe=true&layout=footer&color-thm=0096DB&color-cta=E63957",
-    "Code": "FR6669.626.1"
-  },
-  {
     "Id": "67c5b1b0-f611-4228-9d87-a723d583d3e9",
     "CreatedAt": "2025-03-03T13:42:08Z",
     "Title": "Ferienhaus La Voce del Silenzio",
