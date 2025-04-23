@@ -37,17 +37,13 @@ router.get(
   isProvider,
   providerController.getListingDetails
 );
-// Auth routes (unprotected)
-router.post("/signup", providerController.signup);
-router.post("/login", providerController.login);
 
-// Protected routes - need token verification
-// Provider analytics route - both endpoints that serve the same function
+// Analytics & Dashboard
 router.get(
   "/analytics",
   verifyToken,
   isProvider,
-  providerController.getProviderAnalytics
+  providerProfileController.getProviderAnalytics
 );
 
 // Provider adds a new listing
@@ -116,14 +112,7 @@ router.delete(
   providerProfileController.unblockDates
 );
 
-// Analytics & Dashboard
-router.get(
-  "/analytics",
-  verifyToken,
-  isProvider,
-  providerProfileController.getProviderAnalytics
-);
-//router.get('/dashboard/stats', verifyToken, isProvider, providerProfileController.getProviderDashboardStats);
+// Provider earnings and transactions
 router.get(
   "/earnings",
   verifyToken,
@@ -163,33 +152,6 @@ router.get(
   "/public/:id/listings",
   providerController.getPublicProviderListings
 );
-
-module.exports = router;
-// Provider profile
-router.get(
-  "/profile",
-  verifyToken,
-  isProvider,
-  providerController.getProviderProfile
-);
-
-// Provider listings
-router.get(
-  "/listings",
-  verifyToken,
-  isProvider,
-  providerController.getProviderListings
-);
-
-// Provider bookings - if this method exists
-if (typeof providerController.getProviderBookings === "function") {
-  router.get(
-    "/bookings",
-    verifyToken,
-    isProvider,
-    providerController.getProviderBookings
-  );
-}
 
 // Generic routes
 router.get("/", providerController.getAllProviders);
