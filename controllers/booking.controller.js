@@ -48,6 +48,7 @@ exports.deleteBooking = async (req, res, next) => {
 
 exports.getUserBookings = async (req, res, next) => {
   try {
+    console.log(req?.user)
     const bookings = await bookingService.getBookingsByUser(req.user.id);
     res.json(bookings);
   } catch (err) {
