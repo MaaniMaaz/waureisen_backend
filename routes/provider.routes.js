@@ -47,3 +47,8 @@ router.get('/public/:id', providerController.getPublicProviderProfile);
 router.get('/public/:id/listings', providerController.getPublicProviderListings);
 
 module.exports = router;
+
+
+//Added by Maaz
+router.get('/analytics', verifyToken, isProvider, providerController.getProviderAnalytics);
+module.exports = router;
