@@ -472,7 +472,7 @@ exports.getProviderAnalytics = async (providerId, timeRange = "month") => {
         for (
           let month = new Date(startMonth);
           month < endMonth;
-          month.setMonth(month.getMonth() + 1)
+          month.setMonth(month.getMonth() + a)
         ) {
           const monthKey = formatDate(month, "YYYY-MM");
           if (bookingsByDate.has(monthKey)) {
