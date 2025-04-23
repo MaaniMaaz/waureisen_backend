@@ -12,50 +12,54 @@
 // Priovider
 // Voucher
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+
+// Validator function to limit array size to 6
+function arraySixLimit(val) {
+  return val.length <= 6;
+}
 
 const adminSchema = new mongoose.Schema({
-
   username: { type: String, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
 
-  // TBD
-  // An array of msgs from provider and user 
-  crispCommunticationNotifications: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'CrispCommunicationNotification' 
-  }],
+  // TBD branch
+  // An array of msgs from provider and user
+  crispCommunticationNotifications: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CrispCommunicationNotification",
+    },
+  ],
 
-  // New recommendation arrays - each limited to 3 items
-  topRecommendations: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Listing',
-    validate: [arrayLimit, '{PATH} exceeds the limit of 3']
-  }],
-  
-  popularAccommodations: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Listing',
-    validate: [arrayLimit, '{PATH} exceeds the limit of 3']
-  }],
-  
-  exclusiveFinds: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Listing',
-    validate: [arrayLimit, '{PATH} exceeds the limit of 3']
-  }],
+  // Recommendation arrays - no validation at schema level
+  topRecommendations: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Listing",
+    },
+  ],
 
-  // TBD if needed or not 
-  role: { type: String, default: 'admin' },
+  popularAccommodations: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Listing",
+    },
+  ],
 
-  createdAt: { type: Date, default: Date.now }
+  exclusiveFinds: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Listing",
+    },
+  ],
+
+  // TBD if needed or not
+  role: { type: String, default: "admin" },
+
+  createdAt: { type: Date, default: Date.now },
 });
 
-// Validator function to limit array size to 3
-function arrayLimit(val) {
-  return val.length <= 3;
-}
-
-const Admin = mongoose.model('Admin', adminSchema);
+const Admin = mongoose.model("Admin", adminSchema);
 module.exports = Admin;
