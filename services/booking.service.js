@@ -1,6 +1,7 @@
 // booking.service.js - Make sure this is properly implemented
 
 const Booking = require("../models/booking.model");
+const UnavailableDate = require("../models/unavailableDate.model");
 
 exports.getAllBookings = async () => {
   return await Booking.find().populate("user").populate("listing");
@@ -13,6 +14,7 @@ exports.getBookingById = async (id) => {
 exports.createBooking = async (data) => {
   // to check if the listing is available for the selected dates or is that specific listing is blocked on that specific date by that specific provider
   await validateBookingDates(data.listing, data.checkInDate, data.checkOutDate);
+console.log(data);
 
   const newBooking = new Booking(data);
   return await newBooking.save();

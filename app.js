@@ -59,13 +59,12 @@ app.post(
 
     try {
       event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
-      console.log(event?.type );
+     
     } catch (err) {
       response.status(400).send(`Webhook Error: ${err.message}`);
-      console.log(event?.type, err );
+     
       return;
     }
-    console.log(event?.type );
     // Handle the event
     switch (event.type) {
       case "payment_intent.succeeded":
@@ -119,6 +118,7 @@ app.use('/api/email-notifications', emailNotificationRoutes);
 app.use('/api/campers', camperRoutes);
 app.use('/api/newsletters', newsletterRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/booking', bookingRoutes);
 
 app.use('/api/providers', providerRoutes);
 
