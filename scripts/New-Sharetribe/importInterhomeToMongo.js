@@ -6,7 +6,7 @@ const path = require('path');
 require('dotenv').config();
 
 // ───────── MongoDB Setup ─────────
-const MONGO_URI = 'mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenInterhomeDBLatestt267?retryWrites=true&w=majority&appName=ClusterWork';
+const MONGO_URI = 'mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenInterhomeDBFinal?retryWrites=true&w=majority&appName=ClusterWork';
 
 // ───────── API Endpoints ─────────
 const API_BASE = 'https://ws.interhome.com/ih/b2b/V0100';
@@ -317,11 +317,38 @@ async function main() {
     }
     
     // Save to MongoDB
+    // Replace the insertMany block with this
     if (processedListings.length > 0) {
       console.log(`Saving ${processedListings.length} listings to MongoDB...`);
-      await Listing.insertMany(processedListings);
-      console.log('✅ Successfully saved to MongoDB');
-    } else {
+      let savedCount = 0;
+      let updatedCount = 0;
+      
+      for (const listing of processedListings) {
+        try {
+          const result = await Listing.updateOne(
+            { Code: listing.Code }, // filter by Code
+            listing,                // replacement document
+            { upsert: true }        // create if doesn't exist
+          );
+          
+          if (result.upsertedCount > 0) {
+            savedCount++;
+          } else if (result.modifiedCount > 0) {
+            updatedCount++;
+          }
+        } catch (error) {
+          console.error(`Error saving listing ${listing.Code}: ${error.message}`);
+        }
+      }
+      
+      console.log(`✅ Successfully saved ${savedCount} new listings and updated ${updatedCount} existing listings in MongoDB`);
+    }
+      
+      // Log any discrepancy if it exists
+      if (result.length !== processedListings.length) {
+        console.warn(`⚠️ Note: ${processedListings.length - result.length} listings were not saved`);
+      }
+    else {
       console.warn('⚠️ No listings to save');
     }
     
