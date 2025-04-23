@@ -247,18 +247,39 @@ exports.updateTopRecommendations = async (req, res, next) => {
     // Enforce the limit of 6 items in the array
     const limitedIds = listingIds.slice(0, 6);
 
-    // Verify all listings exist
+    // Verify all listings exist and are active
     const validIds = [];
+    const skippedListings = [];
+
     for (const id of limitedIds) {
       try {
         const listing = await Listing.findById(id);
         if (listing) {
-          validIds.push(new mongoose.Types.ObjectId(id));
+          if (listing.status === "active") {
+            validIds.push(new mongoose.Types.ObjectId(id));
+          } else {
+            skippedListings.push({
+              id,
+              title: listing.title || "Unnamed Listing",
+              reason: `Listing is ${listing.status}. Only active listings can be added to recommendations.`,
+            });
+            console.warn(
+              `Listing ${id} (${listing.title}) is not active (${listing.status}), skipping`
+            );
+          }
         } else {
           console.warn(`Listing with ID ${id} not found, skipping`);
+          skippedListings.push({
+            id,
+            reason: "Listing not found",
+          });
         }
       } catch (err) {
         console.warn(`Invalid listing ID: ${id}, skipping`);
+        skippedListings.push({
+          id,
+          reason: "Invalid listing ID",
+        });
       }
     }
 
@@ -284,6 +305,8 @@ exports.updateTopRecommendations = async (req, res, next) => {
       res.json({
         topRecommendations: admin.topRecommendations,
         message: "Top recommendations updated successfully",
+        skippedListings:
+          skippedListings.length > 0 ? skippedListings : undefined,
       });
     } catch (dbError) {
       console.error("Database error:", dbError);
@@ -317,18 +340,39 @@ exports.updatePopularAccommodations = async (req, res, next) => {
     // Enforce the limit of 6 items in the array
     const limitedIds = listingIds.slice(0, 6);
 
-    // Verify all listings exist
+    // Verify all listings exist and are active
     const validIds = [];
+    const skippedListings = [];
+
     for (const id of limitedIds) {
       try {
         const listing = await Listing.findById(id);
         if (listing) {
-          validIds.push(new mongoose.Types.ObjectId(id));
+          if (listing.status === "active") {
+            validIds.push(new mongoose.Types.ObjectId(id));
+          } else {
+            skippedListings.push({
+              id,
+              title: listing.title || "Unnamed Listing",
+              reason: `Listing is ${listing.status}. Only active listings can be added to recommendations.`,
+            });
+            console.warn(
+              `Listing ${id} (${listing.title}) is not active (${listing.status}), skipping`
+            );
+          }
         } else {
           console.warn(`Listing with ID ${id} not found, skipping`);
+          skippedListings.push({
+            id,
+            reason: "Listing not found",
+          });
         }
       } catch (err) {
         console.warn(`Invalid listing ID: ${id}, skipping`);
+        skippedListings.push({
+          id,
+          reason: "Invalid listing ID",
+        });
       }
     }
 
@@ -354,6 +398,8 @@ exports.updatePopularAccommodations = async (req, res, next) => {
       res.json({
         popularAccommodations: admin.popularAccommodations,
         message: "Popular accommodations updated successfully",
+        skippedListings:
+          skippedListings.length > 0 ? skippedListings : undefined,
       });
     } catch (dbError) {
       console.error("Database error:", dbError);
@@ -387,18 +433,39 @@ exports.updateExclusiveFinds = async (req, res, next) => {
     // Enforce the limit of 6 items in the array
     const limitedIds = listingIds.slice(0, 6);
 
-    // Verify all listings exist
+    // Verify all listings exist and are active
     const validIds = [];
+    const skippedListings = [];
+
     for (const id of limitedIds) {
       try {
         const listing = await Listing.findById(id);
         if (listing) {
-          validIds.push(new mongoose.Types.ObjectId(id));
+          if (listing.status === "active") {
+            validIds.push(new mongoose.Types.ObjectId(id));
+          } else {
+            skippedListings.push({
+              id,
+              title: listing.title || "Unnamed Listing",
+              reason: `Listing is ${listing.status}. Only active listings can be added to recommendations.`,
+            });
+            console.warn(
+              `Listing ${id} (${listing.title}) is not active (${listing.status}), skipping`
+            );
+          }
         } else {
           console.warn(`Listing with ID ${id} not found, skipping`);
+          skippedListings.push({
+            id,
+            reason: "Listing not found",
+          });
         }
       } catch (err) {
         console.warn(`Invalid listing ID: ${id}, skipping`);
+        skippedListings.push({
+          id,
+          reason: "Invalid listing ID",
+        });
       }
     }
 
@@ -422,6 +489,8 @@ exports.updateExclusiveFinds = async (req, res, next) => {
       res.json({
         exclusiveFinds: admin.exclusiveFinds,
         message: "Exclusive finds updated successfully",
+        skippedListings:
+          skippedListings.length > 0 ? skippedListings : undefined,
       });
     } catch (dbError) {
       console.error("Database error:", dbError);
@@ -442,3 +511,92 @@ exports.updateExclusiveFinds = async (req, res, next) => {
 // Don't forget to add the Listing model import at the top
 const Admin = require("../models/admin.model");
 const Listing = require("../models/listing.model");
+
+// Import User model
+const User = require("../models/user.model");
+
+// Get all users for admin panel
+exports.getAllUsers = async (req, res, next) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching all users:", err);
+    next(err);
+  }
+};
+
+// Update user status (ban/unban)
+exports.updateUserStatus = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const { profileStatus } = req.body;
+
+    // Validate status
+    if (
+      !["not verified", "pending verification", "verified", "banned"].includes(
+        profileStatus
+      )
+    ) {
+      return res.status(400).json({ message: "Invalid profile status" });
+    }
+
+    // Check if this is a user or provider
+    let userModel = User;
+    let userType = "user";
+
+    let user = await User.findById(userId);
+    if (!user) {
+      // If not found in User collection, try Provider collection
+      userModel = mongoose.model("Provider");
+      userType = "provider";
+      user = await userModel.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+    }
+
+    // Update user status
+    const updatedUser = await userModel.findByIdAndUpdate(
+      userId,
+      { profileStatus },
+      { new: true }
+    );
+
+    // If banning a provider, disable all their listings
+    if (userType === "provider" && profileStatus === "banned") {
+      try {
+        const Listing = mongoose.model("Listing");
+        // Find all listings owned by this provider
+        const listings = await Listing.find({
+          owner: userId,
+          ownerType: "Provider",
+        });
+
+        // Update all listings to inactive
+        const updatePromises = listings.map((listing) =>
+          Listing.findByIdAndUpdate(listing._id, { status: "inactive" })
+        );
+
+        await Promise.all(updatePromises);
+        console.log(
+          `Disabled ${listings.length} listings for banned provider ${userId}`
+        );
+      } catch (listingError) {
+        console.error("Error disabling provider listings:", listingError);
+        // Continue with the ban even if disabling listings fails
+      }
+    }
+
+    res.json({
+      message: `${
+        userType === "provider" ? "Provider" : "User"
+      } status updated to ${profileStatus}`,
+      user: updatedUser,
+    });
+  } catch (err) {
+    console.error("Error updating user status:", err);
+    next(err);
+  }
+};

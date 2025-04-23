@@ -163,6 +163,30 @@ exports.getUnavailableDates = async (providerId, filters = {}) => {
   }
 };
 
+
+exports.createProvider = async (data) => {
+  const newProvider = new Provider({
+    ...data,
+    registrationStatus: 'incomplete', 
+  });
+  return await newProvider.save();
+};
+
+
+exports.completeProviderRegistration = async (providerId, data) => {
+  
+  return await Provider.findByIdAndUpdate(
+    providerId, 
+    { 
+      ...data,
+      registrationStatus: 'complete',
+      profileStatus: 'pending verification', 
+    },
+    { new: true }
+  );
+};
+
+
 // Block dates
 exports.blockDates = async (providerId, blockData) => {
   try {
@@ -472,7 +496,7 @@ exports.getProviderAnalytics = async (providerId, timeRange = "month") => {
         for (
           let month = new Date(startMonth);
           month < endMonth;
-          month.setMonth(month.getMonth() + 1)
+          month.setMonth(month.getMonth() + a)
         ) {
           const monthKey = formatDate(month, "YYYY-MM");
           if (bookingsByDate.has(monthKey)) {

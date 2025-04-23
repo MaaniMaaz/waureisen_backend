@@ -10,6 +10,13 @@ const providerProfileController = require("../controllers/provider.profile.contr
 router.post("/signup", providerController.signup);
 router.post("/login", providerController.login);
 
+router.post(
+  "/complete-registration",
+  verifyToken,
+  isProvider,
+  providerController.completeRegistration
+);
+
 // Profile routes
 router.get(
   "/profile",

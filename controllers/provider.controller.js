@@ -55,6 +55,40 @@ exports.signup = async (req, res, next) => {
   }
 };
 
+// Add this new endpoint after the existing signup function in provider.controller.js
+
+exports.completeRegistration = async (req, res, next) => {
+  try {
+    const providerId = req.user.id; // Get provider ID from auth token
+    const registrationData = req.body;
+
+    // Find the provider to ensure they exist and are in incomplete registration state
+    const provider = await providerService.getProviderById(providerId);
+    
+    if (!provider) {
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    // Complete the registration with all the data
+    const updatedProvider = await providerService.completeProviderRegistration(providerId, registrationData);
+
+    // Return success response with updated provider data
+    res.status(200).json({
+      message: "Provider registration completed successfully",
+      provider: {
+        id: updatedProvider._id,
+        username: updatedProvider.username,
+        email: updatedProvider.email,
+        profileStatus: updatedProvider.profileStatus,
+        registrationStatus: updatedProvider.registrationStatus
+      }
+    });
+  } catch (err) {
+    console.error("Error completing provider registration:", err);
+    next(err);
+  }
+};
+
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -73,7 +107,11 @@ exports.login = async (req, res, next) => {
 
     // Check if provider is banned
     if (provider.profileStatus === "banned") {
-      return res.status(403).json({ message: "Account is banned" });
+      return res.status(403).json({
+        message:
+          "Your account has been banned. Please contact support for assistance.",
+        isBanned: true,
+      });
     }
 
     // Generate token
@@ -100,7 +138,7 @@ exports.login = async (req, res, next) => {
 
 exports.getAllProviders = async (req, res, next) => {
   try {
-    const providers = await providerService.getAllProviders();
+    const providers = await mongoose.model("Provider").find();
     res.json(providers);
   } catch (err) {
     next(err);
@@ -196,6 +234,32 @@ exports.updateProviderStatus = async (req, res, next) => {
     if (!updatedProvider) {
       return res.status(404).json({ message: "Provider not found" });
     }
+
+    // If the provider is being banned, update all their listings to inactive
+    if (status === "banned") {
+      try {
+        // Find all listings owned by this provider
+        const listings = await Listing.find({
+          owner: req.params.id,
+          ownerType: "Provider",
+        });
+
+        // Update all listings to inactive
+        await Promise.all(
+          listings.map((listing) =>
+            Listing.findByIdAndUpdate(listing._id, { status: "inactive" })
+          )
+        );
+
+        console.log(
+          `Disabled ${listings.length} listings for banned provider ${req.params.id}`
+        );
+      } catch (listingError) {
+        console.error("Error disabling provider listings:", listingError);
+        // Continue with the ban even if disabling listings fails
+      }
+    }
+
     res.json({
       message: `Provider status updated to ${status}`,
       provider: updatedProvider,
