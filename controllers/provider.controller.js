@@ -55,6 +55,40 @@ exports.signup = async (req, res, next) => {
   }
 };
 
+// Add this new endpoint after the existing signup function in provider.controller.js
+
+exports.completeRegistration = async (req, res, next) => {
+  try {
+    const providerId = req.user.id; // Get provider ID from auth token
+    const registrationData = req.body;
+
+    // Find the provider to ensure they exist and are in incomplete registration state
+    const provider = await providerService.getProviderById(providerId);
+    
+    if (!provider) {
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    // Complete the registration with all the data
+    const updatedProvider = await providerService.completeProviderRegistration(providerId, registrationData);
+
+    // Return success response with updated provider data
+    res.status(200).json({
+      message: "Provider registration completed successfully",
+      provider: {
+        id: updatedProvider._id,
+        username: updatedProvider.username,
+        email: updatedProvider.email,
+        profileStatus: updatedProvider.profileStatus,
+        registrationStatus: updatedProvider.registrationStatus
+      }
+    });
+  } catch (err) {
+    console.error("Error completing provider registration:", err);
+    next(err);
+  }
+};
+
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;

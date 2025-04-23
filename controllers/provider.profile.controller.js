@@ -43,17 +43,77 @@ exports.getProviderListings = async (req, res, next) => {
 
 exports.getProviderBookings = async (req, res, next) => {
   try {
-    const { status, page, limit, sortOrder } = req.query;
-    const bookings = await providerService.getProviderBookings(req.user.id, { 
-      status, 
-      page: parseInt(page) || 1,
-      limit: parseInt(limit) || 10,
-      sortOrder
+    const { status, page, limit, sortOrder, dateRange, listingId } = req.query;
+    
+    // Log received parameters
+    console.log('Provider bookings request params:', { 
+      status, page, limit, sortOrder, dateRange, listingId 
     });
-    res.json(bookings);
-  } catch (err) {
-    console.error('Error getting provider bookings:', err);
-    next(err);
+    
+    // Get provider's listings first
+    const listings = await Listing.find({
+      owner: req.user.id,
+      ownerType: "Provider",
+    }).select("_id");
+
+    const listingIds = listings.map((listing) => listing._id);
+
+    // Build the query
+    const query = {
+      listing: listingId ? listingId : { $in: listingIds },
+    };
+
+    // Add status filter if provided
+    if (status && status !== "all") {
+      query.status = status;
+    }
+    
+    // Add date range filter if provided
+    if (dateRange) {
+      const [startDate, endDate] = dateRange.split(',');
+      if (startDate && endDate) {
+        query.$or = [
+          // Booking starts during the displayed month
+          { checkInDate: { $gte: new Date(startDate), $lte: new Date(endDate) } },
+          // Booking ends during the displayed month
+          { checkOutDate: { $gte: new Date(startDate), $lte: new Date(endDate) } },
+          // Booking spans the entire displayed month
+          { 
+            checkInDate: { $lte: new Date(startDate) },
+            checkOutDate: { $gte: new Date(endDate) }
+          }
+        ];
+      }
+    }
+
+    // Pagination parameters
+    const pageNum = parseInt(page) || 1;
+    const pageSize = parseInt(limit) || 10;
+    const skip = (pageNum - 1) * pageSize;
+
+    // Get total count for pagination
+    const totalCount = await Booking.countDocuments(query);
+
+    // Get bookings with pagination
+    const bookings = await Booking.find(query)
+      .populate("user", "username firstName lastName email")
+      .populate("listing", "title location images")
+      .sort({ checkInDate: sortOrder === "desc" ? -1 : 1 })
+      .skip(skip)
+      .limit(pageSize);
+
+    return res.json({
+      bookings,
+      pagination: {
+        totalCount,
+        page: pageNum,
+        limit: pageSize,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
+    });
+  } catch (error) {
+    console.error("Error getting provider bookings:", error);
+    next(error);
   }
 };
 
