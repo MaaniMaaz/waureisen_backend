@@ -75,7 +75,7 @@ router.get(
   "/view-all-customers",
   verifyToken,
   isAdmin,
-  userController.getAllUsers
+  adminController.getAllUsers
 );
 
 // Provider Management Routes
@@ -203,6 +203,12 @@ router.get(
   verifyToken,
   isAdmin,
   userController.getUserById
+);
+router.put(
+  "/update-user-status/:id",
+  verifyToken,
+  isAdmin,
+  adminController.updateUserStatus
 );
 router.put(
   "/ban-user/:id",
