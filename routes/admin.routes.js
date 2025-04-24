@@ -28,7 +28,7 @@ router.post("/login", adminController.login);
 // =====================================================
 
 // Recommendation routes
-router.get("/recommendations", verifyToken, adminController.getRecommendations); // Allow all authenticated users to access
+router.get("/recommendations", adminController.getRecommendations); // Public access for recommendations
 router.put(
   "/recommendations/top",
   verifyToken,
@@ -55,6 +55,15 @@ router.get(
   isAdmin,
   listingController.getAllListings
 );
+
+// New paginated route for admin panel
+router.get(
+  "/paginated-listings",
+  verifyToken,
+  isAdmin,
+  listingController.getPaginatedListings
+);
+
 router.post("/add-listing", verifyToken, isAdmin, async (req, res, next) => {
   try {
     // Add admin metadata to the listing

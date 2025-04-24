@@ -163,29 +163,34 @@ exports.getUnavailableDates = async (providerId, filters = {}) => {
   }
 };
 
-
 exports.createProvider = async (data) => {
   const newProvider = new Provider({
     ...data,
-    registrationStatus: 'incomplete', 
+    registrationStatus: "incomplete",
   });
   return await newProvider.save();
 };
 
+exports.updateProvider = async (id, data) => {
+  try {
+    return await Provider.findByIdAndUpdate(id, data, { new: true });
+  } catch (error) {
+    console.error("Error updating provider:", error);
+    throw error;
+  }
+};
 
 exports.completeProviderRegistration = async (providerId, data) => {
-  
   return await Provider.findByIdAndUpdate(
-    providerId, 
-    { 
+    providerId,
+    {
       ...data,
-      registrationStatus: 'complete',
-      profileStatus: 'pending verification', 
+      registrationStatus: "complete",
+      profileStatus: "pending verification",
     },
     { new: true }
   );
 };
-
 
 // Block dates
 exports.blockDates = async (providerId, blockData) => {
@@ -496,7 +501,7 @@ exports.getProviderAnalytics = async (providerId, timeRange = "month") => {
         for (
           let month = new Date(startMonth);
           month < endMonth;
-          month.setMonth(month.getMonth() + a)
+          month.setMonth(month.getMonth() + 1)
         ) {
           const monthKey = formatDate(month, "YYYY-MM");
           if (bookingsByDate.has(monthKey)) {

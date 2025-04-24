@@ -1,11 +1,46 @@
-const Listing = require('../models/listing.model');
+const Listing = require("../models/listing.model");
 
 exports.getAllListings = async () => {
-  return await Listing.find().populate('owner');
+  return await Listing.find().populate("owner");
+};
+
+exports.getPaginatedListings = async (page = 1, limit = 9, searchTerm = "") => {
+  const skip = (page - 1) * limit;
+
+  // Build the search query
+  let query = {};
+  if (searchTerm) {
+    query = {
+      $or: [
+        { title: { $regex: searchTerm, $options: "i" } },
+        { "description.general": { $regex: searchTerm, $options: "i" } },
+      ],
+    };
+  }
+
+  // Count total documents for pagination info
+  const total = await Listing.countDocuments(query);
+
+  // Get listings with pagination
+  const listings = await Listing.find(query)
+    .populate("owner")
+    .sort({ createdAt: -1 }) // Latest first
+    .skip(skip)
+    .limit(limit);
+
+  return {
+    listings,
+    pagination: {
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / limit),
+      limit: parseInt(limit),
+    },
+  };
 };
 
 exports.getListingById = async (id) => {
-  return await Listing.findById(id).populate('owner');
+  return await Listing.findById(id).populate("owner");
 };
 
 exports.createListing = async (data) => {
@@ -22,81 +57,88 @@ exports.deleteListing = async (id) => {
 };
 
 exports.searchListingsByMap = async (params) => {
-  const { 
-    latitude, longitude, radius = 10, bounds,
-    page, limit, guestCount, dogCount, dateRange 
+  const {
+    latitude,
+    longitude,
+    radius = 10,
+    bounds,
+    page,
+    limit,
+    guestCount,
+    dogCount,
+    dateRange,
   } = params;
-  
+
   // Calculate skip value for pagination
   const skip = (page - 1) * limit;
-  
+
   // Build query
   let query = {
-    'location.type': 'Point',
-    'status': 'active' // Only return active listings
+    "location.type": "Point",
+    status: "active", // Only return active listings
   };
-  
+
   // Use bounds if provided, otherwise use radius
   if (bounds) {
     // MongoDB $geoWithin with $box query
-    query['location.coordinates'] = {
+    query["location.coordinates"] = {
       $geoWithin: {
         $box: [
           [bounds.sw.lng, bounds.sw.lat], // Southwest corner [lng, lat]
-          [bounds.ne.lng, bounds.ne.lat]  // Northeast corner [lng, lat]
-        ]
-      }
+          [bounds.ne.lng, bounds.ne.lat], // Northeast corner [lng, lat]
+        ],
+      },
     };
   } else {
     // Use radius-based search
-    query['location.coordinates'] = {
+    query["location.coordinates"] = {
       $near: {
         $geometry: {
-          type: 'Point',
-          coordinates: [longitude, latitude] // GeoJSON uses [lng, lat] order
+          type: "Point",
+          coordinates: [longitude, latitude], // GeoJSON uses [lng, lat] order
         },
-        $maxDistance: radius * 1000 // Convert km to meters
-      }
+        $maxDistance: radius * 1000, // Convert km to meters
+      },
     };
   }
-  
+
   // Add capacity filter if people parameter is provided
   if (guestCount) {
-    query['capacity.people'] = { $gte: guestCount };
+    query["capacity.people"] = { $gte: guestCount };
   }
-  
+
   // Add pets filter if dogs parameter is provided
   if (dogCount) {
-    query['petsAllowed'] = true;
-    query['capacity.pets'] = { $gte: dogCount };
+    query["petsAllowed"] = true;
+    query["capacity.pets"] = { $gte: dogCount };
   }
-  
+
   // Add date range filter if provided
   // This would depend on your data model
-  
+
   // Count total matching documents (for pagination info)
   const total = await Listing.countDocuments(query);
-  
+
   // Perform geospatial query
   const listings = await Listing.find(query)
     .skip(skip)
     .limit(limit + 1) // Get one extra to check if there are more
     .lean();
-  
+
   console.log(`Found ${listings.length} listings for map search`);
-  
+
   // Check if there are more results
   const hasMore = listings.length > limit;
-  
+
   // Remove the extra item if there are more
   if (hasMore) {
     listings.pop();
   }
-  
+
   return {
     listings,
     hasMore,
-    total
+    total,
   };
 };
 
@@ -106,74 +148,78 @@ exports.searchListingsByMap = async (params) => {
  * @returns {Object} Object containing listings and pagination info
  */
 exports.searchListings = async (params) => {
-  const { 
-    latitude, longitude, page = 1, limit = 10, 
-    guestCount, dogCount, dateRange 
+  const {
+    latitude,
+    longitude,
+    page = 1,
+    limit = 10,
+    guestCount,
+    dogCount,
+    dateRange,
   } = params;
-  
+
   // Calculate skip value for pagination
   const skip = (page - 1) * limit;
-  
+
   // Build query
   let query = {
-    'location.type': 'Point',
-    'status': 'active' // Only return active listings
+    "location.type": "Point",
+    status: "active", // Only return active listings
   };
-  
+
   // Add geospatial query if coordinates are provided
   if (latitude && longitude) {
-    query['location.coordinates'] = {
+    query["location.coordinates"] = {
       $near: {
         $geometry: {
-          type: 'Point',
-          coordinates: [longitude, latitude] // GeoJSON uses [lng, lat] order
+          type: "Point",
+          coordinates: [longitude, latitude], // GeoJSON uses [lng, lat] order
         },
-        $maxDistance: 50000 // 50km radius
-      }
+        $maxDistance: 50000, // 50km radius
+      },
     };
   }
-  
+
   // Add capacity filter if people parameter is provided
   if (guestCount) {
-    query['capacity.people'] = { $gte: guestCount };
+    query["capacity.people"] = { $gte: guestCount };
   }
-  
+
   // Add pets filter if dogs parameter is provided
   if (dogCount) {
-    query['petsAllowed'] = true;
-    query['capacity.pets'] = { $gte: dogCount };
+    query["petsAllowed"] = true;
+    query["capacity.pets"] = { $gte: dogCount };
   }
-  
+
   // Add date range filter if provided
   // This would depend on your data model
-  
+
   try {
     // Get one extra to check if there are more results
     const listings = await Listing.find(query)
       .skip(skip)
       .limit(limit + 1)
       .lean();
-    
+
     console.log(`Found ${listings.length} listings for search query`);
-    
+
     // Check if there are more results
     const hasMore = listings.length > limit;
-    
+
     // Remove the extra item if there are more
     if (hasMore) {
       listings.pop();
     }
-    
+
     return {
       listings,
-      hasMore
+      hasMore,
     };
   } catch (error) {
-    console.error('Error in searchListings service:', error);
+    console.error("Error in searchListings service:", error);
     throw error;
   }
 };
-
 
 /**
  * Delete a listing by ID for a specific provider
@@ -187,17 +233,17 @@ exports.deleteProviderListing = async (listingId, providerId) => {
     const listing = await Listing.findOne({
       _id: listingId,
       owner: providerId,
-      ownerType: 'Provider'
+      ownerType: "Provider",
     });
-    
+
     if (!listing) {
-      throw new Error('Listing not found or not owned by this provider');
+      throw new Error("Listing not found or not owned by this provider");
     }
-    
+
     await Listing.findByIdAndDelete(listingId);
     return true;
   } catch (error) {
-    console.error('Error deleting provider listing:', error);
+    console.error("Error deleting provider listing:", error);
     throw error;
   }
 };

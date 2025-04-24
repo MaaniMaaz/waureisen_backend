@@ -145,21 +145,17 @@ exports.login = async (req, res, next) => {
 // Get recommendations
 exports.getRecommendations = async (req, res, next) => {
   try {
-    // Use req.user.id from auth token instead of path parameter
-    const adminId = req.user?.id;
-
-    if (!adminId) {
-      return res.status(401).json({ message: "Authentication required" });
-    }
-
+    // Instead of getting from authenticated user, get the first admin in the database to fetch recommendations
     try {
-      // Use MongoDB's native driver to fetch admin
-      const adminData = await Admin.collection.findOne({
-        _id: new mongoose.Types.ObjectId(adminId),
-      });
+      // Get the first admin user to retrieve recommendations
+      const adminData = await Admin.findOne({}).exec();
 
       if (!adminData) {
-        return res.status(404).json({ message: "Admin not found" });
+        return res.json({
+          topRecommendations: [],
+          popularAccommodations: [],
+          exclusiveFinds: [],
+        });
       }
 
       // Manually populate the recommendations using findById for each listing
