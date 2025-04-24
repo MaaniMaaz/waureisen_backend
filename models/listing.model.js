@@ -208,7 +208,7 @@ const listingSchema = new mongoose.Schema({
   },
 
   // Reference to filter model
-  filter: {
+  filters: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Filter'
   },
