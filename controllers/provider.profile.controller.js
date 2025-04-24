@@ -4,42 +4,127 @@ const Booking = require('../models/booking.model');
 const Listing = require('../models/listing.model');
 const providerService = require('../services/provider.service');
 const messageService = require('../services/message.service');
+const bcrypt = require('bcryptjs');
 
 exports.getProviderProfile = async (req, res, next) => {
   try {
-      const provider = await providerService.getProviderById(req.user.id);
-      if (!provider) {
-          return res.status(404).json({ message: 'Provider profile not found' });
-      }
-      // Remove sensitive information
-      const { password, ...providerProfile } = provider.toObject();
-      res.json(providerProfile);
+    const provider = await providerService.getProviderById(req.user.id);
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider profile not found' });
+    }
+    
+    const { password, ...providerProfile } = provider.toObject();
+    res.json(providerProfile);
   } catch (err) {
-      next(err);
+    next(err);
   }
 };
 
 exports.updateProviderProfile = async (req, res, next) => {
   try {
-      const updatedProvider = await providerService.updateProvider(req.user.id, req.body);
-      if (!updatedProvider) {
-          return res.status(404).json({ message: 'Provider profile not found' });
-      }
-      const { password, ...providerProfile } = updatedProvider.toObject();
-      res.json(providerProfile);
+    console.log('Provider profile update request:', req.body);
+    
+    const providerId = req.user.id;
+    const updateData = req.body;
+    
+    const updatedProvider = await providerService.updateProvider(providerId, updateData);
+    
+    if (!updatedProvider) {
+      return res.status(404).json({ message: 'Provider profile not found' });
+    }
+    
+    // Return provider data without password
+    const { password, ...providerProfile } = updatedProvider.toObject();
+    res.json(providerProfile);
   } catch (err) {
-      next(err);
+    console.error('Error updating provider profile:', err);
+    next(err);
   }
 };
 
-exports.getProviderListings = async (req, res, next) => {
+
+
+exports.updateProviderBanking = async (req, res, next) => {
   try {
-      const listings = await providerService.getProviderListings(req.user.id);
-      res.json(listings);
+    const providerId = req.user.id;
+    const bankingData = req.body;
+    
+    // Basic validation
+    if (!bankingData.bankName || !bankingData.accountHolder || !bankingData.iban) {
+      return res.status(400).json({ 
+        message: 'Bank name, account holder name, and IBAN are required' 
+      });
+    }
+    
+    const updatedProvider = await providerService.updateProviderBanking(providerId, bankingData);
+    
+    if (!updatedProvider) {
+      return res.status(404).json({ message: 'Provider profile not found' });
+    }
+    
+    // Return provider data without password
+    const { password, ...providerProfile } = updatedProvider.toObject();
+    res.json(providerProfile);
   } catch (err) {
-      next(err);
+    console.error('Error updating provider banking details:', err);
+    next(err);
   }
 };
+
+
+exports.updateProviderSecurity = async (req, res, next) => {
+  try {
+    const providerId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+    
+    // Validation
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ 
+        message: 'Current password and new password are required' 
+      });
+    }
+    
+    // Get provider with password
+    const provider = await Provider.findById(providerId);
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+    
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, provider.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+    
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Update password
+    const success = await providerService.updateProviderPassword(providerId, hashedPassword);
+    
+    if (!success) {
+      return res.status(500).json({ message: 'Failed to update password' });
+    }
+    
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Error updating provider security settings:', err);
+    next(err);
+  }
+};
+
+
+
+
+exports.getProviderListings = async (req, res, next) => {
+  try {
+    const listings = await providerService.getProviderListings(req.user.id);
+    res.json(listings);
+  } catch (err) {
+    next(err);
+  }
+};
+
 
 exports.getProviderBookings = async (req, res, next) => {
   try {
@@ -397,4 +482,63 @@ exports.getUnavailableDates = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
+};
+
+
+exports.getCalendarBookings = async (req, res, next) => {
+  try {
+    const { status, dateRange, listingId } = req.query;
+    
+    console.log('Calendar bookings request params:', { 
+      status, dateRange, listingId 
+    });
+    
+    // Get provider's listings first
+    const listings = await Listing.find({
+      owner: req.user.id,
+      ownerType: "Provider",
+    }).select("_id");
+
+    const listingIds = listings.map((listing) => listing._id);
+
+    // Build the query
+    const query = {
+      listing: listingId ? listingId : { $in: listingIds },
+    };
+
+    // Add status filter if provided
+    if (status && status !== "all") {
+      query.status = status;
+    }
+    
+    // Add date range filter if provided
+    if (dateRange) {
+      const [startDate, endDate] = dateRange.split(',');
+      if (startDate && endDate) {
+        query.$or = [
+          // Booking starts during the displayed month
+          { checkInDate: { $gte: new Date(startDate), $lte: new Date(endDate) } },
+          // Booking ends during the displayed month
+          { checkOutDate: { $gte: new Date(startDate), $lte: new Date(endDate) } },
+          // Booking spans the entire displayed month
+          { 
+            checkInDate: { $lte: new Date(startDate) },
+            checkOutDate: { $gte: new Date(endDate) }
+          }
+        ];
+      }
+    }
+
+    // Get ALL bookings for the query without pagination
+    const bookings = await Booking.find(query)
+      .populate("user", "username firstName lastName email")
+      .populate("listing", "title location images")
+      .sort({ checkInDate: 1 });
+
+    // Return just the bookings array, no pagination wrapper
+    return res.json(bookings);
+  } catch (error) {
+    console.error("Error getting calendar bookings:", error);
+    next(error);
+  }
 };
