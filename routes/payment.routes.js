@@ -6,5 +6,6 @@ const { isAdmin } = require('../middlewares/role');
 
 // Payment routes
 router.post('/', verifyToken, paymentController.createPaymentIntent);
+router.post('/transfer-payment',  paymentController.transferPayment);
 
 module.exports = router;
