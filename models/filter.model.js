@@ -32,7 +32,7 @@ const filterDefinition = {
   // For file/image type filters
   fileTypes: {
     type: String,
-    default: 'image/*'
+    default: '-' // image /*
   }
 };
 

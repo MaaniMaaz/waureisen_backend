@@ -430,7 +430,7 @@ async function mapToListing(sharetribeListing, detail, mediaItems) {
   const savedFilter = await Filter.create(filterData);
 
   // Update listing with filter reference
-  savedListing.selectedFilters = savedFilter._id;
+  savedListing.filters = savedFilter._id;
   await savedListing.save();
 
   return savedListing;
@@ -517,7 +517,7 @@ async function main() {
         }
       }
       
-      console.log(`✅ Successfully saved ${savedCount} new listings and updated ${updatedCount} existing listings in MongoDB`);
+      console.log(`✅ Successfully saved ${processedListings.length} new listings in MongoDB`);
       
       // Log any errors if they occurred
       if (errorCount > 0) {
