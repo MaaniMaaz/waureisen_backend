@@ -111,11 +111,12 @@ app.use("/api/providers", providerRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/travel-magazine", travelMagazineRoutes);
 app.use("/api/vouchers", voucherRoutes);
-app.use("/api/messages", messageRoutes);
-app.use("/api/email-notifications", emailNotificationRoutes);
-app.use("/api/campers", camperRoutes);
-app.use("/api/newsletters", newsletterRoutes);
-app.use("/api/payment", paymentRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/email-notifications', emailNotificationRoutes);
+app.use('/api/campers', camperRoutes);
+app.use('/api/newsletters', newsletterRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api/booking', bookingRoutes);
 
 app.use("/api/providers", providerRoutes);
 

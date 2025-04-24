@@ -6,6 +6,8 @@ const bookingController = require('../controllers/booking.controller');
 
 router.get('/', bookingController.getAllBookings);
 
+router.get('/my', bookingController.getUserBookings);
+
 router.get('/:id', bookingController.getBookingById);
 
 router.post('/', bookingController.createBooking);

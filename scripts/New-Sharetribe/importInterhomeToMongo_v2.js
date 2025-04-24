@@ -1,5 +1,5 @@
 // importInterhomeToMongo.js - Imports Interhome listings from JSON file to MongoDB
-// In this script the details are being saved from the api in the lisiting model
+// In this script the details from JSON file for maxDogs, checkInTime, checkOutTime, beds, washrooms, selectedFilters.dogFilters, legal.termsAndConditions
 const axios = require('axios');
 const mongoose = require('mongoose');
 const fs = require('fs');
@@ -7,7 +7,7 @@ const path = require('path');
 require('dotenv').config();
 
 // ───────── MongoDB Setup ─────────
-const MONGO_URI = 'mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenInterhomeDBFinal?retryWrites=true&w=majority&appName=ClusterWork';
+const MONGO_URI = 'mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenInterhomeCHECK?retryWrites=true&w=majority&appName=ClusterWork';
 
 // ───────── API Endpoints ─────────
 const API_BASE = 'https://ws.interhome.com/ih/b2b/V0100';
@@ -22,7 +22,7 @@ const HEADERS = {
 };
 
 // ───────── Input File Path ─────────
-const inputFilePath = path.join(__dirname, 'interhome_listings_with_code.json');
+const inputFilePath = path.join(__dirname, 'interhome_listings_parsed.json');
 
 // ───────── Connect to MongoDB ─────────
 const connectMongo = async () => {
@@ -131,7 +131,26 @@ async function fetchMedia(code) {
 // Update the mapToListing function to properly handle all fields
 function mapToListing(sharetribeListing, detail, mediaItems) {
   // Extract data from Sharetribe listing
-  const publicData = JSON.parse(sharetribeListing.PublicData || '{}');
+  // Handle both cases: when PublicData is already parsed or when it's a string that needs parsing
+  let publicData = {};
+  
+  if (typeof sharetribeListing.PublicData === 'string') {
+    try {
+      publicData = JSON.parse(sharetribeListing.PublicData || '{}');
+    } catch (error) {
+      console.warn(`Failed to parse PublicData for ${sharetribeListing.Code}: ${error.message}`);
+    }
+  } else if (sharetribeListing.PublicData) {
+    // If it's already an object (not a string), use it directly
+    publicData = sharetribeListing.PublicData;
+  }
+  
+  // If we have direct properties on the listing object (from parsed JSON), use those as well
+  Object.keys(sharetribeListing).forEach(key => {
+    if (key.startsWith('facilities') || key === 'dogFacilities') {
+      publicData[key] = sharetribeListing[key];
+    }
+  });
   
   // Extract data from Interhome API detail
   const code = detail?.code || detail?.Code || '';
@@ -179,14 +198,81 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
   const place = detail?.place || detail?.Place || [];
   const placeContent = place[0]?.content || place[0]?.Content || '';
   
-  // Extract attributes properly - create objects with name property
-  const attributes = detail?.attributes?.attribute || 
-                    detail?.Attributes?.Attribute || [];
-  const mappedAttributes = attributes.map(attr => ({
-    name: attr.name || attr.Name || ''
-  })).filter(attr => attr.name);
+  // Extract attributes from API response
+  // Commenting out API attributes as requested - we will only use JSON attributes
+  // const apiAttributes = detail?.attributes?.attribute || 
+  //                   detail?.Attributes?.Attribute || [];
+  // const apiMappedAttributes = apiAttributes.map(attr => ({
+  //   name: attr.name || attr.Name || '',
+  //   description: []
+  // })).filter(attr => attr.name);
   
-  console.log(`Mapped ${mappedAttributes.length} attributes for listing ${code}`);
+  // Extract all facilities from publicData and map them to attributes format
+  // Create a map to group facilities by name
+  const facilitiesMap = new Map();
+  
+  // Find all keys that start with 'facilities' in publicData
+  Object.keys(publicData).forEach(key => {
+    if (key.startsWith('facilities')) {
+      const facilityCategory = key;
+      const facilityValues = publicData[key];
+      
+      // Only process array values
+      if (Array.isArray(facilityValues)) {
+        // Get or create the attribute entry for this facility category
+        if (!facilitiesMap.has(facilityCategory)) {
+          facilitiesMap.set(facilityCategory, {
+            name: facilityCategory,
+            description: []
+          });
+        }
+        
+        // Add all values to the description array
+        const facilityAttribute = facilitiesMap.get(facilityCategory);
+        facilityValues.forEach(value => {
+          facilityAttribute.description.push(value);
+        });
+        
+        console.log(`Mapped ${facilityValues.length} items from ${facilityCategory}`);
+      } else if (typeof facilityValues === 'string') {
+        // Handle case where the facility is a string
+        if (!facilitiesMap.has(facilityCategory)) {
+          facilitiesMap.set(facilityCategory, {
+            name: facilityCategory,
+            description: []
+          });
+        }
+        
+        const facilityAttribute = facilitiesMap.get(facilityCategory);
+        facilityAttribute.description.push(facilityValues);
+        
+        console.log(`Mapped string value from ${facilityCategory}`);
+      }
+    }
+  });
+  
+  // Process dog facilities and add to attributes
+  const dogFacilities = publicData.dogFacilities || [];
+  if (dogFacilities.length > 0) {
+    if (!facilitiesMap.has('dogFacilities')) {
+      facilitiesMap.set('dogFacilities', {
+        name: 'dogFacilities',
+        description: []
+      });
+    }
+    
+    const dogFacilityAttribute = facilitiesMap.get('dogFacilities');
+    dogFacilities.forEach(facility => {
+      dogFacilityAttribute.description.push(facility);
+    });
+    
+    console.log(`Added ${dogFacilities.length} dog facilities to attributes`);
+  }
+  
+  // Convert the map values to an array
+  const mappedAttributes = Array.from(facilitiesMap.values());
+  
+  console.log(`Mapped total of ${mappedAttributes.length} attributes for listing ${code}`);
   
   // Extract images from media items - handle all possible property names
   const images = mediaItems.map(item => {
@@ -211,6 +297,33 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
     });
   }
   
+  // Process dog facilities for dog filters
+  // Reuse the previously declared dogFacilities variable instead of redeclaring it
+  const dogFilters = (publicData.dogFacilities || []).map(facility => ({
+    name: facility,
+    icon: ''
+  }));
+  
+  // Parse check-in and check-out times to Date objects if they exist
+  let checkInTime = null;
+  let checkOutTime = null;
+  
+  if (publicData.detailsCheckInTime) {
+    try {
+      checkInTime = new Date(publicData.detailsCheckInTime);
+    } catch (error) {
+      console.warn(`Failed to parse check-in time for ${code}: ${error.message}`);
+    }
+  }
+  
+  if (publicData.detailsCheckOutTime) {
+    try {
+      checkOutTime = new Date(publicData.detailsCheckOutTime);
+    } catch (error) {
+      console.warn(`Failed to parse check-out time for ${code}: ${error.message}`);
+    }
+  }
+  
   return {
     Code: code,
     listingType: publicData.listingType || 'interhomeaccommocation',
@@ -220,8 +333,8 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
       inside: insideDescription,
       outside: outsideDescription
     },
-    checkInTime: publicData.detailsCheckInTime || null,
-    checkOutTime: publicData.detailsCheckOutTime || null,
+    checkInTime: checkInTime,
+    checkOutTime: checkOutTime,
     location: {
       address: placeContent || publicData.location?.address || '',
       optional: '',
@@ -235,13 +348,18 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
     specialPrices: [],
     additionalServices: [], // Set to empty array to avoid ObjectId issues
     availability: [],
-    // Add these fields that were missing in your original mapping
+    // bedRooms should come from API detail call
     bedRooms: bedRooms,
+    // beds should use detailsBeds from JSON file
+    beds: publicData.detailsBeds || 0,
     rooms: {
       number: rooms,
       room: roomDetails
     },
-    washrooms: bathRooms || toilets || 0,
+    // Use detailsBathrooms from publicData if available, otherwise use bathRooms or toilets from API
+    washrooms: publicData.detailsBathrooms || bathRooms || toilets || 0,
+    // Use detailsMaxDogs from publicData if available
+    maxDogs: publicData.detailsMaxDogs || 0,
     status: 'active',
     legal: {
       cancellationPolicy: publicData.documentPolicy || '',
@@ -255,7 +373,9 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
     // Fix the attributes mapping to match the schema
     attributes: mappedAttributes,
     provider: 'Interhome',
-    selectedFilters: {},
+    selectedFilters: {
+      dogFilters: dogFilters
+    },
     totalViews: 0,
     totalBookings: 0,
     totalReviews: 0,
@@ -278,9 +398,9 @@ async function main() {
     
     console.log(`Found ${listings.length} listings in the JSON file`);
     
-    // Process all listings instead of just the first 5
-    const listingsToProcess = listings;
-    console.log(`Processing all ${listingsToProcess.length} listings...`);
+    // Process only the first 5 listings
+    const listingsToProcess = listings.slice(0, 5);
+    console.log(`Processing first ${listingsToProcess.length} listings...`);
     
     const processedListings = [];
     
@@ -318,11 +438,11 @@ async function main() {
     }
     
     // Save to MongoDB
-    // Replace the insertMany block with this
     if (processedListings.length > 0) {
       console.log(`Saving ${processedListings.length} listings to MongoDB...`);
       let savedCount = 0;
       let updatedCount = 0;
+      let errorCount = 0;
       
       for (const listing of processedListings) {
         try {
@@ -338,18 +458,18 @@ async function main() {
             updatedCount++;
           }
         } catch (error) {
+          errorCount++;
           console.error(`Error saving listing ${listing.Code}: ${error.message}`);
         }
       }
       
       console.log(`✅ Successfully saved ${savedCount} new listings and updated ${updatedCount} existing listings in MongoDB`);
-    }
       
-      // Log any discrepancy if it exists
-      if (result.length !== processedListings.length) {
-        console.warn(`⚠️ Note: ${processedListings.length - result.length} listings were not saved`);
+      // Log any errors if they occurred
+      if (errorCount > 0) {
+        console.warn(`⚠️ Note: ${errorCount} listings could not be saved due to errors`);
       }
-    else {
+    } else {
       console.warn('⚠️ No listings to save');
     }
     
