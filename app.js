@@ -12,25 +12,24 @@ const filterRoutes = require("./routes/filter.routes.js");
 const languageRoutes = require("./routes/language.routes.js");
 const listingRoutes = require("./routes/listing.routes.js");
 const providerRoutes = require("./routes/provider.routes.js");
-const messageRoutes = require('./routes/message.routes');
-const emailNotificationRoutes = require('./routes/emailNotification.routes.js');
-const camperRoutes = require('./routes/camper.routes');
+const messageRoutes = require("./routes/message.routes");
+const emailNotificationRoutes = require("./routes/emailNotification.routes.js");
+const camperRoutes = require("./routes/camper.routes");
 const transactionRoutes = require("./routes/transaction.routes.js");
 const travelMagazineRoutes = require("./routes/travelMagazine.routes.js");
 const voucherRoutes = require("./routes/voucher.routes.js");
 const bookingRoutes = require("./routes/booking.routes.js");
-const newsletterRoutes = require('./routes/newsletter.routes');
-const paymentRoutes = require('./routes/payment.routes.js');
-const interhomeRoutes = require('./routes/interhome.routes');
+
 const {CronJob} = require("cron");
 const axios = require("axios");
+const newsletterRoutes = require("./routes/newsletter.routes");
+const paymentRoutes = require("./routes/payment.routes.js");
+const interhomeRoutes = require("./routes/interhome.routes");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
-const {handlePayment} = require('./functions/webhook.js');
-
-
+const { handlePayment } = require("./functions/webhook.js");
 
 // const reviewRoutes = require("./routes/review.routes.js")
-const chatRoutes = require('./routes/chat.routes'); // Add this for chat routes
+const chatRoutes = require("./routes/chat.routes"); // Add this for chat routes
 
 const errorHandler = require("./middlewares/errorHandler");
 
@@ -41,16 +40,18 @@ const server = http.createServer(app); // Create HTTP server
 connectDB();
 
 // Middleware
-app.use(cors({
-  origin: '*', // Allow all origins
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "profile-status"],
+  })
+);
 
 // webhook
 
 const endpointSecret = process.env.WEBHOOK_SECRET;
-console.log(endpointSecret)
+console.log(endpointSecret);
 app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
@@ -61,12 +62,13 @@ app.post(
 
     try {
       event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
-     
+      console.log(event?.type);
     } catch (err) {
       response.status(400).send(`Webhook Error: ${err.message}`);
-     
+      console.log(event?.type, err);
       return;
     }
+    console.log(event?.type);
     // Handle the event
     switch (event.type) {
       case "payment_intent.succeeded":
@@ -123,6 +125,7 @@ const scheduleTransferPaymnetJob = new CronJob("* * * * *",
 true,                
 "UTC" )
 scheduleTransferPaymnetJob.start()
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -131,8 +134,6 @@ app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
-
-
 
 // API Routes
 app.use("/api/admins", adminRoutes);
@@ -152,10 +153,10 @@ app.use('/api/newsletters', newsletterRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/booking', bookingRoutes);
 
-app.use('/api/providers', providerRoutes);
+app.use("/api/providers", providerRoutes);
 
-app.use('/api/interhome', interhomeRoutes);
-app.use('/api/chat', chatRoutes); // Add this for chat routes
+app.use("/api/interhome", interhomeRoutes);
+app.use("/api/chat", chatRoutes); // Add this for chat routes
 
 // Root route
 app.get("/", (req, res) => {
@@ -167,11 +168,11 @@ app.use(errorHandler);
 
 // Initialize socket server
 const io = socketServer.init(server);
-console.log('Socket.IO server initialized');
+console.log("Socket.IO server initialized");
 
 // Handle socket.io errors
-io.on('error', (error) => {
-  console.error('Socket.IO server error:', error);
+io.on("error", (error) => {
+  console.error("Socket.IO server error:", error);
 });
 
 const PORT = process.env.PORT || 5000;

@@ -1,7 +1,72 @@
 const mongoose = require('mongoose');
 
-// Define filter schema with subsections and individual filters
+// Define the filter schema with nested subsections and individual filters
+
+// First define the filter schema as it will be reused in both subsections and subsubsections
+const filterDefinition = {
+  name: { 
+    type: String, 
+    required: true,
+    trim: true
+  },
+  type: { 
+    type: String, 
+    required: true,
+    enum: ['text', 'number', 'checkbox', 'select', 'radio', 'file', 'date'],
+    default: 'text'
+  },
+  // Flag to indicate if this is a predefined filter that shouldn't be deleted or modified
+  predefined: {
+    type: Boolean,
+    default: false
+  },
+  required: {
+    type: Boolean,
+    default: false
+  },
+  // Options for select or radio types
+  options: [{ 
+    type: String,
+    trim: true
+  }],
+  // For file/image type filters
+  fileTypes: {
+    type: String,
+    default: '-' // image /*
+  }
+};
+
+// Define the subsubsection schema (for nested categories like 'Parking' under 'Amenities')
+const subsubsectionSchema = new mongoose.Schema({
+  name: { 
+    type: String, 
+    required: true,
+    trim: true
+  },
+  description: { 
+    type: String,
+    trim: true
+  },
+  // Flag to indicate if this is a predefined subsubsection that shouldn't be deleted or modified
+  predefined: {
+    type: Boolean,
+    default: false
+  },
+  // Filters specific to this subsubsection
+  filters: [filterDefinition]
+});
+
 const filterSchema = new mongoose.Schema({
+  listing: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Listing',
+    unique: true
+  },
+  isTemplate: {
+    type: Boolean,
+    default: false
+  },
+ 
   // Subsections are the main categories of filters (e.g., Basic Info, Amenities, etc.)
   subsections: [{
     name: { 
@@ -18,39 +83,15 @@ const filterSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
-    // Filters are specific attributes within each subsection
-    filters: [{
-      name: { 
-        type: String, 
-        required: true,
-        trim: true
-      },
-      type: { 
-        type: String, 
-        required: true,
-        enum: ['text', 'number', 'checkbox', 'select', 'radio', 'file', 'date'],
-        default: 'text'
-      },
-      // Flag to indicate if this is a predefined filter that shouldn't be deleted or modified
-      predefined: {
-        type: Boolean,
-        default: false
-      },
-      required: {
-        type: Boolean,
-        default: false
-      },
-      // Options for select or radio types
-      options: [{ 
-        type: String,
-        trim: true
-      }],
-      // For file/image type filters
-      fileTypes: {
-        type: String,
-        default: 'image/*'
-      }
-    }]
+    // Flag to indicate if this subsection has nested subsubsections
+    hasSubsections: {
+      type: Boolean,
+      default: false
+    },
+    // Subsubsections for hierarchical organization (e.g., 'Parking' under 'Amenities')
+    subsubsections: [subsubsectionSchema],
+    // Filters directly under this subsection (when not using subsubsections)
+    filters: [filterDefinition]
   }],
   
   // For compatibility with existing code - these can be gradually migrated

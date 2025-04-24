@@ -207,7 +207,12 @@ const listingSchema = new mongoose.Schema({
     default: 'WaureisenD'
   },
 
-  // Selected filters for the listing -- TBD if we need to save icon or not
+  // Reference to filter model
+  filters: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Filter'
+  },
+  // Selected filters for the listing
   selectedFilters: {
     generalFilters: [{ name: String, icon: String }],
     mainFilters: [{ name: String, icon: String }],

@@ -64,13 +64,16 @@ exports.completeRegistration = async (req, res, next) => {
 
     // Find the provider to ensure they exist and are in incomplete registration state
     const provider = await providerService.getProviderById(providerId);
-    
+
     if (!provider) {
       return res.status(404).json({ message: "Provider not found" });
     }
 
     // Complete the registration with all the data
-    const updatedProvider = await providerService.completeProviderRegistration(providerId, registrationData);
+    const updatedProvider = await providerService.completeProviderRegistration(
+      providerId,
+      registrationData
+    );
 
     // Return success response with updated provider data
     res.status(200).json({
@@ -80,8 +83,8 @@ exports.completeRegistration = async (req, res, next) => {
         username: updatedProvider.username,
         email: updatedProvider.email,
         profileStatus: updatedProvider.profileStatus,
-        registrationStatus: updatedProvider.registrationStatus
-      }
+        registrationStatus: updatedProvider.registrationStatus,
+      },
     });
   } catch (err) {
     console.error("Error completing provider registration:", err);
@@ -218,7 +221,15 @@ exports.updateProviderStatus = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid provider ID format" });
     }
 
+    // Get status from header
     const status = req.headers["profile-status"]?.toLowerCase() || "banned";
+    console.log(
+      "Updating provider status to:",
+      status,
+      "for provider ID:",
+      req.params.id
+    );
+
     if (
       !["not verified", "pending verification", "verified", "banned"].includes(
         status
@@ -231,6 +242,7 @@ exports.updateProviderStatus = async (req, res, next) => {
       req.params.id,
       { profileStatus: status }
     );
+
     if (!updatedProvider) {
       return res.status(404).json({ message: "Provider not found" });
     }
@@ -244,16 +256,22 @@ exports.updateProviderStatus = async (req, res, next) => {
           ownerType: "Provider",
         });
 
-        // Update all listings to inactive
-        await Promise.all(
-          listings.map((listing) =>
-            Listing.findByIdAndUpdate(listing._id, { status: "inactive" })
-          )
+        console.log(
+          `Found ${listings.length} listings to disable for provider ${req.params.id}`
         );
 
-        console.log(
-          `Disabled ${listings.length} listings for banned provider ${req.params.id}`
-        );
+        // Update all listings to inactive
+        if (listings.length > 0) {
+          await Promise.all(
+            listings.map((listing) =>
+              Listing.findByIdAndUpdate(listing._id, { status: "inactive" })
+            )
+          );
+
+          console.log(
+            `Disabled ${listings.length} listings for banned provider ${req.params.id}`
+          );
+        }
       } catch (listingError) {
         console.error("Error disabling provider listings:", listingError);
         // Continue with the ban even if disabling listings fails
@@ -265,6 +283,7 @@ exports.updateProviderStatus = async (req, res, next) => {
       provider: updatedProvider,
     });
   } catch (err) {
+    console.error("Error in updateProviderStatus:", err);
     next(err);
   }
 };

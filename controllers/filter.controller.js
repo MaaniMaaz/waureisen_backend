@@ -189,3 +189,127 @@ exports.deleteSubsectionFilter = async (req, res, next) => {
     next(err);
   }
 };
+
+/**
+ * Add a new subsubsection to a subsection
+ */
+exports.addSubsubsection = async (req, res, next) => {
+  try {
+    const { filterId, subsectionId } = req.params;
+    const subsubsectionData = req.body;
+    
+    const updatedFilter = await filterService.addOrUpdateSubsubsection(filterId, subsectionId, subsubsectionData);
+    res.status(201).json(updatedFilter);
+  } catch (err) {
+    if (err.message === 'Cannot modify predefined subsection') {
+      return res.status(403).json({ message: err.message });
+    }
+    next(err);
+  }
+};
+
+/**
+ * Update an existing subsubsection
+ */
+exports.updateSubsubsection = async (req, res, next) => {
+  try {
+    const { filterId, subsectionId, subsubsectionId } = req.params;
+    const subsubsectionData = req.body;
+    
+    const updatedFilter = await filterService.addOrUpdateSubsubsection(
+      filterId, 
+      subsectionId, 
+      subsubsectionData, 
+      subsubsectionId
+    );
+    res.json(updatedFilter);
+  } catch (err) {
+    if (err.message === 'Cannot modify predefined subsubsection') {
+      return res.status(403).json({ message: err.message });
+    }
+    next(err);
+  }
+};
+
+/**
+ * Delete a subsubsection
+ */
+exports.deleteSubsubsection = async (req, res, next) => {
+  try {
+    const { filterId, subsectionId, subsubsectionId } = req.params;
+    
+    const updatedFilter = await filterService.deleteSubsubsection(filterId, subsectionId, subsubsectionId);
+    res.json(updatedFilter);
+  } catch (err) {
+    if (err.message === 'Cannot delete predefined subsubsection') {
+      return res.status(403).json({ message: err.message });
+    }
+    next(err);
+  }
+};
+
+/**
+ * Add a new filter to a subsubsection
+ */
+exports.addSubsubsectionFilter = async (req, res, next) => {
+  try {
+    const { filterId, subsectionId, subsubsectionId } = req.params;
+    const filterData = req.body;
+    
+    const updatedFilter = await filterService.addOrUpdateSubsubsectionFilter(
+      filterId, 
+      subsectionId, 
+      subsubsectionId, 
+      filterData
+    );
+    res.status(201).json(updatedFilter);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Update an existing filter in a subsubsection
+ */
+exports.updateSubsubsectionFilter = async (req, res, next) => {
+  try {
+    const { filterId, subsectionId, subsubsectionId, subFilterId } = req.params;
+    const filterData = req.body;
+    
+    const updatedFilter = await filterService.addOrUpdateSubsubsectionFilter(
+      filterId, 
+      subsectionId, 
+      subsubsectionId, 
+      filterData, 
+      subFilterId
+    );
+    res.json(updatedFilter);
+  } catch (err) {
+    if (err.message === 'Cannot modify predefined filter') {
+      return res.status(403).json({ message: err.message });
+    }
+    next(err);
+  }
+};
+
+/**
+ * Delete a filter from a subsubsection
+ */
+exports.deleteSubsubsectionFilter = async (req, res, next) => {
+  try {
+    const { filterId, subsectionId, subsubsectionId, subFilterId } = req.params;
+    
+    const updatedFilter = await filterService.deleteSubsubsectionFilter(
+      filterId, 
+      subsectionId, 
+      subsubsectionId, 
+      subFilterId
+    );
+    res.json(updatedFilter);
+  } catch (err) {
+    if (err.message === 'Cannot delete predefined filter') {
+      return res.status(403).json({ message: err.message });
+    }
+    next(err);
+  }
+};
