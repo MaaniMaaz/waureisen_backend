@@ -8,8 +8,8 @@
       "inside": "\"Signhild\" - from the sea\", 3-room house 67 m2. Object suitable for 6 adults. Living room with TV, video, radio, CD-player and hi-fi system. 1 room with 1 double bed. 1 room with 1 x 2 bunk beds. 1 room with 1 double bed. Kitchen (4 hot plates, oven, dishwasher, microwave, freezer). Shower/WC. Terrace 20 m2, roofed. Facilities: Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. 760-14223",
       "outside": "Single-family house, built in 1985. 400 m from the sea. Private: natural state property 1'200 m2. Terrace (74 m2), children's playground. In the house: sauna. Parking at the house. Grocery 2 km."
     },
-    "checkInTime": "1400",
-    "checkOutTime": "1000",
+    "checkInTime": "1400-01-01T00:00:00.000Z",
+    "checkOutTime": "1000-01-01T00:00:00.000Z",
     "location": {
       "address": "Hvide Sande",
       "optional": "",
@@ -27,6 +27,7 @@
     "additionalServices": [],
     "availability": [],
     "bedRooms": 3,
+    "beds": 6,
     "rooms": {
       "number": 3,
       "room": [
@@ -43,6 +44,7 @@
       ]
     },
     "washrooms": 1,
+    "maxDogs": 1,
     "status": "active",
     "legal": {
       "cancellationPolicy": "Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.",
@@ -87,84 +89,126 @@
     ],
     "attributes": [
       {
-        "name": "cots"
+        "name": "facilitiesParking",
+        "description": [
+          "outdoor",
+          "parkingattheaccommodation"
+        ]
       },
       {
-        "name": "pets_max"
+        "name": "facilitiesWellness",
+        "description": [
+          "sauna"
+        ]
       },
       {
-        "name": "studio"
+        "name": "facilitiesaccommodationfeatures",
+        "description": [
+          "tv",
+          "freewifi",
+          "nocarpet",
+          "balcony",
+          "terrace",
+          "kitchen",
+          "fireplace",
+          "standalone",
+          "washingmachine"
+        ]
       },
       {
-        "name": "playground"
+        "name": "facilitieskids",
+        "description": [
+          "kidsfriendly",
+          "babybed"
+        ]
       },
       {
-        "name": "cleaning"
+        "name": "facilitieskitchen",
+        "description": [
+          "dishwasher",
+          "microwave",
+          "backingoven"
+        ]
       },
       {
-        "name": "dishwasher"
+        "name": "facilitiesmainfilters",
+        "description": [
+          "parkingattheaccommodation",
+          "kidsfriendly"
+        ]
       },
       {
-        "name": "fireplace"
+        "name": "facilitiessightseeingnearby",
+        "description": [
+          "Ortsbeschreibung Hvide Sande\n\nLebhafter Fischerort und Badeort, 3'000 Einwohner, im Westen der Region, direkt am Meer, 23 km südwestlich von Ringkøbing. Im Ort: Supermarkt, Einkaufsgeschäfte, Metzgerei, Bäckerei, Boutique, Post, Bank, Restaurant, Bar, Museum. Hallenbad, Sauna. Zudem: Apotheke, Arzt. Sehenswürdigkeiten Lyngvik Lighthouse 5 km, Kinderland Ald'i'leg.\nSommer\n\nSandstrand, 3 km lang, flach abfallend, mit Strandeinrichtung, für Kinder geeignet, 2 km vom Ort. Surfen, Wasserski. Minigolf. Reiten. Wanderwege. Fahrradwege, Vermietung von Fahrrädern und Mountainbikes. Die Westküste ist herb, frisch, berauschend und erquickend. So weit das Auge reicht sieht man lange, breite Sandstrände und Dünen. Dänemarks schönste Sonnenuntergänge können Sie an der Nordsee erleben. Sind Sie für die ruhigeren Gewässer, dann besuchen Sie doch mal die naturgeschützte Halbinsel Skallingen, wo die Seehunde herumtollen, oder das Vogelreservat Tipperne beim Ringköbing Fjord. Dort bietet sich Ihnen ein imponierender Anblick, wenn sich Millionen von Zugvögeln im Frühjahr und Herbst auf ihrem Weg Richtung Norden oder Süden treffen. Dänemarks westlichster Punkt ist der Leuchtturm bei Blåvandshuk. Rund um den Leuchtturm liegen immer noch alte Betonbunker aus dem 2. Weltkrieg."
+        ]
       },
       {
-        "name": "microwave"
+        "name": "facilitiessmoking",
+        "description": [
+          "nonsmokingaccommodation"
+        ]
       },
       {
-        "name": "oven"
+        "name": "facilitiessport",
+        "description": [
+          "surf",
+          "hikingtour",
+          "bicyclepath",
+          "biketour",
+          "horseriding",
+          "bicyclerental",
+          "minigolf"
+        ]
       },
       {
-        "name": "parking"
+        "name": "facilitiestodonearby",
+        "description": [
+          "sea"
+        ]
       },
       {
-        "name": "pets"
+        "name": "facilitiesview",
+        "description": [
+          "gardenview"
+        ]
       },
       {
-        "name": "sauna"
-      },
-      {
-        "name": "familyfriendly_summer"
-      },
-      {
-        "name": "shower"
-      },
-      {
-        "name": "terrace"
-      },
-      {
-        "name": "fridge"
-      },
-      {
-        "name": "heating"
-      },
-      {
-        "name": "kitchen"
-      },
-      {
-        "name": "freezer"
-      },
-      {
-        "name": "nonsmoking"
-      },
-      {
-        "name": "tv"
-      },
-      {
-        "name": "stove"
-      },
-      {
-        "name": "wlan"
+        "name": "dogFacilities",
+        "description": [
+          "privategarden",
+          "Noleashrequired",
+          "fencedgarden1"
+        ]
       }
     ],
     "provider": "Interhome",
-    "selectedFilters": {},
+    "selectedFilters": {
+      "dogFilters": [
+        {
+          "name": "privategarden",
+          "icon": ""
+        },
+        {
+          "name": "Noleashrequired",
+          "icon": ""
+        },
+        {
+          "name": "fencedgarden1",
+          "icon": ""
+        }
+      ]
+    },
     "totalViews": 0,
     "totalBookings": 0,
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-21T17:52:59.873Z",
-    "updatedAt": "2025-04-21T17:52:59.873Z"
+    "createdAt": "2025-04-24T08:47:09.537Z",
+    "updatedAt": "2025-04-24T08:47:09.537Z",
+    "$setOnInsert": {
+      "__v": 0
+    }
   },
   {
     "Code": "DK6960.611.1",
@@ -175,8 +219,8 @@
       "inside": "\"Skev\" - 200m to the inlet\", 3-room house 96 m2. Object suitable for 6 adults. Living room with TV and CD-player. 1 room with 2 beds. 1 room with 1 double bed. 1 room with 1 double bed. Kitchen (oven, dishwasher, 4 ceramic glass hob hotplates, microwave, freezer). Shower/WC, hydro massage bath. Terrace 4 m2, roofed. Facilities: Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. 760-14791",
       "outside": "Single-family house, built in 1999. 950 m from the sea. Private: natural state property 2'198 m2. Terrace (80 m2), barbecue. In the house: sauna, washing machine, tumble dryer. Parking at the house. Grocery 2 km."
     },
-    "checkInTime": "1400",
-    "checkOutTime": "1000",
+    "checkInTime": "1400-01-01T00:00:00.000Z",
+    "checkOutTime": "1000-01-01T00:00:00.000Z",
     "location": {
       "address": "Hvide Sande",
       "optional": "",
@@ -194,6 +238,7 @@
     "additionalServices": [],
     "availability": [],
     "bedRooms": 3,
+    "beds": 6,
     "rooms": {
       "number": 3,
       "room": [
@@ -210,6 +255,7 @@
       ]
     },
     "washrooms": 1,
+    "maxDogs": 1,
     "status": "active",
     "legal": {
       "cancellationPolicy": "Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.",
@@ -254,90 +300,130 @@
     ],
     "attributes": [
       {
-        "name": "cots"
+        "name": "facilitiesWellness",
+        "description": [
+          "sauna"
+        ]
       },
       {
-        "name": "pets_max"
+        "name": "facilitiesaccommodationfeatures",
+        "description": [
+          "tv",
+          "freewifi",
+          "nocarpet",
+          "balcony",
+          "terrace",
+          "kitchen",
+          "fireplace",
+          "standalone",
+          "washingmachine"
+        ]
       },
       {
-        "name": "studio"
+        "name": "facilitieskids",
+        "description": [
+          "babybed"
+        ]
       },
       {
-        "name": "bbq"
+        "name": "facilitieskitchen",
+        "description": [
+          "dishwasher",
+          "microwave",
+          "backingoven"
+        ]
       },
       {
-        "name": "cleaning"
+        "name": "facilitiesmainfilters",
+        "description": [
+          "fencedgarden",
+          "parkingattheaccommodation",
+          "kidsfriendly"
+        ]
       },
       {
-        "name": "cook"
+        "name": "facilitiespool",
+        "description": [
+          "whirlpool"
+        ]
       },
       {
-        "name": "dishwasher"
+        "name": "facilitiessightseeingnearby",
+        "description": [
+          "Ortsbeschreibung Hvide Sande\n\nLebhafter Fischerort und Badeort, 3'000 Einwohner, im Westen der Region, direkt am Meer, 23 km südwestlich von Ringkøbing. Im Ort: Supermarkt, Einkaufsgeschäfte, Metzgerei, Bäckerei, Boutique, Post, Bank, Restaurant, Bar, Museum. Hallenbad, Sauna. Zudem: Apotheke, Arzt. Sehenswürdigkeiten Lyngvik Lighthouse 5 km, Kinderland Ald'i'leg.\nSommer\n\nSandstrand, 3 km lang, flach abfallend, mit Strandeinrichtung, für Kinder geeignet, 2 km vom Ort. Surfen, Wasserski. Minigolf. Reiten. Wanderwege. Fahrradwege, Vermietung von Fahrrädern und Mountainbikes. Die Westküste ist herb, frisch, berauschend und erquickend. So weit das Auge reicht sieht man lange, breite Sandstrände und Dünen. Dänemarks schönste Sonnenuntergänge können Sie an der Nordsee erleben. Sind Sie für die ruhigeren Gewässer, dann besuchen Sie doch mal die naturgeschützte Halbinsel Skallingen, wo die Seehunde herumtollen, oder das Vogelreservat Tipperne beim Ringköbing Fjord. Dort bietet sich Ihnen ein imponierender Anblick, wenn sich Millionen von Zugvögeln im Frühjahr und Herbst auf ihrem Weg Richtung Norden oder Süden treffen. Dänemarks westlichster Punkt ist der Leuchtturm bei Blåvandshuk. Rund um den Leuchtturm liegen immer noch alte Betonbunker aus dem 2. Weltkrieg."
+        ]
       },
       {
-        "name": "tumbler"
+        "name": "facilitiessmoking",
+        "description": [
+          "nonsmokingaccommodation"
+        ]
       },
       {
-        "name": "fireplace"
+        "name": "facilitiessport",
+        "description": [
+          "surf",
+          "minigolf",
+          "horseriding",
+          "hikingtour",
+          "bicyclepath",
+          "bicyclerental",
+          "biketour"
+        ]
       },
       {
-        "name": "microwave"
+        "name": "facilitiestodonearby",
+        "description": [
+          "sea"
+        ]
       },
       {
-        "name": "parking"
+        "name": "facilitiesview",
+        "description": [
+          "gardenview"
+        ]
       },
       {
-        "name": "pets"
-      },
-      {
-        "name": "sauna"
-      },
-      {
-        "name": "familyfriendly_summer"
-      },
-      {
-        "name": "shower"
-      },
-      {
-        "name": "terrace"
-      },
-      {
-        "name": "washingmachine"
-      },
-      {
-        "name": "fridge"
-      },
-      {
-        "name": "heating"
-      },
-      {
-        "name": "kitchen"
-      },
-      {
-        "name": "freezer"
-      },
-      {
-        "name": "nonsmoking"
-      },
-      {
-        "name": "tv"
-      },
-      {
-        "name": "stove"
-      },
-      {
-        "name": "wlan"
+        "name": "dogFacilities",
+        "description": [
+          "privategarden",
+          "Noleashrequired",
+          "fencedterrace",
+          "fencedgarden1"
+        ]
       }
     ],
     "provider": "Interhome",
-    "selectedFilters": {},
+    "selectedFilters": {
+      "dogFilters": [
+        {
+          "name": "privategarden",
+          "icon": ""
+        },
+        {
+          "name": "Noleashrequired",
+          "icon": ""
+        },
+        {
+          "name": "fencedterrace",
+          "icon": ""
+        },
+        {
+          "name": "fencedgarden1",
+          "icon": ""
+        }
+      ]
+    },
     "totalViews": 0,
     "totalBookings": 0,
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-21T17:53:00.281Z",
-    "updatedAt": "2025-04-21T17:53:00.281Z"
+    "createdAt": "2025-04-24T08:47:09.891Z",
+    "updatedAt": "2025-04-24T08:47:09.891Z",
+    "$setOnInsert": {
+      "__v": 0
+    }
   },
   {
     "Code": "DK9990.650.1",
@@ -348,8 +434,8 @@
       "inside": "\"Gunulf\" - 150m from the sea\", 3-room house 100 m2. Object suitable for 6 adults. Living room with TV and radio. 1 room with 1 double bed. Kitchen (oven, dishwasher, 4 induction hot plates, freezer). Shower/WC. Upper floor: living room with 1 double bed. 1 room with 2 beds. Facilities: Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. Bookings accepted for holiday purposes only. 813-175937",
       "outside": "Single-family house, built in 1844. 150 m from the sea. For shared use: garden. Private: natural state property 280 m2, garden (fenced). Terrace (100 m2). In the house: washing machine. Parking at the house. Grocery 200 m. The owner does not accept any youth groups."
     },
-    "checkInTime": "1400",
-    "checkOutTime": "1000",
+    "checkInTime": "1400-01-01T00:00:00.000Z",
+    "checkOutTime": "1000-01-01T00:00:00.000Z",
     "location": {
       "address": "Skagen",
       "optional": "",
@@ -367,6 +453,7 @@
     "additionalServices": [],
     "availability": [],
     "bedRooms": 2,
+    "beds": 6,
     "rooms": {
       "number": 3,
       "room": [
@@ -393,6 +480,7 @@
       ]
     },
     "washrooms": 1,
+    "maxDogs": 1,
     "status": "active",
     "legal": {
       "cancellationPolicy": "Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.",
@@ -428,78 +516,115 @@
     ],
     "attributes": [
       {
-        "name": "cots"
+        "name": "facilitiesParking",
+        "description": [
+          "outdoor",
+          "parkingattheaccommodation"
+        ]
       },
       {
-        "name": "pets_max"
+        "name": "facilitiesaccommodationfeatures",
+        "description": [
+          "tv",
+          "freewifi",
+          "nocarpet",
+          "balcony",
+          "terrace",
+          "kitchen",
+          "washingmachine"
+        ]
       },
       {
-        "name": "studio"
+        "name": "facilitieskids",
+        "description": [
+          "kidsfriendly",
+          "babybed"
+        ]
       },
       {
-        "name": "cleaning"
+        "name": "facilitieskitchen",
+        "description": [
+          "backingoven",
+          "dishwasher"
+        ]
       },
       {
-        "name": "cook"
+        "name": "facilitiesmainfilters",
+        "description": [
+          "fencedgarden",
+          "parkingattheaccommodation",
+          "kidsfriendly"
+        ]
       },
       {
-        "name": "dishwasher"
+        "name": "facilitiessightseeingnearby",
+        "description": [
+          "Ortsbeschreibung Skagen\n\nBekannter, lebhafter Badeort, 8'000 Einwohner, im Norden der Region, direkt am Meer, 40 km nördlich von Frederikshavn. Im Ort: Supermarkt, Einkaufsgeschäfte, Metzgerei, Bäckerei, Boutique, Post, Bank, Restaurant, Bar, Museum. Hallenbad, Fitnesszentrum. Zudem: Apotheke, Arzt. Sehenswürdigkeiten Grenen 4 km, Skagen Odde Naturcenter 4 km.\nSommer\n\nSandstrand, 3 km lang, flach abfallend, für Kinder geeignet, 1 km vom Ort. Sporthafen. Minigolf 2 km. Angeln (mit Bewilligung). Wanderwege. Fahrradwege, Vermietung von Fahrrädern. Entlang der Küste Nordwestjütlands, von Skagen im Norden bis Agger im Süden, können Sie Nordeuropas weißeste und breiteste Sandstrände erleben. Hier liegen die gemütlichen Badeorte, die Ihnen alles bieten, was Ihr Herz begehrt. An einigen Stellen können Sie immer noch die Fischer beobachten, die wie in alten Tagen ihre Fischerboote auf den Strand ziehen. Auf Grenen, Dänemarks nördlichstem Punkt, können Sie mit je einem Fuß in zwei Meeren stehen, die sich hier treffen: Kattegat und Skagerrak. Entlang der ganzen Küste können Sie auch traumhafte Sonnenuntergänge genießen."
+        ]
       },
       {
-        "name": "parking"
+        "name": "facilitiessmoking",
+        "description": [
+          "nonsmokingaccommodation"
+        ]
       },
       {
-        "name": "pets"
+        "name": "facilitiessport",
+        "description": [
+          "hikingtour",
+          "bicyclepath",
+          "biketour",
+          "minigolf"
+        ]
       },
       {
-        "name": "familyfriendly_summer"
+        "name": "facilitiestodonearby",
+        "description": [
+          "sea"
+        ]
       },
       {
-        "name": "shower"
+        "name": "facilitiesview",
+        "description": [
+          "gardenview"
+        ]
       },
       {
-        "name": "terrace"
-      },
-      {
-        "name": "washingmachine"
-      },
-      {
-        "name": "fridge"
-      },
-      {
-        "name": "heating"
-      },
-      {
-        "name": "kitchen"
-      },
-      {
-        "name": "no_youth_groups"
-      },
-      {
-        "name": "freezer"
-      },
-      {
-        "name": "nonsmoking"
-      },
-      {
-        "name": "tv"
-      },
-      {
-        "name": "stove"
-      },
-      {
-        "name": "wlan"
+        "name": "dogFacilities",
+        "description": [
+          "privategarden",
+          "Noleashrequired",
+          "fencedterrace"
+        ]
       }
     ],
     "provider": "Interhome",
-    "selectedFilters": {},
+    "selectedFilters": {
+      "dogFilters": [
+        {
+          "name": "privategarden",
+          "icon": ""
+        },
+        {
+          "name": "Noleashrequired",
+          "icon": ""
+        },
+        {
+          "name": "fencedterrace",
+          "icon": ""
+        }
+      ]
+    },
     "totalViews": 0,
     "totalBookings": 0,
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-21T17:53:00.707Z",
-    "updatedAt": "2025-04-21T17:53:00.707Z"
+    "createdAt": "2025-04-24T08:47:10.243Z",
+    "updatedAt": "2025-04-24T08:47:10.243Z",
+    "$setOnInsert": {
+      "__v": 0
+    }
   },
   {
     "Code": "DK6960.604.1",
@@ -510,8 +635,8 @@
       "inside": "\"Gottfreda\" - 330m to the inlet\", 4-room house 125 m2. Object suitable for 10 adults + 1 child. Living room with TV, radio, CD-player, hi-fi system and DVD. 1 room with 1 double bed. 1 room with 2 x 2 bunk beds. 1 room with 1 double bed. 1 room with 1 double bed. Kitchen (oven, dishwasher, 4 ceramic glass hob hotplates, microwave, freezer). 2 showers/WC, hydro massage bath. Terrace 18 m2, roofed. Facilities: children's high chair, baby cot. Internet (WiFi). Please note: non-smokers only. Maximum 1 pet/ dog allowed. 760-15458",
       "outside": "Single-family house, built in 1991. 930 m from the sea. Private: natural state property 2'500 m2. Terrace (32 m2), children's playground (swing). In the house: sauna, washing machine, tumble dryer. Parking at the house. E-charging station. Grocery 3 km. The owner does not accept any youth groups."
     },
-    "checkInTime": "1400",
-    "checkOutTime": "1000",
+    "checkInTime": "1400-01-01T00:00:00.000Z",
+    "checkOutTime": "1000-01-01T00:00:00.000Z",
     "location": {
       "address": "Hvide Sande",
       "optional": "",
@@ -529,6 +654,7 @@
     "additionalServices": [],
     "availability": [],
     "bedRooms": 4,
+    "beds": 10,
     "rooms": {
       "number": 4,
       "room": [
@@ -545,6 +671,7 @@
       ]
     },
     "washrooms": 2,
+    "maxDogs": 1,
     "status": "active",
     "legal": {
       "cancellationPolicy": "Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.",
@@ -593,99 +720,135 @@
     ],
     "attributes": [
       {
-        "name": "cots"
+        "name": "facilitiesParking",
+        "description": [
+          "outdoor",
+          "parkingattheaccommodation"
+        ]
       },
       {
-        "name": "electric_vehiclecharging_stat"
+        "name": "facilitiesWellness",
+        "description": [
+          "sauna"
+        ]
       },
       {
-        "name": "pets_max"
+        "name": "facilitiesaccommodationfeatures",
+        "description": [
+          "tv",
+          "freewifi",
+          "nocarpet",
+          "balcony",
+          "terrace",
+          "kitchen",
+          "fireplace",
+          "standalone",
+          "washingmachine"
+        ]
       },
       {
-        "name": "studio"
+        "name": "facilitieskids",
+        "description": [
+          "kidsfriendly",
+          "kidschair",
+          "babybed",
+          "childrenplayground"
+        ]
       },
       {
-        "name": "playground"
+        "name": "facilitieskitchen",
+        "description": [
+          "dishwasher",
+          "microwave",
+          "backingoven"
+        ]
       },
       {
-        "name": "cleaning"
+        "name": "facilitiesmainfilters",
+        "description": [
+          "parkingattheaccommodation",
+          "kidsfriendly"
+        ]
       },
       {
-        "name": "cook"
+        "name": "facilitiespool",
+        "description": [
+          "whirlpool"
+        ]
       },
       {
-        "name": "dishwasher"
+        "name": "facilitiessightseeingnearby",
+        "description": [
+          "Ortsbeschreibung Hvide Sande\n\nLebhafter Fischerort und Badeort, 3'000 Einwohner, im Westen der Region, direkt am Meer, 23 km südwestlich von Ringkøbing. Im Ort: Supermarkt, Einkaufsgeschäfte, Metzgerei, Bäckerei, Boutique, Post, Bank, Restaurant, Bar, Museum. Hallenbad, Sauna. Zudem: Apotheke, Arzt. Sehenswürdigkeiten Lyngvik Lighthouse 5 km, Kinderland Ald'i'leg.\nSommer\n\nSandstrand, 3 km lang, flach abfallend, mit Strandeinrichtung, für Kinder geeignet, 2 km vom Ort. Surfen, Wasserski. Minigolf. Reiten. Wanderwege. Fahrradwege, Vermietung von Fahrrädern und Mountainbikes. Die Westküste ist herb, frisch, berauschend und erquickend. So weit das Auge reicht sieht man lange, breite Sandstrände und Dünen. Dänemarks schönste Sonnenuntergänge können Sie an der Nordsee erleben. Sind Sie für die ruhigeren Gewässer, dann besuchen Sie doch mal die naturgeschützte Halbinsel Skallingen, wo die Seehunde herumtollen, oder das Vogelreservat Tipperne beim Ringköbing Fjord. Dort bietet sich Ihnen ein imponierender Anblick, wenn sich Millionen von Zugvögeln im Frühjahr und Herbst auf ihrem Weg Richtung Norden oder Süden treffen. Dänemarks westlichster Punkt ist der Leuchtturm bei Blåvandshuk. Rund um den Leuchtturm liegen immer noch alte Betonbunker aus dem 2. Weltkrieg."
+        ]
       },
       {
-        "name": "tumbler"
+        "name": "facilitiessmoking",
+        "description": [
+          "nonsmokingaccommodation"
+        ]
       },
       {
-        "name": "fireplace"
+        "name": "facilitiessport",
+        "description": [
+          "surf",
+          "minigolf",
+          "horseriding",
+          "hikingtour",
+          "bicyclepath",
+          "bicyclerental",
+          "biketour"
+        ]
       },
       {
-        "name": "microwave"
+        "name": "facilitiestodonearby",
+        "description": [
+          "sea"
+        ]
       },
       {
-        "name": "parking"
+        "name": "facilitiesview",
+        "description": [
+          "seaview",
+          "gardenview"
+        ]
       },
       {
-        "name": "pets"
-      },
-      {
-        "name": "sauna"
-      },
-      {
-        "name": "familyfriendly_summer"
-      },
-      {
-        "name": "shower"
-      },
-      {
-        "name": "terrace"
-      },
-      {
-        "name": "washingmachine"
-      },
-      {
-        "name": "dvdplayer"
-      },
-      {
-        "name": "fridge"
-      },
-      {
-        "name": "heating"
-      },
-      {
-        "name": "kitchen"
-      },
-      {
-        "name": "no_youth_groups"
-      },
-      {
-        "name": "freezer"
-      },
-      {
-        "name": "nonsmoking"
-      },
-      {
-        "name": "tv"
-      },
-      {
-        "name": "stove"
-      },
-      {
-        "name": "wlan"
+        "name": "dogFacilities",
+        "description": [
+          "privategarden",
+          "Noleashrequired",
+          "fencedgarden1"
+        ]
       }
     ],
     "provider": "Interhome",
-    "selectedFilters": {},
+    "selectedFilters": {
+      "dogFilters": [
+        {
+          "name": "privategarden",
+          "icon": ""
+        },
+        {
+          "name": "Noleashrequired",
+          "icon": ""
+        },
+        {
+          "name": "fencedgarden1",
+          "icon": ""
+        }
+      ]
+    },
     "totalViews": 0,
     "totalBookings": 0,
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-21T17:53:01.116Z",
-    "updatedAt": "2025-04-21T17:53:01.116Z"
+    "createdAt": "2025-04-24T08:47:10.558Z",
+    "updatedAt": "2025-04-24T08:47:10.558Z",
+    "$setOnInsert": {
+      "__v": 0
+    }
   },
   {
     "Code": "DK6792.626.1",
@@ -696,8 +859,8 @@
       "inside": "\"Heralda\" - 3.3km from the sea\", 4-room house 105 m2. Object suitable for 8 adults. Living room with 1 double bed, TV, video and radio. 1 room with 1 double bed. 1 room with 2 beds. 1 room with 1 double bed. Kitchen (4 hot plates, oven, dishwasher, microwave, freezer). Shower/WC. Terrace 6 m2, roofed. Facilities: children's high chair. Internet (WiFi). Please note: non-smokers only. Maximum 3 pets/ dogs allowed. 550-9662",
       "outside": "Single-family house, built in 1990. 3.3 km from the sea. Private: natural state property 2'600 m2. Terrace (50 m2), children's playground (swing). In the house: sauna, washing machine. Parking at the house. Grocery 1.1 km. The owner does not accept any youth groups."
     },
-    "checkInTime": "1400",
-    "checkOutTime": "1000",
+    "checkInTime": "1400-01-01T00:00:00.000Z",
+    "checkOutTime": "1000-01-01T00:00:00.000Z",
     "location": {
       "address": "Rømø",
       "optional": "",
@@ -715,6 +878,7 @@
     "additionalServices": [],
     "availability": [],
     "bedRooms": 3,
+    "beds": 8,
     "rooms": {
       "number": 4,
       "room": [
@@ -731,6 +895,7 @@
       ]
     },
     "washrooms": 2,
+    "maxDogs": 3,
     "status": "active",
     "legal": {
       "cancellationPolicy": "Je nach Reisezeitraum 90% Rückerstattung bis 0% Rückerstattung.",
@@ -772,86 +937,125 @@
     ],
     "attributes": [
       {
-        "name": "cots"
+        "name": "facilitiesParking",
+        "description": [
+          "outdoor",
+          "parkingattheaccommodation"
+        ]
       },
       {
-        "name": "pets_max"
+        "name": "facilitiesWellness",
+        "description": [
+          "sauna"
+        ]
       },
       {
-        "name": "studio"
+        "name": "facilitiesaccommodationfeatures",
+        "description": [
+          "tv",
+          "freewifi",
+          "nocarpet",
+          "balcony",
+          "terrace",
+          "kitchen",
+          "fireplace",
+          "standalone",
+          "washingmachine"
+        ]
       },
       {
-        "name": "cleaning"
+        "name": "facilitieskids",
+        "description": [
+          "kidsfriendly",
+          "childrenplayground"
+        ]
       },
       {
-        "name": "dishwasher"
+        "name": "facilitieskitchen",
+        "description": [
+          "dishwasher",
+          "microwave",
+          "backingoven"
+        ]
       },
       {
-        "name": "fireplace"
+        "name": "facilitiesmainfilters",
+        "description": [
+          "parkingattheaccommodation",
+          "kidsfriendly"
+        ]
       },
       {
-        "name": "microwave"
+        "name": "facilitiessightseeingnearby",
+        "description": [
+          "Ortsbeschreibung Rømø\n\nGrosser Badeort, 600 Einwohner, im Westen der Region, direkt am Meer, 70 km südlich von Esbjerg. Im Ort: 1 - 10 km: Lebensmittelgeschäft, Metzgerei, Bäckerei, Restaurant, Museum. Weitere Möglichkeiten für Einkauf und Unterhaltung in 20 - 25 km. Sehenswürdigkeiten Naturcenter Tønnisgård, Kinderland Rømø Lege- og Labyrintpark, Rømø Sommerland.\nSommer\n\nSandstrand, 12 km lang, flach abfallend, mit Strandeinrichtung, für Kinder geeignet, 3 km vom Ort. Surfen. Golfplatz. Minigolf. Reiten. Angeln (mit Bewilligung). Wanderwege. Fahrradwege, Vermietung von Fahrrädern. Die Westküste ist herb, frisch, berauschend und erquickend. So weit das Auge reicht sieht man lange, breite Sandstrände und Dünen. Dänemarks schönste Sonnenuntergänge können Sie an der Nordsee erleben. Sind Sie für die ruhigeren Gewässer, dann besuchen Sie doch mal die naturgeschützte Halbinsel Skallingen, wo die Seehunde herumtollen, oder das Vogelreservat Tipperne beim Ringköbing Fjord. Dort bietet sich Ihnen ein imponierender Anblick, wenn sich Millionen von Zugvögeln im Frühjahr und Herbst auf ihrem Weg Richtung Norden oder Süden treffen. Dänemarks westlichster Punkt ist der Leuchtturm bei Blåvandshuk. Rund um den Leuchtturm liegen immer noch alte Betonbunker aus dem 2. Weltkrieg."
+        ]
       },
       {
-        "name": "oven"
+        "name": "facilitiessmoking",
+        "description": [
+          "nonsmokingaccommodation"
+        ]
       },
       {
-        "name": "parking"
+        "name": "facilitiessport",
+        "description": [
+          "minigolf",
+          "horseriding",
+          "hikingtour",
+          "bicyclepath",
+          "surf",
+          "golf",
+          "biketour"
+        ]
       },
       {
-        "name": "pets"
+        "name": "facilitiestodonearby",
+        "description": [
+          "sea"
+        ]
       },
       {
-        "name": "sauna"
+        "name": "facilitiesview",
+        "description": [
+          "gardenview"
+        ]
       },
       {
-        "name": "familyfriendly_summer"
-      },
-      {
-        "name": "shower"
-      },
-      {
-        "name": "terrace"
-      },
-      {
-        "name": "washingmachine"
-      },
-      {
-        "name": "fridge"
-      },
-      {
-        "name": "heating"
-      },
-      {
-        "name": "kitchen"
-      },
-      {
-        "name": "no_youth_groups"
-      },
-      {
-        "name": "freezer"
-      },
-      {
-        "name": "nonsmoking"
-      },
-      {
-        "name": "tv"
-      },
-      {
-        "name": "stove"
-      },
-      {
-        "name": "wlan"
+        "name": "dogFacilities",
+        "description": [
+          "privategarden",
+          "Noleashrequired",
+          "fencedgarden1"
+        ]
       }
     ],
     "provider": "Interhome",
-    "selectedFilters": {},
+    "selectedFilters": {
+      "dogFilters": [
+        {
+          "name": "privategarden",
+          "icon": ""
+        },
+        {
+          "name": "Noleashrequired",
+          "icon": ""
+        },
+        {
+          "name": "fencedgarden1",
+          "icon": ""
+        }
+      ]
+    },
     "totalViews": 0,
     "totalBookings": 0,
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-21T17:53:01.525Z",
-    "updatedAt": "2025-04-21T17:53:01.525Z"
+    "createdAt": "2025-04-24T08:47:10.938Z",
+    "updatedAt": "2025-04-24T08:47:10.938Z",
+    "$setOnInsert": {
+      "__v": 0
+    }
   }
 ]

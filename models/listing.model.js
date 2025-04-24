@@ -97,9 +97,17 @@ const listingSchema = new mongoose.Schema({
     }]
   }],
 
+  maxDogs: {
+    type:Number
+  },
+
   bedRooms: {
     type: Number,
     default: 0, 
+  },
+
+  beds: {
+    type: Number 
   },
 
   rooms: {
@@ -134,6 +142,7 @@ const listingSchema = new mongoose.Schema({
   //Details with Icons For Interhome Only 
   attributes: [{
     name: { type: String },
+    description: [{ type: String }]
   }],
 
   // Documents 
