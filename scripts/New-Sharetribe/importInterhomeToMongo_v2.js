@@ -129,7 +129,43 @@ async function fetchMedia(code) {
 
 // Update the mapToListing function to properly handle images and additionalServices
 // Update the mapToListing function to properly handle all fields
-function mapToListing(sharetribeListing, detail, mediaItems) {
+async function mapToListing(sharetribeListing, detail, mediaItems) {
+  // Load Filter model
+  const Filter = require('../../models/filter.model');
+
+  // Create filter structure for amenities
+  const filterData = {
+    listing: null, // Will be set after listing creation
+    isTemplate: false,
+    subsections: [{
+      name: 'Amenities',
+      description: 'Select the amenities and features available at your property.',
+      predefined: true,
+      hasSubsections: true,
+      subsubsections: Object.entries({
+        dogFacilities: sharetribeListing.dogFacilities || [],
+        facilitiesParking: sharetribeListing.facilitiesParking || [],
+        facilitiesWellness: sharetribeListing.facilitiesWellness || [],
+        facilitiesaccommodationfeatures: sharetribeListing.facilitiesaccommodationfeatures || [],
+        facilitieskids: sharetribeListing.facilitieskids || [],
+        facilitieskitchen: sharetribeListing.facilitieskitchen || [],
+        facilitiesmainfilters: sharetribeListing.facilitiesmainfilters || [],
+        facilitiessmoking: sharetribeListing.facilitiessmoking || [],
+        facilitiessport: sharetribeListing.facilitiessport || [],
+        facilitiestodonearby: sharetribeListing.facilitiestodonearby || [],
+        facilitiesview: sharetribeListing.facilitiesview || []
+      }).map(([name, facilities]) => ({
+        name,
+        description: '',
+        predefined: true,
+        filters: facilities.map(facility => ({
+          name: facility,
+          type: 'checkbox',
+          predefined: true
+        }))
+      }))
+    }]
+  };
   // Extract data from Sharetribe listing
   // Handle both cases: when PublicData is already parsed or when it's a string that needs parsing
   let publicData = {};
@@ -324,7 +360,8 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
     }
   }
   
-  return {
+  // Create listing first
+  const listing = {
     Code: code,
     listingType: publicData.listingType || 'interhomeaccommocation',
     title: sharetribeListing.Title || name,
@@ -384,6 +421,19 @@ function mapToListing(sharetribeListing, detail, mediaItems) {
     createdAt: new Date(),
     updatedAt: new Date()
   };
+
+  // Save listing and get ID
+  const savedListing = await Listing.create(listing);
+
+  // Create filter with listing reference
+  filterData.listing = savedListing._id;
+  const savedFilter = await Filter.create(filterData);
+
+  // Update listing with filter reference
+  savedListing.selectedFilters = savedFilter._id;
+  await savedListing.save();
+
+  return savedListing;
 }
 
 // ───────── Main Process ─────────
@@ -398,22 +448,26 @@ async function main() {
     
     console.log(`Found ${listings.length} listings in the JSON file`);
     
-    // Process only the first 5 listings
+    // Process exactly 5 listings
+    if (listings.length < 5) {
+      throw new Error('Input file must contain at least 5 listings');
+    }
     const listingsToProcess = listings.slice(0, 5);
     console.log(`Processing first ${listingsToProcess.length} listings...`);
     
     const processedListings = [];
     
     // Process each listing
-    for (const [index, listing] of listingsToProcess.entries()) {
+    for (let i = 0; i < 5; i++) {
+      const listing = listingsToProcess[i];
       const code = listing.Code;
       
       if (!code) {
-        console.warn(`⚠️ Listing ${index + 1} has no code, skipping`);
+        console.warn(`⚠️ Listing ${i + 1} has no code, skipping`);
         continue;
       }
       
-      console.log(`🔄 Processing ${index + 1}/${listingsToProcess.length}: ${listing.Title} (${code})`);
+      console.log(`🔄 Processing ${i + 1}/5: ${listing.Title} (${code})`);
       
       try {
         // Fetch additional data from Interhome API
@@ -428,7 +482,7 @@ async function main() {
         }
         
         // Map the data to our listing model
-        const mappedListing = mapToListing(listing, detail, mediaItems);
+        const mappedListing = await mapToListing(listing, detail, mediaItems);
         processedListings.push(mappedListing);
         
         console.log(`✅ Successfully processed ${listing.Title}`);

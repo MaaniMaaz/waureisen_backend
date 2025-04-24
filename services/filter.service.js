@@ -93,14 +93,125 @@ exports.addOrUpdateSubsection = async (filterId, subsectionData, subsectionId = 
     
     filter.subsections[subsectionIndex].name = subsectionData.name;
     filter.subsections[subsectionIndex].description = subsectionData.description;
+    
+    // Update hasSubsections flag if provided
+    if (subsectionData.hasSubsections !== undefined) {
+      filter.subsections[subsectionIndex].hasSubsections = subsectionData.hasSubsections;
+    }
   } else {
     // Add new subsection
     filter.subsections.push({
       name: subsectionData.name,
       description: subsectionData.description,
       predefined: false, // Custom subsections are not predefined
+      hasSubsections: subsectionData.hasSubsections || false,
+      filters: [],
+      subsubsections: []
+    });
+  }
+  
+  return await filter.save();
+};
+
+/**
+ * Add or update a subsubsection within a subsection
+ * @param {string} filterId - The filter document ID
+ * @param {string} subsectionId - The parent subsection ID
+ * @param {Object} subsubsectionData - Subsubsection data to add/update
+ * @param {string|null} subsubsectionId - Existing subsubsection ID to update (null for new subsubsection)
+ * @returns {Promise<Object>} Updated filter document
+ */
+exports.addOrUpdateSubsubsection = async (filterId, subsectionId, subsubsectionData, subsubsectionId = null) => {
+  const filter = await Filter.findById(filterId);
+  
+  if (!filter) {
+    throw new Error('Filter not found');
+  }
+  
+  const subsectionIndex = filter.subsections.findIndex(
+    subsection => subsection._id.toString() === subsectionId
+  );
+  
+  if (subsectionIndex === -1) {
+    throw new Error('Subsection not found');
+  }
+  
+  // Ensure the subsection is marked as having subsubsections
+  filter.subsections[subsectionIndex].hasSubsections = true;
+  
+  if (subsubsectionId) {
+    // Update existing subsubsection
+    const subsubsectionIndex = filter.subsections[subsectionIndex].subsubsections.findIndex(
+      subsubsection => subsubsection._id.toString() === subsubsectionId
+    );
+    
+    if (subsubsectionIndex === -1) {
+      throw new Error('Subsubsection not found');
+    }
+    
+    // Check if it's a predefined subsubsection
+    if (filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].predefined) {
+      throw new Error('Cannot modify predefined subsubsection');
+    }
+    
+    filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].name = subsubsectionData.name;
+    filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].description = subsubsectionData.description;
+  } else {
+    // Add new subsubsection
+    filter.subsections[subsectionIndex].subsubsections.push({
+      name: subsubsectionData.name,
+      description: subsubsectionData.description,
+      predefined: false, // Custom subsubsections are not predefined
       filters: []
     });
+  }
+  
+  return await filter.save();
+};
+
+/**
+ * Delete a subsubsection
+ * @param {string} filterId - The filter document ID
+ * @param {string} subsectionId - The parent subsection ID
+ * @param {string} subsubsectionId - The subsubsection ID to delete
+ * @returns {Promise<Object>} Updated filter document
+ */
+exports.deleteSubsubsection = async (filterId, subsectionId, subsubsectionId) => {
+  const filter = await Filter.findById(filterId);
+  
+  if (!filter) {
+    throw new Error('Filter not found');
+  }
+  
+  const subsectionIndex = filter.subsections.findIndex(
+    subsection => subsection._id.toString() === subsectionId
+  );
+  
+  if (subsectionIndex === -1) {
+    throw new Error('Subsection not found');
+  }
+  
+  // Find the subsubsection
+  const subsubsectionIndex = filter.subsections[subsectionIndex].subsubsections.findIndex(
+    subsubsection => subsubsection._id.toString() === subsubsectionId
+  );
+  
+  if (subsubsectionIndex === -1) {
+    throw new Error('Subsubsection not found');
+  }
+  
+  // Check if it's a predefined subsubsection
+  if (filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].predefined) {
+    throw new Error('Cannot delete predefined subsubsection');
+  }
+  
+  filter.subsections[subsectionIndex].subsubsections = filter.subsections[subsectionIndex].subsubsections.filter(
+    subsubsection => subsubsection._id.toString() !== subsubsectionId
+  );
+  
+  // If no more subsubsections, update the hasSubsections flag
+  if (filter.subsections[subsectionIndex].subsubsections.length === 0) {
+    filter.subsections[subsectionIndex].hasSubsections = false;
   }
   
   return await filter.save();
@@ -197,6 +308,71 @@ exports.addOrUpdateSubsectionFilter = async (filterId, subsectionId, filterData,
 };
 
 /**
+ * Add or update a filter within a subsubsection
+ * @param {string} filterId - The filter document ID
+ * @param {string} subsectionId - The parent subsection ID
+ * @param {string} subsubsectionId - The subsubsection ID
+ * @param {Object} filterData - Filter data to add/update
+ * @param {string|null} subFilterId - Existing filter ID to update (null for new filter)
+ * @returns {Promise<Object>} Updated filter document
+ */
+exports.addOrUpdateSubsubsectionFilter = async (filterId, subsectionId, subsubsectionId, filterData, subFilterId = null) => {
+  const filter = await Filter.findById(filterId);
+  
+  if (!filter) {
+    throw new Error('Filter not found');
+  }
+  
+  const subsectionIndex = filter.subsections.findIndex(
+    subsection => subsection._id.toString() === subsectionId
+  );
+  
+  if (subsectionIndex === -1) {
+    throw new Error('Subsection not found');
+  }
+  
+  const subsubsectionIndex = filter.subsections[subsectionIndex].subsubsections.findIndex(
+    subsubsection => subsubsection._id.toString() === subsubsectionId
+  );
+  
+  if (subsubsectionIndex === -1) {
+    throw new Error('Subsubsection not found');
+  }
+  
+  if (subFilterId) {
+    // Update existing filter
+    const filterIndex = filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].filters.findIndex(
+      f => f._id.toString() === subFilterId
+    );
+    
+    if (filterIndex === -1) {
+      throw new Error('Filter not found in subsubsection');
+    }
+    
+    // Check if it's a predefined filter
+    if (filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].filters[filterIndex].predefined) {
+      throw new Error('Cannot modify predefined filter');
+    }
+    
+    filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].filters[filterIndex] = {
+      ...filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].filters[filterIndex],
+      ...filterData,
+      predefined: false, // Ensure predefined status doesn't change
+      _id: filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].filters[filterIndex]._id
+    };
+  } else {
+    // Add new filter
+    const newFilter = {
+      ...filterData,
+      predefined: false // New filters are not predefined
+    };
+    filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].filters.push(newFilter);
+  }
+  
+  return await filter.save();
+};
+
+/**
  * Delete a filter from a subsection
  * @param {string} filterId - The filter document ID
  * @param {string} subsectionId - The subsection ID
@@ -235,6 +411,59 @@ exports.deleteSubsectionFilter = async (filterId, subsectionId, subFilterId) => 
   filter.subsections[subsectionIndex].filters = filter.subsections[subsectionIndex].filters.filter(
     f => f._id.toString() !== subFilterId
   );
+  
+  return await filter.save();
+};
+
+/**
+ * Delete a filter from a subsubsection
+ * @param {string} filterId - The filter document ID
+ * @param {string} subsectionId - The parent subsection ID
+ * @param {string} subsubsectionId - The subsubsection ID
+ * @param {string} subFilterId - The filter ID to delete
+ * @returns {Promise<Object>} Updated filter document
+ */
+exports.deleteSubsubsectionFilter = async (filterId, subsectionId, subsubsectionId, subFilterId) => {
+  const filter = await Filter.findById(filterId);
+  
+  if (!filter) {
+    throw new Error('Filter not found');
+  }
+  
+  const subsectionIndex = filter.subsections.findIndex(
+    subsection => subsection._id.toString() === subsectionId
+  );
+  
+  if (subsectionIndex === -1) {
+    throw new Error('Subsection not found');
+  }
+  
+  const subsubsectionIndex = filter.subsections[subsectionIndex].subsubsections.findIndex(
+    subsubsection => subsubsection._id.toString() === subsubsectionId
+  );
+  
+  if (subsubsectionIndex === -1) {
+    throw new Error('Subsubsection not found');
+  }
+  
+  // Find the filter
+  const filterIndex = filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].filters.findIndex(
+    f => f._id.toString() === subFilterId
+  );
+  
+  if (filterIndex === -1) {
+    throw new Error('Filter not found in subsubsection');
+  }
+  
+  // Check if it's a predefined filter
+  if (filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].filters[filterIndex].predefined) {
+    throw new Error('Cannot delete predefined filter');
+  }
+  
+  filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].filters = 
+    filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].filters.filter(
+      f => f._id.toString() !== subFilterId
+    );
   
   return await filter.save();
 };

@@ -24,4 +24,14 @@ router.post('/:filterId/subsections/:subsectionId/filters', verifyToken, isAdmin
 router.put('/:filterId/subsections/:subsectionId/filters/:subFilterId', verifyToken, isAdmin, filterController.updateSubsectionFilter);
 router.delete('/:filterId/subsections/:subsectionId/filters/:subFilterId', verifyToken, isAdmin, filterController.deleteSubsectionFilter);
 
+// Subsubsection routes
+router.post('/:filterId/subsections/:subsectionId/subsubsections', verifyToken, isAdmin, filterController.addSubsubsection);
+router.put('/:filterId/subsections/:subsectionId/subsubsections/:subsubsectionId', verifyToken, isAdmin, filterController.updateSubsubsection);
+router.delete('/:filterId/subsections/:subsectionId/subsubsections/:subsubsectionId', verifyToken, isAdmin, filterController.deleteSubsubsection);
+
+// Subsubsection filter routes
+router.post('/:filterId/subsections/:subsectionId/subsubsections/:subsubsectionId/filters', verifyToken, isAdmin, filterController.addSubsubsectionFilter);
+router.put('/:filterId/subsections/:subsectionId/subsubsections/:subsubsectionId/filters/:subFilterId', verifyToken, isAdmin, filterController.updateSubsubsectionFilter);
+router.delete('/:filterId/subsections/:subsectionId/subsubsections/:subsubsectionId/filters/:subFilterId', verifyToken, isAdmin, filterController.deleteSubsubsectionFilter);
+
 module.exports = router;
