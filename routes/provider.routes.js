@@ -31,6 +31,19 @@ router.put(
   providerProfileController.updateProviderProfile
 );
 
+// New account-related routes
+router.put(
+  "/profile/banking",
+  verifyToken,
+  isProvider,
+  providerProfileController.updateProviderBanking
+);
+router.put(
+  "/profile/security",
+  verifyToken,
+  isProvider,
+  providerProfileController.updateProviderSecurity
+);
 // Listings Management
 router.get(
   "/listings",
@@ -117,6 +130,12 @@ router.delete(
   verifyToken,
   isProvider,
   providerProfileController.unblockDates
+);
+router.get(
+  "/calendar-bookings",
+  verifyToken,
+  isProvider,
+  providerProfileController.getCalendarBookings
 );
 
 // Provider earnings and transactions

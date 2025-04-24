@@ -115,6 +115,8 @@ exports.getBookingUserDetails = async (userId) => {
 
 exports.getUnavailableDates = async (providerId, filters = {}) => {
   try {
+    console.log('Getting unavailable dates with filters:', filters);
+    
     let query = {};
 
     // If listingId is provided, filter by specific listing
@@ -131,32 +133,55 @@ exports.getUnavailableDates = async (providerId, filters = {}) => {
       query.listing = { $in: listingIds };
     }
 
-    // Add date range filters if provided
+    // Add date range filters if provided with inclusive boundary dates
     if (filters.startDate && filters.endDate) {
+      const startDate = new Date(filters.startDate);
+      startDate.setUTCHours(0, 0, 0, 0);
+      
+      const endDate = new Date(filters.endDate);
+      endDate.setUTCHours(23, 59, 59, 999);
+      
       query.date = {
-        $gte: new Date(filters.startDate),
-        $lte: new Date(filters.endDate),
+        $gte: startDate,
+        $lte: endDate,
       };
     } else if (filters.startDate) {
-      query.date = { $gte: new Date(filters.startDate) };
+      const startDate = new Date(filters.startDate);
+      startDate.setUTCHours(0, 0, 0, 0);
+      query.date = { $gte: startDate };
     } else if (filters.endDate) {
-      query.date = { $lte: new Date(filters.endDate) };
+      const endDate = new Date(filters.endDate);
+      endDate.setUTCHours(23, 59, 59, 999);
+      query.date = { $lte: endDate };
     }
+
+    console.log('Unavailable dates query:', JSON.stringify(query));
 
     // Get all unavailable dates matching the query
     const unavailableDates = await UnavailableDate.find(query)
       .populate("listing", "title")
       .sort({ date: 1 });
 
+    console.log(`Found ${unavailableDates.length} unavailable dates`);
+
     // Transform dates for easier frontend handling
-    return unavailableDates.map((record) => ({
-      id: record._id,
-      date: record.date.toISOString().split("T")[0],
-      listing: record.listing._id || record.listing,
-      listingId: record.listing._id || record.listing,
-      listingTitle: record.listing.title || "Property",
-      reason: record.reason,
-    }));
+    const formattedDates = unavailableDates.map((record) => {
+      // Format date to YYYY-MM-DD to avoid timezone issues
+      const date = new Date(record.date);
+      const formattedDate = date.toISOString().split('T')[0];
+      
+      return {
+        id: record._id,
+        date: formattedDate,
+        listing: record.listing._id || record.listing,
+        listingId: record.listing._id || record.listing,
+        listingTitle: record.listing.title || "Property",
+        reason: record.reason,
+      };
+    });
+    
+    console.log('Formatted unavailable dates:', formattedDates);
+    return formattedDates;
   } catch (error) {
     console.error("Error getting unavailable dates:", error);
     throw error;
@@ -196,6 +221,14 @@ exports.completeProviderRegistration = async (providerId, data) => {
 exports.blockDates = async (providerId, blockData) => {
   try {
     const { listingId, startDate, endDate, reason } = blockData;
+    
+    console.log('Provider attempting to block dates:', {
+      providerId,
+      listingId,
+      startDate,
+      endDate,
+      reason
+    });
 
     // Verify listing ownership
     const listing = await Listing.findOne({
@@ -239,7 +272,6 @@ exports.blockDates = async (providerId, blockData) => {
       throw new Error("Cannot block dates in the past");
     }
 
-    // Create blocked dates
     const start = new Date(startDate);
     const end = new Date(endDate);
     const blockedDates = [];
@@ -250,16 +282,35 @@ exports.blockDates = async (providerId, blockData) => {
       date <= end;
       date.setDate(date.getDate() + 1)
     ) {
+      // Create a new date object for each day to avoid reference issues
+      const dateClone = new Date(date);
+      // Set to noon UTC to avoid timezone issues
+      dateClone.setUTCHours(12, 0, 0, 0);
+      
       blockedDates.push({
         listing: listingId,
-        date: new Date(date),
+        date: dateClone,
         reason,
         createdBy: providerId,
         createdByType: "Provider",
       });
     }
-
-    return await UnavailableDate.insertMany(blockedDates);
+    
+    console.log(`Creating ${blockedDates.length} unavailable date entries`);
+    
+    // Use insertMany with ordered: false to continue even if some entries fail due to duplicates
+    const result = await UnavailableDate.insertMany(blockedDates, { ordered: false })
+      .catch(error => {
+        // Handle duplicate key errors (some dates might already be blocked)
+        if (error.code === 11000) {
+          console.log('Some dates already blocked (duplicate key error):', error.message);
+          return error.insertedDocs || [];
+        }
+        throw error;
+      });
+    
+    console.log(`Successfully created ${result.length} unavailable date entries`);
+    return result;
   } catch (error) {
     console.error("Error blocking dates:", error);
     throw error;
@@ -545,6 +596,83 @@ exports.getProviderAnalytics = async (providerId, timeRange = "month") => {
     };
   } catch (error) {
     console.error("Error calculating provider analytics:", error);
+    throw error;
+  }
+};
+
+
+
+
+exports.updateProvider = async (providerId, updateData) => {
+  try {
+    console.log(`Updating provider ${providerId} with data:`, updateData);
+    
+    const updatedProvider = await Provider.findByIdAndUpdate(
+      providerId,
+      updateData,
+      { new: true } // Return the updated document
+    );
+    
+    console.log('Provider update result:', updatedProvider ? 'Success' : 'Failed');
+    return updatedProvider;
+  } catch (error) {
+    console.error('Error in updateProvider service function:', error);
+    throw error;
+  }
+};
+
+
+exports.updateProviderBanking = async (providerId, bankingData) => {
+  try {
+    const { bankName, accountHolder, iban, swift } = bankingData;
+    
+    const updateData = {
+      bankName,
+      accountHolder,
+      iban,
+      swift: swift || ''
+    };
+    
+    const updatedProvider = await Provider.findByIdAndUpdate(
+      providerId,
+      updateData,
+      { new: true }
+    );
+    
+    return updatedProvider;
+  } catch (error) {
+    console.error('Error updating provider banking details:', error);
+    throw error;
+  }
+};
+ 
+
+exports.updateProviderPassword = async (providerId, hashedPassword) => {
+  try {
+    const result = await Provider.findByIdAndUpdate(
+      providerId,
+      { password: hashedPassword }
+    );
+    
+    return !!result; // Convert to boolean - true if update successful
+  } catch (error) {
+    console.error('Error updating provider password:', error);
+    throw error;
+  }
+};
+
+
+exports.updateProviderSettings = async (providerId, settings) => {
+  try {
+    const updatedProvider = await Provider.findByIdAndUpdate(
+      providerId,
+      { settings },
+      { new: true }
+    );
+    
+    return updatedProvider;
+  } catch (error) {
+    console.error('Error updating provider settings:', error);
     throw error;
   }
 };
