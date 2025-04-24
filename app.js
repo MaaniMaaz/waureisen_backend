@@ -5,7 +5,7 @@ const http = require("http"); // Add this for socket.io
 // const bodyParser = require('body-parser');
 const connectDB = require("./configs/database");
 const socketServer = require("./socketServer"); // Add this for socket.io
-
+const Booking = require("./models/booking.model.js")
 const adminRoutes = require("./routes/admin.routes.js");
 const userRoutes = require("./routes/user.routes.js");
 const filterRoutes = require("./routes/filter.routes.js");
@@ -22,6 +22,8 @@ const bookingRoutes = require("./routes/booking.routes.js");
 const newsletterRoutes = require('./routes/newsletter.routes');
 const paymentRoutes = require('./routes/payment.routes.js');
 const interhomeRoutes = require('./routes/interhome.routes');
+const {CronJob} = require("cron");
+const axios = require("axios");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 const {handlePayment} = require('./functions/webhook.js');
 
@@ -90,7 +92,37 @@ app.post(
   }
 );
 
+// cron job for transfer payment
+const scheduleTransferPaymnetJob = new CronJob("* * * * *", 
+  async () => {
+  console.log("Running daily payout job...");
+  const today = new Date();
 
+  const bookings = await Booking.find({
+    checkInDate: {
+      $eq: today.toISOString().split("T")[0], // Adjust based on your DB format
+    },
+    status:"pending"
+  });
+  console.log(bookings);
+  
+  for (const booking of bookings) {
+    try {
+      const response = await axios.post('http://localhost:5000/api/payment/transfer-payment', {
+        connectedAccountId: 'acct_1RHQnw2MRQIK1rqe',
+        amount: booking?.totalPrice,
+        currency: 'chf',
+        bookingId:booking?._id
+      });
+      console.log("Payout triggered:", response.data);
+  } catch (err) {
+    console.error("Failed to make payout:", err.message);
+  }
+  }
+},null,                
+true,                
+"UTC" )
+scheduleTransferPaymnetJob.start()
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
