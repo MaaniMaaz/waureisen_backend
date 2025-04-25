@@ -12,8 +12,9 @@ exports.getConversationByBooking = async (bookingId) => {
       select: 'title location images pricePerNight maxDogs'
     })
     .populate({
-      path: 'booking', 
-      select: 'checkInDate checkOutDate totalPrice status capacity'
+      path: 'booking',
+      // Include ALL relevant booking fields, especially capacity and _id
+      select: 'checkInDate checkOutDate totalPrice status capacity user listing type createdAt updatedAt _id bookingId'
     });
 };
 
@@ -26,7 +27,7 @@ exports.getCustomerConversations = async (customerId) => {
     })
     .populate({
       path: 'booking', 
-      select: 'checkInDate checkOutDate totalPrice status'
+      select: 'checkInDate checkOutDate totalPrice status capacity user listing type'
     })
     .sort({ updatedAt: -1 });
 };
@@ -40,7 +41,7 @@ exports.getProviderConversations = async (providerId) => {
     })
     .populate({
       path: 'booking', 
-      select: 'checkInDate checkOutDate totalPrice status capacity'
+      select: 'checkInDate checkOutDate totalPrice status capacity user listing type'
     })
     .sort({ updatedAt: -1 });
 };

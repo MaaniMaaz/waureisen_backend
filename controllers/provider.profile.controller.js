@@ -128,11 +128,11 @@ exports.getProviderListings = async (req, res, next) => {
 
 exports.getProviderBookings = async (req, res, next) => {
   try {
-    const { status, page, limit, sortOrder, dateRange, listingId } = req.query;
+    const { status, page, limit, sortOrder, sortBy, dateRange, listingId } = req.query;
     
     // Log received parameters
     console.log('Provider bookings request params:', { 
-      status, page, limit, sortOrder, dateRange, listingId 
+      status, page, limit, sortOrder, sortBy, dateRange, listingId 
     });
     
     // Get provider's listings first
@@ -175,6 +175,11 @@ exports.getProviderBookings = async (req, res, next) => {
     const pageNum = parseInt(page) || 1;
     const pageSize = parseInt(limit) || 10;
     const skip = (pageNum - 1) * pageSize;
+    
+    // Determine sort field and order
+    const sortField = sortBy || 'createdAt';
+    const sortDirection = sortOrder === 'desc' ? -1 : 1;
+    const sortOptions = { [sortField]: sortDirection };
 
     // Get total count for pagination
     const totalCount = await Booking.countDocuments(query);
@@ -183,7 +188,7 @@ exports.getProviderBookings = async (req, res, next) => {
     const bookings = await Booking.find(query)
       .populate("user", "username firstName lastName email")
       .populate("listing", "title location images")
-      .sort({ checkInDate: sortOrder === "desc" ? -1 : 1 })
+      .sort(sortOptions)
       .skip(skip)
       .limit(pageSize);
 

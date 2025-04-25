@@ -22,6 +22,7 @@ exports.getProviderConversations = async (req, res, next) => {
   }
 };
 
+
 exports.getOrCreateConversation = async (req, res, next) => {
   try {
     const { bookingId } = req.params;
@@ -92,6 +93,30 @@ exports.markConversationAsRead = async (req, res, next) => {
     await messageService.markMessagesAsRead(conversationId, userType);
     
     res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserUnreadCount = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const conversations = await Conversation.find({ customer: userId });
+    const unreadCount = conversations.reduce((total, conv) => 
+      total + (conv.unreadCustomer || 0), 0);
+    res.json({ unreadCount });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getProviderUnreadCount = async (req, res, next) => {
+  try {
+    const providerId = req.user.id;
+    const conversations = await Conversation.find({ provider: providerId });
+    const unreadCount = conversations.reduce((total, conv) => 
+      total + (conv.unreadProvider || 0), 0);
+    res.json({ unreadCount });
   } catch (err) {
     next(err);
   }
