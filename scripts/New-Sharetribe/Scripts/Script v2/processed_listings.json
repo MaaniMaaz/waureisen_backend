@@ -36,13 +36,13 @@
           "floor": "MainFloor",
           "type": "rooms",
           "count": 3,
-          "_id": "680a661a8232b17601bea54c"
+          "_id": "680b614fee534442dc043f5f"
         },
         {
           "floor": "MainFloor",
           "type": "living_room",
           "count": 1,
-          "_id": "680a661a8232b17601bea54d"
+          "_id": "680b614fee534442dc043f60"
         }
       ]
     },
@@ -55,14 +55,14 @@
           "outdoor",
           "parkingattheaccommodation"
         ],
-        "_id": "680a661a8232b17601bea54e"
+        "_id": "680b614fee534442dc043f61"
       },
       {
         "name": "facilitiesWellness",
         "description": [
           "sauna"
         ],
-        "_id": "680a661a8232b17601bea54f"
+        "_id": "680b614fee534442dc043f62"
       },
       {
         "name": "facilitiesaccommodationfeatures",
@@ -77,7 +77,7 @@
           "standalone",
           "washingmachine"
         ],
-        "_id": "680a661a8232b17601bea550"
+        "_id": "680b614fee534442dc043f63"
       },
       {
         "name": "facilitieskids",
@@ -85,7 +85,7 @@
           "kidsfriendly",
           "babybed"
         ],
-        "_id": "680a661a8232b17601bea551"
+        "_id": "680b614fee534442dc043f64"
       },
       {
         "name": "facilitieskitchen",
@@ -94,7 +94,7 @@
           "microwave",
           "backingoven"
         ],
-        "_id": "680a661a8232b17601bea552"
+        "_id": "680b614fee534442dc043f65"
       },
       {
         "name": "facilitiesmainfilters",
@@ -102,21 +102,21 @@
           "parkingattheaccommodation",
           "kidsfriendly"
         ],
-        "_id": "680a661a8232b17601bea553"
+        "_id": "680b614fee534442dc043f66"
       },
       {
         "name": "facilitiessightseeingnearby",
         "description": [
           "Ortsbeschreibung Hvide Sande\n\nLebhafter Fischerort und Badeort, 3'000 Einwohner, im Westen der Region, direkt am Meer, 23 km südwestlich von Ringkøbing. Im Ort: Supermarkt, Einkaufsgeschäfte, Metzgerei, Bäckerei, Boutique, Post, Bank, Restaurant, Bar, Museum. Hallenbad, Sauna. Zudem: Apotheke, Arzt. Sehenswürdigkeiten Lyngvik Lighthouse 5 km, Kinderland Ald'i'leg.\nSommer\n\nSandstrand, 3 km lang, flach abfallend, mit Strandeinrichtung, für Kinder geeignet, 2 km vom Ort. Surfen, Wasserski. Minigolf. Reiten. Wanderwege. Fahrradwege, Vermietung von Fahrrädern und Mountainbikes. Die Westküste ist herb, frisch, berauschend und erquickend. So weit das Auge reicht sieht man lange, breite Sandstrände und Dünen. Dänemarks schönste Sonnenuntergänge können Sie an der Nordsee erleben. Sind Sie für die ruhigeren Gewässer, dann besuchen Sie doch mal die naturgeschützte Halbinsel Skallingen, wo die Seehunde herumtollen, oder das Vogelreservat Tipperne beim Ringköbing Fjord. Dort bietet sich Ihnen ein imponierender Anblick, wenn sich Millionen von Zugvögeln im Frühjahr und Herbst auf ihrem Weg Richtung Norden oder Süden treffen. Dänemarks westlichster Punkt ist der Leuchtturm bei Blåvandshuk. Rund um den Leuchtturm liegen immer noch alte Betonbunker aus dem 2. Weltkrieg."
         ],
-        "_id": "680a661a8232b17601bea554"
+        "_id": "680b614fee534442dc043f67"
       },
       {
         "name": "facilitiessmoking",
         "description": [
           "nonsmokingaccommodation"
         ],
-        "_id": "680a661a8232b17601bea555"
+        "_id": "680b614fee534442dc043f68"
       },
       {
         "name": "facilitiessport",
@@ -129,21 +129,21 @@
           "bicyclerental",
           "minigolf"
         ],
-        "_id": "680a661a8232b17601bea556"
+        "_id": "680b614fee534442dc043f69"
       },
       {
         "name": "facilitiestodonearby",
         "description": [
           "sea"
         ],
-        "_id": "680a661a8232b17601bea557"
+        "_id": "680b614fee534442dc043f6a"
       },
       {
         "name": "facilitiesview",
         "description": [
           "gardenview"
         ],
-        "_id": "680a661a8232b17601bea558"
+        "_id": "680b614fee534442dc043f6b"
       },
       {
         "name": "dogFacilities",
@@ -152,7 +152,7 @@
           "Noleashrequired",
           "fencedgarden1"
         ],
-        "_id": "680a661a8232b17601bea559"
+        "_id": "680b614fee534442dc043f6c"
       }
     ],
     "legal": {
@@ -201,17 +201,17 @@
         {
           "name": "privategarden",
           "icon": "",
-          "_id": "680a661a8232b17601bea55a"
+          "_id": "680b614fee534442dc043f6d"
         },
         {
           "name": "Noleashrequired",
           "icon": "",
-          "_id": "680a661a8232b17601bea55b"
+          "_id": "680b614fee534442dc043f6e"
         },
         {
           "name": "fencedgarden1",
           "icon": "",
-          "_id": "680a661a8232b17601bea55c"
+          "_id": "680b614fee534442dc043f6f"
         }
       ],
       "generalFilters": [],
@@ -235,11 +235,11 @@
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-24T16:26:02.320Z",
-    "updatedAt": "2025-04-24T16:26:02.320Z",
-    "_id": "680a661a8232b17601bea54b",
+    "createdAt": "2025-04-25T10:17:51.190Z",
+    "updatedAt": "2025-04-25T10:17:51.190Z",
+    "_id": "680b614fee534442dc043f5e",
     "__v": 0,
-    "filters": "680a661b8232b17601bea55f"
+    "filters": "680b6150ee534442dc043f72"
   },
   {
     "Code": "DK6960.611.1",
@@ -278,13 +278,13 @@
           "floor": "MainFloor",
           "type": "rooms",
           "count": 3,
-          "_id": "680a661b8232b17601bea58f"
+          "_id": "680b6150ee534442dc043fa2"
         },
         {
           "floor": "MainFloor",
           "type": "living_room",
           "count": 1,
-          "_id": "680a661b8232b17601bea590"
+          "_id": "680b6150ee534442dc043fa3"
         }
       ]
     },
@@ -296,7 +296,7 @@
         "description": [
           "sauna"
         ],
-        "_id": "680a661b8232b17601bea591"
+        "_id": "680b6150ee534442dc043fa4"
       },
       {
         "name": "facilitiesaccommodationfeatures",
@@ -311,14 +311,14 @@
           "standalone",
           "washingmachine"
         ],
-        "_id": "680a661b8232b17601bea592"
+        "_id": "680b6150ee534442dc043fa5"
       },
       {
         "name": "facilitieskids",
         "description": [
           "babybed"
         ],
-        "_id": "680a661b8232b17601bea593"
+        "_id": "680b6150ee534442dc043fa6"
       },
       {
         "name": "facilitieskitchen",
@@ -327,7 +327,7 @@
           "microwave",
           "backingoven"
         ],
-        "_id": "680a661b8232b17601bea594"
+        "_id": "680b6150ee534442dc043fa7"
       },
       {
         "name": "facilitiesmainfilters",
@@ -336,28 +336,28 @@
           "parkingattheaccommodation",
           "kidsfriendly"
         ],
-        "_id": "680a661b8232b17601bea595"
+        "_id": "680b6150ee534442dc043fa8"
       },
       {
         "name": "facilitiespool",
         "description": [
           "whirlpool"
         ],
-        "_id": "680a661b8232b17601bea596"
+        "_id": "680b6150ee534442dc043fa9"
       },
       {
         "name": "facilitiessightseeingnearby",
         "description": [
           "Ortsbeschreibung Hvide Sande\n\nLebhafter Fischerort und Badeort, 3'000 Einwohner, im Westen der Region, direkt am Meer, 23 km südwestlich von Ringkøbing. Im Ort: Supermarkt, Einkaufsgeschäfte, Metzgerei, Bäckerei, Boutique, Post, Bank, Restaurant, Bar, Museum. Hallenbad, Sauna. Zudem: Apotheke, Arzt. Sehenswürdigkeiten Lyngvik Lighthouse 5 km, Kinderland Ald'i'leg.\nSommer\n\nSandstrand, 3 km lang, flach abfallend, mit Strandeinrichtung, für Kinder geeignet, 2 km vom Ort. Surfen, Wasserski. Minigolf. Reiten. Wanderwege. Fahrradwege, Vermietung von Fahrrädern und Mountainbikes. Die Westküste ist herb, frisch, berauschend und erquickend. So weit das Auge reicht sieht man lange, breite Sandstrände und Dünen. Dänemarks schönste Sonnenuntergänge können Sie an der Nordsee erleben. Sind Sie für die ruhigeren Gewässer, dann besuchen Sie doch mal die naturgeschützte Halbinsel Skallingen, wo die Seehunde herumtollen, oder das Vogelreservat Tipperne beim Ringköbing Fjord. Dort bietet sich Ihnen ein imponierender Anblick, wenn sich Millionen von Zugvögeln im Frühjahr und Herbst auf ihrem Weg Richtung Norden oder Süden treffen. Dänemarks westlichster Punkt ist der Leuchtturm bei Blåvandshuk. Rund um den Leuchtturm liegen immer noch alte Betonbunker aus dem 2. Weltkrieg."
         ],
-        "_id": "680a661b8232b17601bea597"
+        "_id": "680b6150ee534442dc043faa"
       },
       {
         "name": "facilitiessmoking",
         "description": [
           "nonsmokingaccommodation"
         ],
-        "_id": "680a661b8232b17601bea598"
+        "_id": "680b6150ee534442dc043fab"
       },
       {
         "name": "facilitiessport",
@@ -370,21 +370,21 @@
           "bicyclerental",
           "biketour"
         ],
-        "_id": "680a661b8232b17601bea599"
+        "_id": "680b6150ee534442dc043fac"
       },
       {
         "name": "facilitiestodonearby",
         "description": [
           "sea"
         ],
-        "_id": "680a661b8232b17601bea59a"
+        "_id": "680b6150ee534442dc043fad"
       },
       {
         "name": "facilitiesview",
         "description": [
           "gardenview"
         ],
-        "_id": "680a661b8232b17601bea59b"
+        "_id": "680b6150ee534442dc043fae"
       },
       {
         "name": "dogFacilities",
@@ -394,7 +394,7 @@
           "fencedterrace",
           "fencedgarden1"
         ],
-        "_id": "680a661b8232b17601bea59c"
+        "_id": "680b6150ee534442dc043faf"
       }
     ],
     "legal": {
@@ -444,22 +444,22 @@
         {
           "name": "privategarden",
           "icon": "",
-          "_id": "680a661b8232b17601bea59d"
+          "_id": "680b6150ee534442dc043fb0"
         },
         {
           "name": "Noleashrequired",
           "icon": "",
-          "_id": "680a661b8232b17601bea59e"
+          "_id": "680b6150ee534442dc043fb1"
         },
         {
           "name": "fencedterrace",
           "icon": "",
-          "_id": "680a661b8232b17601bea59f"
+          "_id": "680b6150ee534442dc043fb2"
         },
         {
           "name": "fencedgarden1",
           "icon": "",
-          "_id": "680a661b8232b17601bea5a0"
+          "_id": "680b6150ee534442dc043fb3"
         }
       ],
       "generalFilters": [],
@@ -483,11 +483,11 @@
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-24T16:26:03.856Z",
-    "updatedAt": "2025-04-24T16:26:03.856Z",
-    "_id": "680a661b8232b17601bea58e",
+    "createdAt": "2025-04-25T10:17:52.707Z",
+    "updatedAt": "2025-04-25T10:17:52.707Z",
+    "_id": "680b6150ee534442dc043fa1",
     "__v": 0,
-    "filters": "680a661b8232b17601bea5a2"
+    "filters": "680b6150ee534442dc043fb5"
   },
   {
     "Code": "DK9990.650.1",
@@ -526,25 +526,25 @@
           "floor": "MainFloor",
           "type": "rooms",
           "count": 1,
-          "_id": "680a661c8232b17601bea5d1"
+          "_id": "680b6151ee534442dc043fe4"
         },
         {
           "floor": "UpperFloor",
           "type": "living_room",
           "count": 1,
-          "_id": "680a661c8232b17601bea5d2"
+          "_id": "680b6151ee534442dc043fe5"
         },
         {
           "floor": "MainFloor",
           "type": "rooms",
           "count": 1,
-          "_id": "680a661c8232b17601bea5d3"
+          "_id": "680b6151ee534442dc043fe6"
         },
         {
           "floor": "MainFloor",
           "type": "living_room",
           "count": 1,
-          "_id": "680a661c8232b17601bea5d4"
+          "_id": "680b6151ee534442dc043fe7"
         }
       ]
     },
@@ -557,7 +557,7 @@
           "outdoor",
           "parkingattheaccommodation"
         ],
-        "_id": "680a661c8232b17601bea5d5"
+        "_id": "680b6151ee534442dc043fe8"
       },
       {
         "name": "facilitiesaccommodationfeatures",
@@ -570,7 +570,7 @@
           "kitchen",
           "washingmachine"
         ],
-        "_id": "680a661c8232b17601bea5d6"
+        "_id": "680b6151ee534442dc043fe9"
       },
       {
         "name": "facilitieskids",
@@ -578,7 +578,7 @@
           "kidsfriendly",
           "babybed"
         ],
-        "_id": "680a661c8232b17601bea5d7"
+        "_id": "680b6151ee534442dc043fea"
       },
       {
         "name": "facilitieskitchen",
@@ -586,7 +586,7 @@
           "backingoven",
           "dishwasher"
         ],
-        "_id": "680a661c8232b17601bea5d8"
+        "_id": "680b6151ee534442dc043feb"
       },
       {
         "name": "facilitiesmainfilters",
@@ -595,21 +595,21 @@
           "parkingattheaccommodation",
           "kidsfriendly"
         ],
-        "_id": "680a661c8232b17601bea5d9"
+        "_id": "680b6151ee534442dc043fec"
       },
       {
         "name": "facilitiessightseeingnearby",
         "description": [
           "Ortsbeschreibung Skagen\n\nBekannter, lebhafter Badeort, 8'000 Einwohner, im Norden der Region, direkt am Meer, 40 km nördlich von Frederikshavn. Im Ort: Supermarkt, Einkaufsgeschäfte, Metzgerei, Bäckerei, Boutique, Post, Bank, Restaurant, Bar, Museum. Hallenbad, Fitnesszentrum. Zudem: Apotheke, Arzt. Sehenswürdigkeiten Grenen 4 km, Skagen Odde Naturcenter 4 km.\nSommer\n\nSandstrand, 3 km lang, flach abfallend, für Kinder geeignet, 1 km vom Ort. Sporthafen. Minigolf 2 km. Angeln (mit Bewilligung). Wanderwege. Fahrradwege, Vermietung von Fahrrädern. Entlang der Küste Nordwestjütlands, von Skagen im Norden bis Agger im Süden, können Sie Nordeuropas weißeste und breiteste Sandstrände erleben. Hier liegen die gemütlichen Badeorte, die Ihnen alles bieten, was Ihr Herz begehrt. An einigen Stellen können Sie immer noch die Fischer beobachten, die wie in alten Tagen ihre Fischerboote auf den Strand ziehen. Auf Grenen, Dänemarks nördlichstem Punkt, können Sie mit je einem Fuß in zwei Meeren stehen, die sich hier treffen: Kattegat und Skagerrak. Entlang der ganzen Küste können Sie auch traumhafte Sonnenuntergänge genießen."
         ],
-        "_id": "680a661c8232b17601bea5da"
+        "_id": "680b6151ee534442dc043fed"
       },
       {
         "name": "facilitiessmoking",
         "description": [
           "nonsmokingaccommodation"
         ],
-        "_id": "680a661c8232b17601bea5db"
+        "_id": "680b6151ee534442dc043fee"
       },
       {
         "name": "facilitiessport",
@@ -619,21 +619,21 @@
           "biketour",
           "minigolf"
         ],
-        "_id": "680a661c8232b17601bea5dc"
+        "_id": "680b6151ee534442dc043fef"
       },
       {
         "name": "facilitiestodonearby",
         "description": [
           "sea"
         ],
-        "_id": "680a661c8232b17601bea5dd"
+        "_id": "680b6151ee534442dc043ff0"
       },
       {
         "name": "facilitiesview",
         "description": [
           "gardenview"
         ],
-        "_id": "680a661c8232b17601bea5de"
+        "_id": "680b6151ee534442dc043ff1"
       },
       {
         "name": "dogFacilities",
@@ -642,7 +642,7 @@
           "Noleashrequired",
           "fencedterrace"
         ],
-        "_id": "680a661c8232b17601bea5df"
+        "_id": "680b6151ee534442dc043ff2"
       }
     ],
     "legal": {
@@ -683,17 +683,17 @@
         {
           "name": "privategarden",
           "icon": "",
-          "_id": "680a661c8232b17601bea5e0"
+          "_id": "680b6151ee534442dc043ff3"
         },
         {
           "name": "Noleashrequired",
           "icon": "",
-          "_id": "680a661c8232b17601bea5e1"
+          "_id": "680b6151ee534442dc043ff4"
         },
         {
           "name": "fencedterrace",
           "icon": "",
-          "_id": "680a661c8232b17601bea5e2"
+          "_id": "680b6151ee534442dc043ff5"
         }
       ],
       "generalFilters": [],
@@ -717,11 +717,11 @@
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-24T16:26:04.653Z",
-    "updatedAt": "2025-04-24T16:26:04.653Z",
-    "_id": "680a661c8232b17601bea5d0",
+    "createdAt": "2025-04-25T10:17:53.534Z",
+    "updatedAt": "2025-04-25T10:17:53.534Z",
+    "_id": "680b6151ee534442dc043fe3",
     "__v": 0,
-    "filters": "680a661c8232b17601bea5e4"
+    "filters": "680b6151ee534442dc043ff7"
   },
   {
     "Code": "DK6960.604.1",
@@ -760,13 +760,13 @@
           "floor": "MainFloor",
           "type": "rooms",
           "count": 4,
-          "_id": "680a661d8232b17601bea60e"
+          "_id": "680b6152ee534442dc044021"
         },
         {
           "floor": "MainFloor",
           "type": "living_room",
           "count": 1,
-          "_id": "680a661d8232b17601bea60f"
+          "_id": "680b6152ee534442dc044022"
         }
       ]
     },
@@ -779,14 +779,14 @@
           "outdoor",
           "parkingattheaccommodation"
         ],
-        "_id": "680a661d8232b17601bea610"
+        "_id": "680b6152ee534442dc044023"
       },
       {
         "name": "facilitiesWellness",
         "description": [
           "sauna"
         ],
-        "_id": "680a661d8232b17601bea611"
+        "_id": "680b6152ee534442dc044024"
       },
       {
         "name": "facilitiesaccommodationfeatures",
@@ -801,7 +801,7 @@
           "standalone",
           "washingmachine"
         ],
-        "_id": "680a661d8232b17601bea612"
+        "_id": "680b6152ee534442dc044025"
       },
       {
         "name": "facilitieskids",
@@ -811,7 +811,7 @@
           "babybed",
           "childrenplayground"
         ],
-        "_id": "680a661d8232b17601bea613"
+        "_id": "680b6152ee534442dc044026"
       },
       {
         "name": "facilitieskitchen",
@@ -820,7 +820,7 @@
           "microwave",
           "backingoven"
         ],
-        "_id": "680a661d8232b17601bea614"
+        "_id": "680b6152ee534442dc044027"
       },
       {
         "name": "facilitiesmainfilters",
@@ -828,28 +828,28 @@
           "parkingattheaccommodation",
           "kidsfriendly"
         ],
-        "_id": "680a661d8232b17601bea615"
+        "_id": "680b6152ee534442dc044028"
       },
       {
         "name": "facilitiespool",
         "description": [
           "whirlpool"
         ],
-        "_id": "680a661d8232b17601bea616"
+        "_id": "680b6152ee534442dc044029"
       },
       {
         "name": "facilitiessightseeingnearby",
         "description": [
           "Ortsbeschreibung Hvide Sande\n\nLebhafter Fischerort und Badeort, 3'000 Einwohner, im Westen der Region, direkt am Meer, 23 km südwestlich von Ringkøbing. Im Ort: Supermarkt, Einkaufsgeschäfte, Metzgerei, Bäckerei, Boutique, Post, Bank, Restaurant, Bar, Museum. Hallenbad, Sauna. Zudem: Apotheke, Arzt. Sehenswürdigkeiten Lyngvik Lighthouse 5 km, Kinderland Ald'i'leg.\nSommer\n\nSandstrand, 3 km lang, flach abfallend, mit Strandeinrichtung, für Kinder geeignet, 2 km vom Ort. Surfen, Wasserski. Minigolf. Reiten. Wanderwege. Fahrradwege, Vermietung von Fahrrädern und Mountainbikes. Die Westküste ist herb, frisch, berauschend und erquickend. So weit das Auge reicht sieht man lange, breite Sandstrände und Dünen. Dänemarks schönste Sonnenuntergänge können Sie an der Nordsee erleben. Sind Sie für die ruhigeren Gewässer, dann besuchen Sie doch mal die naturgeschützte Halbinsel Skallingen, wo die Seehunde herumtollen, oder das Vogelreservat Tipperne beim Ringköbing Fjord. Dort bietet sich Ihnen ein imponierender Anblick, wenn sich Millionen von Zugvögeln im Frühjahr und Herbst auf ihrem Weg Richtung Norden oder Süden treffen. Dänemarks westlichster Punkt ist der Leuchtturm bei Blåvandshuk. Rund um den Leuchtturm liegen immer noch alte Betonbunker aus dem 2. Weltkrieg."
         ],
-        "_id": "680a661d8232b17601bea617"
+        "_id": "680b6152ee534442dc04402a"
       },
       {
         "name": "facilitiessmoking",
         "description": [
           "nonsmokingaccommodation"
         ],
-        "_id": "680a661d8232b17601bea618"
+        "_id": "680b6152ee534442dc04402b"
       },
       {
         "name": "facilitiessport",
@@ -862,14 +862,14 @@
           "bicyclerental",
           "biketour"
         ],
-        "_id": "680a661d8232b17601bea619"
+        "_id": "680b6152ee534442dc04402c"
       },
       {
         "name": "facilitiestodonearby",
         "description": [
           "sea"
         ],
-        "_id": "680a661d8232b17601bea61a"
+        "_id": "680b6152ee534442dc04402d"
       },
       {
         "name": "facilitiesview",
@@ -877,7 +877,7 @@
           "seaview",
           "gardenview"
         ],
-        "_id": "680a661d8232b17601bea61b"
+        "_id": "680b6152ee534442dc04402e"
       },
       {
         "name": "dogFacilities",
@@ -886,7 +886,7 @@
           "Noleashrequired",
           "fencedgarden1"
         ],
-        "_id": "680a661d8232b17601bea61c"
+        "_id": "680b6152ee534442dc04402f"
       }
     ],
     "legal": {
@@ -940,17 +940,17 @@
         {
           "name": "privategarden",
           "icon": "",
-          "_id": "680a661d8232b17601bea61d"
+          "_id": "680b6152ee534442dc044030"
         },
         {
           "name": "Noleashrequired",
           "icon": "",
-          "_id": "680a661d8232b17601bea61e"
+          "_id": "680b6152ee534442dc044031"
         },
         {
           "name": "fencedgarden1",
           "icon": "",
-          "_id": "680a661d8232b17601bea61f"
+          "_id": "680b6152ee534442dc044032"
         }
       ],
       "generalFilters": [],
@@ -974,11 +974,11 @@
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-24T16:26:05.516Z",
-    "updatedAt": "2025-04-24T16:26:05.516Z",
-    "_id": "680a661d8232b17601bea60d",
+    "createdAt": "2025-04-25T10:17:54.340Z",
+    "updatedAt": "2025-04-25T10:17:54.340Z",
+    "_id": "680b6152ee534442dc044020",
     "__v": 0,
-    "filters": "680a661d8232b17601bea621"
+    "filters": "680b6152ee534442dc044034"
   },
   {
     "Code": "DK6792.626.1",
@@ -1017,13 +1017,13 @@
           "floor": "MainFloor",
           "type": "rooms",
           "count": 3,
-          "_id": "680a661e8232b17601bea654"
+          "_id": "680b6153ee534442dc044067"
         },
         {
           "floor": "MainFloor",
           "type": "living_room",
           "count": 1,
-          "_id": "680a661e8232b17601bea655"
+          "_id": "680b6153ee534442dc044068"
         }
       ]
     },
@@ -1036,14 +1036,14 @@
           "outdoor",
           "parkingattheaccommodation"
         ],
-        "_id": "680a661e8232b17601bea656"
+        "_id": "680b6153ee534442dc044069"
       },
       {
         "name": "facilitiesWellness",
         "description": [
           "sauna"
         ],
-        "_id": "680a661e8232b17601bea657"
+        "_id": "680b6153ee534442dc04406a"
       },
       {
         "name": "facilitiesaccommodationfeatures",
@@ -1058,7 +1058,7 @@
           "standalone",
           "washingmachine"
         ],
-        "_id": "680a661e8232b17601bea658"
+        "_id": "680b6153ee534442dc04406b"
       },
       {
         "name": "facilitieskids",
@@ -1066,7 +1066,7 @@
           "kidsfriendly",
           "childrenplayground"
         ],
-        "_id": "680a661e8232b17601bea659"
+        "_id": "680b6153ee534442dc04406c"
       },
       {
         "name": "facilitieskitchen",
@@ -1075,7 +1075,7 @@
           "microwave",
           "backingoven"
         ],
-        "_id": "680a661e8232b17601bea65a"
+        "_id": "680b6153ee534442dc04406d"
       },
       {
         "name": "facilitiesmainfilters",
@@ -1083,21 +1083,21 @@
           "parkingattheaccommodation",
           "kidsfriendly"
         ],
-        "_id": "680a661e8232b17601bea65b"
+        "_id": "680b6153ee534442dc04406e"
       },
       {
         "name": "facilitiessightseeingnearby",
         "description": [
           "Ortsbeschreibung Rømø\n\nGrosser Badeort, 600 Einwohner, im Westen der Region, direkt am Meer, 70 km südlich von Esbjerg. Im Ort: 1 - 10 km: Lebensmittelgeschäft, Metzgerei, Bäckerei, Restaurant, Museum. Weitere Möglichkeiten für Einkauf und Unterhaltung in 20 - 25 km. Sehenswürdigkeiten Naturcenter Tønnisgård, Kinderland Rømø Lege- og Labyrintpark, Rømø Sommerland.\nSommer\n\nSandstrand, 12 km lang, flach abfallend, mit Strandeinrichtung, für Kinder geeignet, 3 km vom Ort. Surfen. Golfplatz. Minigolf. Reiten. Angeln (mit Bewilligung). Wanderwege. Fahrradwege, Vermietung von Fahrrädern. Die Westküste ist herb, frisch, berauschend und erquickend. So weit das Auge reicht sieht man lange, breite Sandstrände und Dünen. Dänemarks schönste Sonnenuntergänge können Sie an der Nordsee erleben. Sind Sie für die ruhigeren Gewässer, dann besuchen Sie doch mal die naturgeschützte Halbinsel Skallingen, wo die Seehunde herumtollen, oder das Vogelreservat Tipperne beim Ringköbing Fjord. Dort bietet sich Ihnen ein imponierender Anblick, wenn sich Millionen von Zugvögeln im Frühjahr und Herbst auf ihrem Weg Richtung Norden oder Süden treffen. Dänemarks westlichster Punkt ist der Leuchtturm bei Blåvandshuk. Rund um den Leuchtturm liegen immer noch alte Betonbunker aus dem 2. Weltkrieg."
         ],
-        "_id": "680a661e8232b17601bea65c"
+        "_id": "680b6153ee534442dc04406f"
       },
       {
         "name": "facilitiessmoking",
         "description": [
           "nonsmokingaccommodation"
         ],
-        "_id": "680a661e8232b17601bea65d"
+        "_id": "680b6153ee534442dc044070"
       },
       {
         "name": "facilitiessport",
@@ -1110,21 +1110,21 @@
           "golf",
           "biketour"
         ],
-        "_id": "680a661e8232b17601bea65e"
+        "_id": "680b6153ee534442dc044071"
       },
       {
         "name": "facilitiestodonearby",
         "description": [
           "sea"
         ],
-        "_id": "680a661e8232b17601bea65f"
+        "_id": "680b6153ee534442dc044072"
       },
       {
         "name": "facilitiesview",
         "description": [
           "gardenview"
         ],
-        "_id": "680a661e8232b17601bea660"
+        "_id": "680b6153ee534442dc044073"
       },
       {
         "name": "dogFacilities",
@@ -1133,7 +1133,7 @@
           "Noleashrequired",
           "fencedgarden1"
         ],
-        "_id": "680a661e8232b17601bea661"
+        "_id": "680b6153ee534442dc044074"
       }
     ],
     "legal": {
@@ -1180,17 +1180,17 @@
         {
           "name": "privategarden",
           "icon": "",
-          "_id": "680a661e8232b17601bea662"
+          "_id": "680b6153ee534442dc044075"
         },
         {
           "name": "Noleashrequired",
           "icon": "",
-          "_id": "680a661e8232b17601bea663"
+          "_id": "680b6153ee534442dc044076"
         },
         {
           "name": "fencedgarden1",
           "icon": "",
-          "_id": "680a661e8232b17601bea664"
+          "_id": "680b6153ee534442dc044077"
         }
       ],
       "generalFilters": [],
@@ -1214,10 +1214,10 @@
     "totalReviews": 0,
     "totalRating": 0,
     "averageRating": 0,
-    "createdAt": "2025-04-24T16:26:06.333Z",
-    "updatedAt": "2025-04-24T16:26:06.333Z",
-    "_id": "680a661e8232b17601bea653",
+    "createdAt": "2025-04-25T10:17:55.144Z",
+    "updatedAt": "2025-04-25T10:17:55.144Z",
+    "_id": "680b6153ee534442dc044066",
     "__v": 0,
-    "filters": "680a661e8232b17601bea666"
+    "filters": "680b6153ee534442dc044079"
   }
 ]

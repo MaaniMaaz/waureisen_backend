@@ -297,6 +297,21 @@ exports.updateSubsubsectionFilter = async (req, res, next) => {
  */
 exports.deleteSubsubsectionFilter = async (req, res, next) => {
   try {
+
+/**
+ * Get template filter document
+ */
+exports.getTemplateFilter = async (req, res, next) => {
+  try {
+    const templateFilter = await Filter.findOne({ isTemplate: true });
+    if (!templateFilter) {
+      return res.status(404).json({ message: 'Template filter not found' });
+    }
+    res.json(templateFilter);
+  } catch (err) {
+    next(err);
+  }
+};
     const { filterId, subsectionId, subsubsectionId, subFilterId } = req.params;
     
     const updatedFilter = await filterService.deleteSubsubsectionFilter(

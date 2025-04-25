@@ -1,0 +1,116 @@
+{
+  "Dog Facilities": [
+    "Private Garden",
+    "No Leash Required",
+    "Fenced Garden 1",
+    "Fenced Terrace",
+    "Dog Stays Free of Charge",
+    "Fenced Garden",
+    "Off-leash Meadow",
+    "Dog-friendly Beach Nearby",
+    "Dog-friendly Restaurants",
+    "Firework Free Zone",
+    "Allowed at the Pool Area",
+    "Fenced Garden 150",
+    "Leash Required",
+    "Fenced Garden 2",
+    "Poop Bags for Free",
+    "Dog School",
+    "Organized Hiking Tours with Dogs",
+    "Food Bowl",
+    "Water Bowl",
+    "Dog Bed",
+    "Fenced Dog Park",
+    "Service Dog",
+    "Allowed in the Restaurant"
+  ],
+  "Facilities Parking": [
+    "Outdoor",
+    "Parking at the Accommodation",
+    "Underground",
+    "Parking Street",
+    "E Charge"
+  ],
+  "Facilities Wellness": [
+    "Sauna",
+    "Thermal Bath",
+    "Steambath",
+    "Hamam",
+    "Massage",
+    "Relaxation Zone",
+    "Aquafitt"
+  ],
+  "Facilities Accommodation Features": [
+    "Tv",
+    "Free Wifi",
+    "No Carpet",
+    "Balcony",
+    "Terrace",
+    "Kitchen",
+    "Fireplace",
+    "Standalone",
+    "Washingmachine",
+    "Grill",
+    "Skiroom",
+    "Other Residents in the Building",
+    "Air Conditioner",
+    "Additional Bed",
+    "Combination Lock"
+  ],
+  "Facilities Kids": [
+    "Kids Friendly",
+    "Baby Bed",
+    "Kids Chair",
+    "Children Playground",
+    "Kids Pool"
+  ],
+  "Facilities Kitchen": [
+    "Dishwasher",
+    "Microwave",
+    "Backing Oven",
+    "Coffee Machine",
+    "Nespresso Machine"
+  ],
+  "Facilities Main Filters": [
+    "Parking at the Accommodation",
+    "Kids Friendly",
+    "Fenced Garden",
+    "Private Pool",
+    "Dog Allowed in the Restaurant",
+    "Free Cancellation"
+  ],
+  "Facilities Smoking": [
+    "Non Smoking Accommodation",
+    "Smoking Accommodation"
+  ],
+  "Facilities Sport": [
+    "Surf",
+    "Hiking Tour",
+    "Bicycle Path",
+    "Bike Tour",
+    "Horse Riding",
+    "Bicycle Rental",
+    "Mini Golf",
+    "Golf",
+    "Sail",
+    "Fitness Center",
+    "Tennis",
+    "Skiing",
+    "Cross Country Skiing",
+    "Beach Volley",
+    "Table Tennis",
+    "Sup Rental"
+  ],
+  "Facilities To Do Nearby": [
+    "Sea",
+    "Lake",
+    "River"
+  ],
+  "Facilities View": [
+    "Garden View",
+    "Sea View",
+    "Pool View",
+    "Mountain View",
+    "Lake View"
+  ]
+}
