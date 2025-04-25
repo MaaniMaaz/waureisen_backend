@@ -191,6 +191,22 @@ exports.deleteSubsectionFilter = async (req, res, next) => {
 };
 
 /**
+ * Get the filter template document
+ */
+exports.getTemplateFilter = async (req, res, next) => {
+  try {
+    const templateFilter = await filterService.getTemplateFilter();
+    if (!templateFilter) {
+      // You might want to return a 404 or a default structure if no template is found
+      return res.status(404).json({ message: 'Filter template not found' });
+    }
+    res.json(templateFilter);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
  * Add a new subsubsection to a subsection
  */
 exports.addSubsubsection = async (req, res, next) => {

@@ -469,6 +469,25 @@ exports.deleteSubsubsectionFilter = async (filterId, subsectionId, subsubsection
 };
 
 /**
+ * Get the filter template document
+ * @returns {Promise<Object>} Filter template document
+ */
+exports.getTemplateFilter = async () => {
+  // Find the filter document marked as a template
+  const templateFilter = await Filter.findOne({ isTemplate: true });
+  
+  if (!templateFilter) {
+    // Optionally, create a default template if none exists, or throw an error
+    // For now, let's return null or throw an error if no template is found
+    // throw new Error('Filter template not found'); 
+    // Or return null:
+    return null; 
+  }
+  
+  return templateFilter;
+};
+
+/**
  * Create a default filter document with predefined subsections
  * @returns {Promise<Object>} Created filter document
  */
