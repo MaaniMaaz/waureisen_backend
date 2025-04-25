@@ -24,4 +24,10 @@ router.get('/:conversationId/messages', verifyToken, messageController.getMessag
 // Send a message
 router.post('/:conversationId/messages', verifyToken, messageController.sendMessage);
 
+// User unread count
+router.get('/user/unread', verifyToken, isUser, conversationController.getUserUnreadCount);
+
+// Provider unread count
+router.get('/provider/unread', verifyToken, isProvider, conversationController.getProviderUnreadCount);
+
 module.exports = router;
