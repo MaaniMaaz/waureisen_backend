@@ -14,6 +14,9 @@ exports.getAllFilters = async () => {
  * @returns {Promise<Object>} Filter document
  */
 exports.getFilterById = async (id) => {
+  if (id === 'template') {
+    return await Filter.findOne({ isTemplate: true });
+  }
   return await Filter.findById(id);
 };
 
@@ -473,7 +476,8 @@ exports.deleteSubsubsectionFilter = async (filterId, subsectionId, subsubsection
  * @returns {Promise<Object>} Filter template document
  */
 exports.getTemplateFilter = async () => {
-  // Find the filter document marked as a template
+  return await Filter.findOne({ isTemplate: true });
+  return await Filter.findOne({ isTemplate: true });
   const templateFilter = await Filter.findOne({ isTemplate: true });
   
   if (!templateFilter) {
