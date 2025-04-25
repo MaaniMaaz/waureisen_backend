@@ -1,61 +1,36 @@
+// services/message.service.js
 const Message = require('../models/message.model');
+const Conversation = require('../models/conversation.model');
 
-exports.getAllMessages = async () => {
-  return await Message.find()
-    .populate('user')
-    .populate({
-      path: 'listing',
-      populate: {
-        path: 'owner'
-      }
-    });
+exports.getMessagesByConversation = async (conversationId, page = 1, limit = 50) => {
+  const skip = (page - 1) * limit;
+  
+  return await Message.find({ conversation: conversationId })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
 };
 
-exports.getMessageById = async (id) => {
-  return await Message.findById(id)
-    .populate('user')
-    .populate({
-      path: 'listing',
-      populate: {
-        path: 'owner'
-      }
-    });
-};
+exports.createMessage = async (conversationId, senderId, senderType, content) => {
+  const newMessage = new Message({
+    conversation: conversationId,
+    sender: senderId,
+    senderType,
+    content
+  });
 
-exports.getMessagesByUser = async (userId) => {
-  return await Message.find({ user: userId })
-    .populate({
-      path: 'listing',
-      populate: {
-        path: 'owner'
-      }
-    });
-};
-
-exports.getMessagesByListing = async (listingId) => {
-  return await Message.find({ listing: listingId })
-    .populate('user')
-    .populate({
-      path: 'listing',
-      populate: {
-        path: 'owner'
-      }
-    });
-};
-
-exports.createMessage = async (data) => {
-  const newMessage = new Message(data);
   return await newMessage.save();
 };
 
-exports.updateMessage = async (id, data) => {
-  return await Message.findByIdAndUpdate(id, data, { new: true });
-};
-
-exports.deleteMessage = async (id) => {
-  await Message.findByIdAndDelete(id);
-};
-
-exports.markAsRead = async (id) => {
-  return await Message.findByIdAndUpdate(id, { isRead: true }, { new: true });
+exports.markMessagesAsRead = async (conversationId, recipientType) => {
+  const senderType = recipientType === 'user' ? 'Provider' : 'User';
+  
+  return await Message.updateMany(
+    { 
+      conversation: conversationId,
+      senderType: senderType,
+      isRead: false
+    },
+    { isRead: true }
+  );
 };

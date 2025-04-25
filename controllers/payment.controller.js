@@ -17,7 +17,7 @@ const createPaymentIntent = async (req, res) => {
     } = req.body;
 
     const currencySmall = currency?.toLowerCase();
-    console.log(req?.user);
+    
 
     // Step 1: Calculate fees (Assume 2.9% for Stripe + 10% for platform)
     const stripeFeePercentage = 2.9;
@@ -63,7 +63,7 @@ const createPaymentIntent = async (req, res) => {
       },
     });
 
-    console.log(paymentIntent, "Payment Intent created successfully.");
+    
 
     // Step 4: Return Payment Intent details in the response
     return res.status(200).json({
@@ -92,7 +92,7 @@ const transferPayment = async (req, res) => {
     console.log("transfer yahan tak aaya");
     
     const { connectedAccountId , amount,currency,bookingId } = req?.body;
-console.log(bookingId , "booking id");
+
 
     const transfer = await stripe.transfers.create({
       amount: amount * 100,
@@ -100,7 +100,7 @@ console.log(bookingId , "booking id");
       destination: connectedAccountId,
     
     });
-    console.log("success bhi hua" , transfer);
+    
     if(transfer?.id){
      await Booking.findByIdAndUpdate(bookingId,{status:"confirmed"})
     }

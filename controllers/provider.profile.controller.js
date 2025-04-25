@@ -202,6 +202,7 @@ exports.getProviderBookings = async (req, res, next) => {
   }
 };
 
+
 exports.acceptBooking = async (req, res, next) => {
   try {
     // First try to get the booking directly by ID
@@ -237,8 +238,68 @@ exports.acceptBooking = async (req, res, next) => {
       }
     }
     
+    // Update booking status
     booking.status = 'confirmed';
     await booking.save();
+    
+    const listing = await Listing.findById(booking.listing);
+    if (2 === 2) {
+      try {
+        // Log for debugging
+        console.log('Creating conversation for Waureisen listing booking');
+        
+        // Set proper customer and provider IDs
+        const customerId = booking.user;
+        const providerId = req.user.id;
+        
+        console.log('Customer ID:', customerId);
+        console.log('Provider ID:', providerId);
+        console.log('Booking ID:', booking._id);
+        console.log('Listing ID:', booking.listing);
+        
+        // Create a conversation
+        const conversationService = require('../services/conversation.service');
+        const messageService = require('../services/message.service');
+        
+        const conversation = await conversationService.createConversation(
+          booking._id,
+          customerId,
+          providerId,
+          booking.listing
+        );
+        
+        console.log('Conversation created:', conversation);
+        
+        if (conversation) {
+          // Send automatic message
+          const message = await messageService.createMessage(
+            conversation._id,
+            providerId,
+            'Provider',
+            'Your booking has been accepted. Feel free to ask any questions!'
+          );
+          
+          console.log('Initial message created:', message);
+          
+          await conversationService.updateLastMessage(
+            conversation._id,
+            message.content,
+            providerId,
+            'Provider'
+          );
+          
+          // Emit socket event if available
+          if (req.io) {
+            req.io.to(conversation._id.toString()).emit('new_message', message);
+            console.log('Socket message emitted');
+          }
+        }
+      } catch (error) {
+        console.error('Error creating conversation on booking acceptance:', error);
+      }
+    } else {
+      console.log('Listing is not a Waureisen listing, skipping conversation creation');
+    }
     
     res.json(booking);
   } catch (err) {
