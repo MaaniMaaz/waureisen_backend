@@ -37,4 +37,5 @@ router.delete('/:filterId/subsections/:subsectionId/subsubsections/:subsubsectio
 // Template endpoint
 router.get('/template', filterController.getTemplateFilter);
 
+
 module.exports = router;
