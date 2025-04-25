@@ -56,6 +56,17 @@ const subsubsectionSchema = new mongoose.Schema({
   filters: [filterDefinition]
 });
 
+// Middleware to ensure only one template exists
+filterSchema.pre('save', async function(next) {
+  if (this.isTemplate) {
+    const existingTemplate = await this.constructor.findOne({ isTemplate: true });
+    if (existingTemplate && !existingTemplate._id.equals(this._id)) {
+      throw new Error('Only one template can exist');
+    }
+  }
+  next();
+});
+
 const filterSchema = new mongoose.Schema({
   listing: {
     type: mongoose.Schema.Types.ObjectId,
