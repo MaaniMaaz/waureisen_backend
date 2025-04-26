@@ -59,6 +59,8 @@ const providerSchema = new mongoose.Schema({
   accountHolder: { type: String },
   iban: { type: String },
   swift: { type: String },
+
+  stripeAccountId: { type: String },
   
   
   hostingExperience: { 

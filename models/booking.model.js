@@ -17,6 +17,9 @@ const bookingSchema = new mongoose.Schema({
   checkInDate: { type: Date, required: true },
   checkOutDate: { type: Date, required: true },
 
+  paymentIntentId: { type: String, required: true },
+  providerAccountId: { type: String, required: true },
+
   // TBD if needed or not
   totalPrice: { type: Number, required: true },
   appliedVoucher: { type: mongoose.Schema.Types.ObjectId, ref: 'Voucher' },

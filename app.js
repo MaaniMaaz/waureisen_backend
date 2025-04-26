@@ -68,21 +68,21 @@ app.post(
       console.log(event?.type, err);
       return;
     }
-    console.log(event?.type);
+    console.log(event?.data);
     // Handle the event
     switch (event.type) {
       case "payment_intent.succeeded":
         const paymentIntentSucceeded = event.data.object;
 
-        await handlePayment("success", paymentIntentSucceeded.metadata);
+        await handlePayment("success", paymentIntentSucceeded.metadata ,event.data.object);
         break;
       case "payment_intent.canceled":
         const paymentIntentCanceled = event.data.object;
-        await handlePayment("canceled", paymentIntentCanceled.metadata);
+        await handlePayment("canceled", paymentIntentCanceled.metadata,event.data.object);
         break;
       case "payment_intent.payment_failed":
         const paymentIntentFailed = event.data.object;
-        await handlePayment("failed", paymentIntentFailed.metadata);
+        await handlePayment("failed", paymentIntentFailed.metadata,event.data.object);
         break;
       // ... handle other event types
       default:
@@ -98,25 +98,29 @@ app.post(
 const scheduleTransferPaymnetJob = new CronJob("* * * * *", 
   async () => {
   console.log("Running daily payout job...");
-  const today = new Date();
+
+  const startOfDay = new Date();
+startOfDay.setUTCHours(0, 0, 0, 0); // 00:00:00 UTC
+
+const endOfDay = new Date();
+endOfDay.setUTCHours(23, 59, 59, 999); // 23:59:59 UTC
 
   const bookings = await Booking.find({
     checkInDate: {
-      $eq: today.toISOString().split("T")[0], // Adjust based on your DB format
+      $gte: startOfDay,
+      $lte: endOfDay
     },
     status:"pending"
   });
-  console.log(bookings);
   
   for (const booking of bookings) {
     try {
       const response = await axios.post('http://localhost:5000/api/payment/transfer-payment', {
-        connectedAccountId: 'acct_1RHQnw2MRQIK1rqe',
+        connectedAccountId: booking?.providerAccountId,
         amount: booking?.totalPrice,
         currency: 'chf',
         bookingId:booking?._id
       });
-      console.log("Payout triggered:", response.data);
   } catch (err) {
     console.error("Failed to make payout:", err.message);
   }
