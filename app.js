@@ -130,7 +130,7 @@ endOfDay.setUTCHours(23, 59, 59, 999); // 23:59:59 UTC
   
   for (const booking of bookings) {
     try {
-      const response = await axios.post('http://localhost:5000/api/payment/transfer-payment', {
+      const response = await axios.post('https://waureisen-backend.onrender.com/api/payment/transfer-payment', {
         connectedAccountId: booking?.providerAccountId,
         amount: booking?.totalPrice,
         currency: 'chf',

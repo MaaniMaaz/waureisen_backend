@@ -182,8 +182,8 @@ console.log(account , "account ka data " , account?.details_submitted)
     // 2. Create an account link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-  refresh_url: `http://localhost:5173/provider/registration?account=failed`, 
-  return_url: `http://localhost:5173/provider/registration?account=${account.id}`, 
+  refresh_url: `https://waureisen11.vercel.app/registration?account=failed`, 
+  return_url: `https://waureisen11.vercel.app/registration?account=${account.id}`, 
   type: 'account_onboarding',
     });
 
