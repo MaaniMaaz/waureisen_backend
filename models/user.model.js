@@ -46,6 +46,7 @@ const userSchema = new mongoose.Schema({
 
   //TBD
   stripeAccountId: { type: String, default: 'N/A' }, 
+  latestChargeId: { type: String, default: 'N/A' }, 
 
   // Payment Details
   paymentMethod: {
