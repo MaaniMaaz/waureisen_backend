@@ -14,6 +14,9 @@ exports.getAllFilters = async () => {
  * @returns {Promise<Object>} Filter document
  */
 exports.getFilterById = async (id) => {
+  if (id === 'template') {
+    return await Filter.findOne({ isTemplate: true });
+  }
   return await Filter.findById(id);
 };
 
@@ -466,6 +469,26 @@ exports.deleteSubsubsectionFilter = async (filterId, subsectionId, subsubsection
     );
   
   return await filter.save();
+};
+
+/**
+ * Get the filter template document
+ * @returns {Promise<Object>} Filter template document
+ */
+exports.getTemplateFilter = async () => {
+  return await Filter.findOne({ isTemplate: true });
+  return await Filter.findOne({ isTemplate: true });
+  const templateFilter = await Filter.findOne({ isTemplate: true });
+  
+  if (!templateFilter) {
+    // Optionally, create a default template if none exists, or throw an error
+    // For now, let's return null or throw an error if no template is found
+    // throw new Error('Filter template not found'); 
+    // Or return null:
+    return null; 
+  }
+  
+  return templateFilter;
 };
 
 /**

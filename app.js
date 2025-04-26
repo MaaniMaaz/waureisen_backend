@@ -1,10 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const http = require("http"); // Add this for socket.io
-// const bodyParser = require('body-parser');
+const http = require("http"); 
+const socketIo = require('socket.io');
 const connectDB = require("./configs/database");
-const socketServer = require("./socketServer"); // Add this for socket.io
 const Booking = require("./models/booking.model.js")
 const adminRoutes = require("./routes/admin.routes.js");
 const userRoutes = require("./routes/user.routes.js");
@@ -12,13 +11,13 @@ const filterRoutes = require("./routes/filter.routes.js");
 const languageRoutes = require("./routes/language.routes.js");
 const listingRoutes = require("./routes/listing.routes.js");
 const providerRoutes = require("./routes/provider.routes.js");
-const messageRoutes = require("./routes/message.routes");
 const emailNotificationRoutes = require("./routes/emailNotification.routes.js");
 const camperRoutes = require("./routes/camper.routes");
 const transactionRoutes = require("./routes/transaction.routes.js");
 const travelMagazineRoutes = require("./routes/travelMagazine.routes.js");
 const voucherRoutes = require("./routes/voucher.routes.js");
 const bookingRoutes = require("./routes/booking.routes.js");
+const conversationRoutes = require('./routes/conversation.routes');
 
 const {CronJob} = require("cron");
 const axios = require("axios");
@@ -29,12 +28,20 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET);
 const { handlePayment } = require("./functions/webhook.js");
 
 // const reviewRoutes = require("./routes/review.routes.js")
-const chatRoutes = require("./routes/chat.routes"); // Add this for chat routes
 
 const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
 const server = http.createServer(app); // Create HTTP server
+
+// Set up Socket.io
+const io = socketIo(server, {
+  cors: {
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  }
+});
 
 // Connect to MongoDB
 connectDB();
@@ -48,8 +55,16 @@ app.use(
   })
 );
 
-// webhook
+// Make io available in the request object
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
+// Initialize socket handlers
+require('./sockets/chat.socket')(io);
+
+// webhook
 const endpointSecret = process.env.WEBHOOK_SECRET;
 console.log(endpointSecret);
 app.post(
@@ -142,7 +157,6 @@ app.use((req, res, next) => {
 // API Routes
 app.use("/api/admins", adminRoutes);
 app.use("/api/users", userRoutes);
-
 app.use("/api/filters", filterRoutes);
 app.use("/api/languages", languageRoutes);
 app.use("/api/listings", listingRoutes);
@@ -150,17 +164,13 @@ app.use("/api/providers", providerRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/travel-magazine", travelMagazineRoutes);
 app.use("/api/vouchers", voucherRoutes);
-app.use('/api/messages', messageRoutes);
 app.use('/api/email-notifications', emailNotificationRoutes);
 app.use('/api/campers', camperRoutes);
 app.use('/api/newsletters', newsletterRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/booking', bookingRoutes);
-
-app.use("/api/providers", providerRoutes);
-
+app.use('/api/conversations', conversationRoutes);
 app.use("/api/interhome", interhomeRoutes);
-app.use("/api/chat", chatRoutes); // Add this for chat routes
 
 // Root route
 app.get("/", (req, res) => {
@@ -170,19 +180,9 @@ app.get("/", (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Initialize socket server
-const io = socketServer.init(server);
-console.log("Socket.IO server initialized");
-
-// Handle socket.io errors
-io.on("error", (error) => {
-  console.error("Socket.IO server error:", error);
-});
-
 const PORT = process.env.PORT || 5000;
 
 // Start the server
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Socket.IO server available at ${PORT}`);
 });

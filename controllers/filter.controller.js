@@ -1,3 +1,4 @@
+const Filter = require('../models/filter.model');
 const filterService = require('../services/filter.service');
 
 /**
@@ -310,6 +311,21 @@ exports.deleteSubsubsectionFilter = async (req, res, next) => {
     if (err.message === 'Cannot delete predefined filter') {
       return res.status(403).json({ message: err.message });
     }
+    next(err);
+  }
+};
+
+/**
+ * Get template filter document
+ */
+exports.getTemplateFilter = async (req, res, next) => {
+  try {
+    const templateFilter = await Filter.findOne({ isTemplate: true });
+    if (!templateFilter) {
+      return res.status(404).json({ message: 'Template filter not found' });
+    }
+    res.json(templateFilter);
+  } catch (err) {
     next(err);
   }
 };

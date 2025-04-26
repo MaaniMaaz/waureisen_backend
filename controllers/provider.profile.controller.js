@@ -128,11 +128,11 @@ exports.getProviderListings = async (req, res, next) => {
 
 exports.getProviderBookings = async (req, res, next) => {
   try {
-    const { status, page, limit, sortOrder, dateRange, listingId } = req.query;
+    const { status, page, limit, sortOrder, sortBy, dateRange, listingId } = req.query;
     
     // Log received parameters
     console.log('Provider bookings request params:', { 
-      status, page, limit, sortOrder, dateRange, listingId 
+      status, page, limit, sortOrder, sortBy, dateRange, listingId 
     });
     
     // Get provider's listings first
@@ -175,6 +175,11 @@ exports.getProviderBookings = async (req, res, next) => {
     const pageNum = parseInt(page) || 1;
     const pageSize = parseInt(limit) || 10;
     const skip = (pageNum - 1) * pageSize;
+    
+    // Determine sort field and order
+    const sortField = sortBy || 'createdAt';
+    const sortDirection = sortOrder === 'desc' ? -1 : 1;
+    const sortOptions = { [sortField]: sortDirection };
 
     // Get total count for pagination
     const totalCount = await Booking.countDocuments(query);
@@ -183,7 +188,7 @@ exports.getProviderBookings = async (req, res, next) => {
     const bookings = await Booking.find(query)
       .populate("user", "username firstName lastName email")
       .populate("listing", "title location images")
-      .sort({ checkInDate: sortOrder === "desc" ? -1 : 1 })
+      .sort(sortOptions)
       .skip(skip)
       .limit(pageSize);
 
@@ -201,6 +206,7 @@ exports.getProviderBookings = async (req, res, next) => {
     next(error);
   }
 };
+
 
 exports.acceptBooking = async (req, res, next) => {
   try {
@@ -237,8 +243,68 @@ exports.acceptBooking = async (req, res, next) => {
       }
     }
     
+    // Update booking status
     booking.status = 'confirmed';
     await booking.save();
+    
+    const listing = await Listing.findById(booking.listing);
+    if (2 === 2) {
+      try {
+        // Log for debugging
+        console.log('Creating conversation for Waureisen listing booking');
+        
+        // Set proper customer and provider IDs
+        const customerId = booking.user;
+        const providerId = req.user.id;
+        
+        console.log('Customer ID:', customerId);
+        console.log('Provider ID:', providerId);
+        console.log('Booking ID:', booking._id);
+        console.log('Listing ID:', booking.listing);
+        
+        // Create a conversation
+        const conversationService = require('../services/conversation.service');
+        const messageService = require('../services/message.service');
+        
+        const conversation = await conversationService.createConversation(
+          booking._id,
+          customerId,
+          providerId,
+          booking.listing
+        );
+        
+        console.log('Conversation created:', conversation);
+        
+        if (conversation) {
+          // Send automatic message
+          const message = await messageService.createMessage(
+            conversation._id,
+            providerId,
+            'Provider',
+            'Your booking has been accepted. Feel free to ask any questions!'
+          );
+          
+          console.log('Initial message created:', message);
+          
+          await conversationService.updateLastMessage(
+            conversation._id,
+            message.content,
+            providerId,
+            'Provider'
+          );
+          
+          // Emit socket event if available
+          if (req.io) {
+            req.io.to(conversation._id.toString()).emit('new_message', message);
+            console.log('Socket message emitted');
+          }
+        }
+      } catch (error) {
+        console.error('Error creating conversation on booking acceptance:', error);
+      }
+    } else {
+      console.log('Listing is not a Waureisen listing, skipping conversation creation');
+    }
     
     res.json(booking);
   } catch (err) {

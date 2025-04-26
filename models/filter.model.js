@@ -164,6 +164,17 @@ const filterSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Middleware to ensure only one template exists
+filterSchema.pre('save', async function(next) {
+  if (this.isTemplate) {
+    const existingTemplate = await this.constructor.findOne({ isTemplate: true });
+    if (existingTemplate && !existingTemplate._id.equals(this._id)) {
+      throw new Error('Only one template can exist');
+    }
+  }
+  next();
+});
+
 // Pre-save middleware to update the updatedAt timestamp
 filterSchema.pre('save', function(next) {
   this.updatedAt = Date.now();

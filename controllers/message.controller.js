@@ -1,188 +1,87 @@
+// controllers/message.controller.js
 const messageService = require('../services/message.service');
-const chatbotService = require('../services/chatbot.service');
-const listingService = require('../services/listing.service');
+const conversationService = require('../services/conversation.service');
+const Conversation = require('../models/conversation.model');
 
-exports.getAllMessages = async (req, res, next) => {
+exports.getMessages = async (req, res, next) => {
   try {
-    const messages = await messageService.getAllMessages();
-    res.json(messages);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getMessageById = async (req, res, next) => {
-  try {
-    const message = await messageService.getMessageById(req.params.id);
-    if (!message) {
-      return res.status(404).json({ message: 'Message not found' });
-    }
-    res.json(message);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getMessagesByUser = async (req, res, next) => {
-  try {
-    const messages = await messageService.getMessagesByUser(req.user.id);
-    res.json(messages);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getMessagesByListing = async (req, res, next) => {
-  try {
-    const listing = await listingService.getListingById(req.params.listingId);
-    if (!listing) {
-      return res.status(404).json({ message: 'Listing not found' });
-    }
-
-    // Check if user is the listing owner
-    if (listing.owner._id.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to view these messages' });
-    }
-
-    const messages = await messageService.getMessagesByListing(req.params.listingId);
-    res.json(messages);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.createMessage = async (req, res, next) => {
-  try {
-    const listing = await listingService.getListingById(req.body.listing);
-    if (!listing) {
-      return res.status(404).json({ message: 'Listing not found' });
-    }
-
-    const messageData = {
-      ...req.body,
-      user: req.user.id
-    };
-
-    const newMessage = await messageService.createMessage(messageData);
-    res.status(201).json(newMessage);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.updateMessage = async (req, res, next) => {
-  try {
-    const message = await messageService.getMessageById(req.params.id);
-    if (!message) {
-      return res.status(404).json({ message: 'Message not found' });
-    }
-
-    // Only allow user who created the message to update it
-    if (message.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to update this message' });
-    }
-
-    const updatedMessage = await messageService.updateMessage(req.params.id, req.body);
-    res.json(updatedMessage);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.deleteMessage = async (req, res, next) => {
-  try {
-    const message = await messageService.getMessageById(req.params.id);
-    if (!message) {
-      return res.status(404).json({ message: 'Message not found' });
-    }
-
-    // Only allow user who created the message to delete it
-    if (message.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to delete this message' });
-    }
-
-    await messageService.deleteMessage(req.params.id);
-    res.status(204).send();
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.markAsRead = async (req, res, next) => {
-  try {
-    const message = await messageService.getMessageById(req.params.id);
-    if (!message) {
-      return res.status(404).json({ message: 'Message not found' });
-    }
-
-    const listing = await listingService.getListingById(message.listing);
-    // Only allow listing owner to mark messages as read
-    if (listing.owner._id.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized to mark this message as read' });
-    }
-
-    const updatedMessage = await messageService.markAsRead(req.params.id);
-    res.json(updatedMessage);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// Add these new methods
-exports.sendMessageToListing = async (req, res, next) => {
-  try {
-    const { listingId, content } = req.body;
-    const listing = await listingService.getListingById(listingId);
+    const { conversationId } = req.params;
+    const { page, limit } = req.query;
     
-    if (!listing) {
-      return res.status(404).json({ message: 'Listing not found' });
+    // Validate user permission to access these messages
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ message: 'Conversation not found' });
     }
+    
+    const isAuthorized = 
+      (req.user.role === 'user' && conversation.customer.toString() === req.user.id) ||
+      (req.user.role === 'provider' && conversation.provider.toString() === req.user.id);
+    
+    if (!isAuthorized) {
+      return res.status(403).json({ message: 'Not authorized to access these messages' });
+    }
+    
+    const messages = await messageService.getMessagesByConversation(
+      conversationId,
+      parseInt(page) || 1,
+      parseInt(limit) || 50
+    );
+    
+    res.json(messages);
+  } catch (err) {
+    next(err);
+  }
+};
 
-    const message = await messageService.createMessage({
-      sender: req.user.id,
-      senderType: 'User',
-      receiver: listing.owner,
-      receiverType: 'Provider',
-      listing: listingId,
-      messageType: 'listing',
+exports.sendMessage = async (req, res, next) => {
+  try {
+    const { conversationId } = req.params;
+    const { content } = req.body;
+    
+    if (!content || content.trim() === '') {
+      return res.status(400).json({ message: 'Message content cannot be empty' });
+    }
+    
+    // Verify conversation exists and user has access
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ message: 'Conversation not found' });
+    }
+    
+    const isAuthorized = 
+      (req.user.role === 'user' && conversation.customer.toString() === req.user.id) ||
+      (req.user.role === 'provider' && conversation.provider.toString() === req.user.id);
+    
+    if (!isAuthorized) {
+      return res.status(403).json({ message: 'Not authorized to send messages in this conversation' });
+    }
+    
+    // Determine sender type based on user role
+    const senderType = req.user.role === 'user' ? 'User' : 'Provider';
+    
+    // Create the message
+    const message = await messageService.createMessage(
+      conversationId,
+      req.user.id,
+      senderType,
       content
-    });
-
-    res.status(201).json(message);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.sendMessageToChatbot = async (req, res, next) => {
-  try {
-    const { message } = req.body;
-    const response = await chatbotService.processMessage(req.user.id, message);
-    res.json(response);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.createSupportTicket = async (req, res, next) => {
-  try {
-    const { content, priority, category } = req.body;
+    );
     
-    const ticket = await messageService.createMessage({
-      sender: req.user.id,
-      senderType: req.user.role,
-      receiver: process.env.ADMIN_SUPPORT_ID,
-      receiverType: 'Admin',
-      messageType: 'support',
+    // Update last message in conversation
+    await conversationService.updateLastMessage(
+      conversationId,
       content,
-      supportTicket: {
-        priority,
-        status: 'open',
-        category
-      }
-    });
-
-    res.status(201).json(ticket);
+      req.user.id,
+      senderType
+    );
+    
+    // Send socket event (will be handled in socket setup)
+    if (req.io) {
+      req.io.to(conversationId).emit('new_message', message);
+    }
+    
+    res.status(201).json(message);
   } catch (err) {
     next(err);
   }

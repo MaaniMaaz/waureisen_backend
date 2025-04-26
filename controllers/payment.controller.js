@@ -17,9 +17,11 @@ const createPaymentIntent = async (req, res) => {
     } = req.body;
 
     const currencySmall = currency?.toLowerCase();
+
   
 
     const userData = await User?.findById(req?.user?.id);
+
 
     // Step 1: Calculate fees (Assume 2.9% for Stripe + 10% for platform)
     const stripeFeePercentage = 2.9;
@@ -81,9 +83,11 @@ const transferPayment = async (req, res) => {
   try {
 
     
+
     const { connectedAccountId, amount, currency, bookingId } = req?.body;
     const stripeFee = amount * 0.029;
     const platformFee = (amount - stripeFee) * 0.10;
+
 
 
     const transfer = await stripe.transfers.create({
@@ -91,6 +95,7 @@ const transferPayment = async (req, res) => {
       currency: currency,
       destination: connectedAccountId,
     });
+
     const transfer2 = await stripe.transfers.create({
       amount: Math.round(platformFee) * 100,
       currency: currency,
@@ -100,6 +105,7 @@ const transferPayment = async (req, res) => {
     console.log(transfer ,"transfer 1", transfer2 , "transfer 2")
     if (transfer?.id && transfer2?.id) {
       await Booking.findByIdAndUpdate(bookingId, { status: "confirmed" });
+
     }
     res.status(200).json({ success: true });
   } catch (error) {
@@ -139,6 +145,9 @@ const refundPayment = async (req, res) => {
       amount: Math.round(amount),
       // ...(amount && { amount }),
     });
+
+    booking.status = "canceled"
+    booking.save()
 
     res.status(200).json({ success: true, refund });
   } catch (error) {

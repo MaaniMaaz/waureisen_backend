@@ -1,11 +1,11 @@
-const User = require('../models/user.model');
+const User = require("../models/user.model");
 
 exports.getAllUsers = async () => {
   return await User.find();
 };
 
 exports.getUserById = async (id) => {
-  return await User.findById(id).populate('bookings');
+  return await User.findById(id).populate("bookings");
 };
 
 exports.createUser = async (data) => {
@@ -23,18 +23,17 @@ exports.deleteUser = async (id) => {
 
 // Add this new method
 exports.getUserByEmail = async (email) => {
-    return await User.findOne({ email });
+  return await User.findOne({ email });
 };
 
 exports.getUserFavorites = async (userId) => {
-  const user = await User.findById(userId)
-    .populate({
-      path: 'favorites',
-      populate: {
-        path: 'owner',
-        select: 'username email profilePicture'
-      }
-    });
+  const user = await User.findById(userId).populate({
+    path: "favorites",
+    populate: {
+      path: "owner",
+      select: "username email profilePicture",
+    },
+  });
   return user.favorites;
 };
 
@@ -43,7 +42,7 @@ exports.addToFavorites = async (userId, listingId) => {
     userId,
     { $addToSet: { favorites: listingId } },
     { new: true }
-  ).populate('favorites');
+  ).populate("favorites");
 };
 
 exports.removeFromFavorites = async (userId, listingId) => {
@@ -51,5 +50,39 @@ exports.removeFromFavorites = async (userId, listingId) => {
     userId,
     { $pull: { favorites: listingId } },
     { new: true }
-  ).populate('favorites');
+  ).populate("favorites");
+};
+
+// Recently Viewed functions
+exports.getRecentlyViewed = async (userId) => {
+  const user = await User.findById(userId).populate({
+    path: "recentlyViewed",
+    populate: {
+      path: "owner",
+      select: "username email profilePicture",
+    },
+  });
+  return user.recentlyViewed;
+};
+
+exports.addToRecentlyViewed = async (userId, listingId) => {
+  // First remove the listing if it already exists in the array
+  await User.findByIdAndUpdate(userId, {
+    $pull: { recentlyViewed: listingId },
+  });
+
+  // Then add it at the beginning (most recent)
+  return await User.findByIdAndUpdate(
+    userId,
+    { $push: { recentlyViewed: { $each: [listingId], $position: 0 } } },
+    { new: true }
+  ).populate("recentlyViewed");
+};
+
+exports.removeFromRecentlyViewed = async (userId, listingId) => {
+  return await User.findByIdAndUpdate(
+    userId,
+    { $pull: { recentlyViewed: listingId } },
+    { new: true }
+  ).populate("recentlyViewed");
 };

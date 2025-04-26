@@ -34,4 +34,8 @@ router.post('/:filterId/subsections/:subsectionId/subsubsections/:subsubsectionI
 router.put('/:filterId/subsections/:subsectionId/subsubsections/:subsubsectionId/filters/:subFilterId', verifyToken, isAdmin, filterController.updateSubsubsectionFilter);
 router.delete('/:filterId/subsections/:subsectionId/subsubsections/:subsubsectionId/filters/:subFilterId', verifyToken, isAdmin, filterController.deleteSubsubsectionFilter);
 
+// Template endpoint
+router.get('/template', filterController.getTemplateFilter);
+
+
 module.exports = router;

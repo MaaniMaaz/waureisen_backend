@@ -36,7 +36,7 @@ const connectMongo = async () => {
 };
 
 // ───────── Load Listing Model ─────────
-const Listing = require('../../models/listing.model');
+const Listing = require('../../../../models/listing.model');
 
 // ───────── Fetch Functions ─────────
 async function fetchDetail(code) {
@@ -131,7 +131,7 @@ async function fetchMedia(code) {
 // Update the mapToListing function to properly handle all fields
 async function mapToListing(sharetribeListing, detail, mediaItems) {
   // Load Filter model
-  const Filter = require('../../models/filter.model');
+  const Filter = require('../../../../models/filter.model');
 
   // Create filter structure for amenities
   const filterData = {
