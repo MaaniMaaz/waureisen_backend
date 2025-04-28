@@ -5,6 +5,7 @@ const Listing = require('../models/listing.model');
 const providerService = require('../services/provider.service');
 const messageService = require('../services/message.service');
 const bcrypt = require('bcryptjs');
+const bookingNotificationService = require('../services/bookingNotification.service');
 
 exports.getProviderProfile = async (req, res, next) => {
   try {
@@ -247,6 +248,15 @@ exports.acceptBooking = async (req, res, next) => {
     booking.status = 'confirmed';
     await booking.save();
     
+    // Send confirmation email to customer
+    try {
+      await bookingNotificationService.sendBookingAcceptanceEmail(booking);
+      console.log(`Acceptance email sent to customer for booking ${booking._id}`);
+    } catch (emailError) {
+      console.error('Error sending booking acceptance email:', emailError);
+      // Continue with the process even if the email fails
+    }
+    
     const listing = await Listing.findById(booking.listing);
     if (2 === 2) {
       try {
@@ -348,8 +358,18 @@ exports.rejectBooking = async (req, res, next) => {
       }
     }
     
+    // Update booking status
     booking.status = 'canceled';
     await booking.save();
+    
+    // Send rejection email to customer
+    try {
+      await bookingNotificationService.sendBookingRejectionEmail(booking);
+      console.log(`Rejection email sent to customer for booking ${booking._id}`);
+    } catch (emailError) {
+      console.error('Error sending booking rejection email:', emailError);
+      // Continue with the process even if the email fails
+    }
     
     res.json(booking);
   } catch (err) {

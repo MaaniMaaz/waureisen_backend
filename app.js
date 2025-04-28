@@ -21,6 +21,7 @@ const newsletterRoutes = require('./routes/newsletter.routes');
 const paymentRoutes = require('./routes/payment.routes.js');
 const interhomeRoutes = require('./routes/interhome.routes');
 const conversationRoutes = require('./routes/conversation.routes');
+const verificationRoutes = require('./routes/verification.routes.js');
 
 const {CronJob} = require("cron");
 const axios = require("axios");
@@ -170,6 +171,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/booking', bookingRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use("/api/interhome", interhomeRoutes);
+app.use('/api/verification', verificationRoutes);
 
 // Root route
 app.get("/", (req, res) => {
