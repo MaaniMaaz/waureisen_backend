@@ -93,6 +93,7 @@ exports.searchListings = async (req, res, next) => {
       people,
       dogs,
       dateRange,
+      filters,
     } = req.query;
 
     // Convert parameters to numbers
@@ -103,6 +104,9 @@ exports.searchListings = async (req, res, next) => {
     const guestCount = people ? parseInt(people) : null;
     const dogCount = dogs ? parseInt(dogs) : null;
 
+    // Parse filters if provided
+    const selectedFilters = filters ? JSON.parse(filters) : null;
+
     // Log received parameters for debugging
     console.log("Search parameters:", {
       latitude,
@@ -112,6 +116,7 @@ exports.searchListings = async (req, res, next) => {
       guestCount,
       dogCount,
       dateRange,
+      selectedFilters,
     });
 
     // Validate parameters
@@ -131,6 +136,7 @@ exports.searchListings = async (req, res, next) => {
       guestCount,
       dogCount,
       dateRange,
+      filters: selectedFilters,
     };
 
     const result = await listingService.searchListings(searchParams);
