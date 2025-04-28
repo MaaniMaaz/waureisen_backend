@@ -14,6 +14,7 @@ router.post("/login", userController.login);
 // Add these routes before other user routes
 router.get("/profile", verifyToken, userController.getUserProfile);
 router.put("/profile", verifyToken, userController.updateUserProfile);
+router.put("/profile/security", verifyToken, userController.updateUserSecurity);
 
 // Favorites routes - moved before other user routes to fix path conflicts
 router.get(

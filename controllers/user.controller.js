@@ -360,3 +360,50 @@ exports.removeFromRecentlyViewed = async (req, res, next) => {
     next(err);
   }
 };
+
+// Add new controller method for updating user password
+exports.updateUserSecurity = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    // Validation
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Current password and new password are required",
+      });
+    }
+
+    // Get user with password
+    const user = await userService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    const updatedUser = await userService.updateUser(userId, {
+      password: hashedPassword,
+    });
+
+    if (!updatedUser) {
+      return res.status(500).json({ message: "Failed to update password" });
+    }
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error("Error updating user security settings:", err);
+    next(err);
+  }
+};
