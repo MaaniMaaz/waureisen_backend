@@ -153,26 +153,52 @@ const applyAmenitiesFilter = (listings, selectedFilters) => {
     return listings;
   }
 
+  console.log('Selected filters to match:', selectedFilters);
+
   return listings.filter(listing => {
-    // Find the Amenities subsection in the listing's filters
+    console.log('\nChecking listing:', listing._id);
+    
     const amenitiesSubsection = listing.filters?.subsections?.find(
       subsection => subsection.name.toLowerCase() === 'amenities'
     );
 
     if (!amenitiesSubsection) {
+      console.log('No Amenities subsection found');
       return false;
     }
 
-    // Check both direct filters and subsubsection filters
-    const hasDirectFilterMatch = amenitiesSubsection.filters?.some(filter => 
-      selectedFilters.includes(filter.name)
-    );
+    // Log direct filters for comparison
+    const directFilters = amenitiesSubsection.filters?.map(f => f.name) || [];
+    console.log('Direct filters available:', directFilters);
 
-    const hasSubsubsectionFilterMatch = amenitiesSubsection.subsubsections?.some(subsection => 
-      subsection.filters?.some(filter => selectedFilters.includes(filter.name))
-    );
+    // Log subsubsection filters for comparison
+    const subsubsectionFilters = amenitiesSubsection.subsubsections?.flatMap(sub => 
+      sub.filters?.map(f => `${sub.name} > ${f.name}`) || []
+    ) || [];
+    console.log('Subsubsection filters available:', subsubsectionFilters);
 
-    return hasDirectFilterMatch || hasSubsubsectionFilterMatch;
+    const directFilterMatch = amenitiesSubsection.filters?.some(filter => {
+      const match = selectedFilters.includes(filter.name);
+      if (match) {
+        console.log(`✓ Direct match: "${filter.name}" matches selected filter`);
+      }
+      return match;
+    });
+
+    const subsubsectionFilterMatch = amenitiesSubsection.subsubsections?.some(subsection => {
+      return subsection.filters?.some(filter => {
+        const match = selectedFilters.includes(filter.name);
+        if (match) {
+          console.log(`✓ Subsubsection match: "${filter.name}" in "${subsection.name}" matches selected filter`);
+        }
+        return match;
+      });
+    });
+
+    const matches = directFilterMatch || subsubsectionFilterMatch;
+    console.log(`Final result: ${matches ? 'MATCHES' : 'NO MATCH'}\n`);
+    
+    return matches;
   });
 };
 
@@ -190,7 +216,7 @@ exports.searchListings = async (params) => {
     guestCount,
     dogCount,
     dateRange,
-    filters, // New parameter for selected filters
+    filters,
   } = params;
 
   // Calculate skip value for pagination
@@ -199,54 +225,45 @@ exports.searchListings = async (params) => {
   // Build query
   let query = {
     "location.type": "Point",
-    status: "active", // Only return active listings
+    status: "active",
   };
 
-  // Add geospatial query if coordinates are provided
   if (latitude && longitude) {
     query["location.coordinates"] = {
       $near: {
         $geometry: {
           type: "Point",
-          coordinates: [longitude, latitude], // GeoJSON uses [lng, lat] order
+          coordinates: [longitude, latitude],
         },
-        $maxDistance: 50000, // 50km radius
+        $maxDistance: 50000,
       },
     };
   }
 
-  // Add capacity filter if people parameter is provided
   if (guestCount) {
     query["capacity.people"] = { $gte: guestCount };
   }
 
-  // Add pets filter if dogs parameter is provided
   if (dogCount) {
     query["petsAllowed"] = true;
     query["capacity.pets"] = { $gte: dogCount };
   }
 
-  // Add date range filter if provided
-  // This would depend on your data model
-
   try {
-    // Get one extra to check if there are more results
     let listings = await Listing.find(query)
+      .populate('filters')
       .skip(skip)
       .limit(limit + 1)
       .lean();
 
     console.log(`Found ${listings.length} listings for search query`);
 
-    // Apply amenities filter if filters are provided
     if (filters && filters.length > 0) {
       listings = applyAmenitiesFilter(listings, filters);
+      console.log(`After filtering: ${listings.length} listings match the criteria`);
     }
 
-    // Check if there are more results
     const hasMore = listings.length > limit;
-
-    // Remove the extra item if there are more
     if (hasMore) {
       listings.pop();
     }
