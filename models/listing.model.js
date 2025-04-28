@@ -204,7 +204,7 @@ const listingSchema = new mongoose.Schema({
   provider: {
     type: String,
     enum: ['Waureisen', 'Interhome', 'Europarcs', 'Bergkultur'],
-    default: 'WaureisenD'
+    default: 'Waureisen'
   },
 
   // Reference to filter model

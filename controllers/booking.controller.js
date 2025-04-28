@@ -1,5 +1,6 @@
 const bookingService = require('../services/booking.service');
 const voucherService = require('../services/voucher.service');
+const bookingNotificationService = require('../services/bookingNotification.service');
 
 exports.getAllBookings = async (req, res, next) => {
   try {
@@ -22,6 +23,15 @@ exports.getBookingById = async (req, res, next) => {
 exports.createBooking = async (req, res, next) => {
   try {
     const newBooking = await bookingService.createBooking(req.body);
+    
+    // Send booking notification email to the provider
+    try {
+      await bookingNotificationService.sendBookingNotificationEmail(newBooking);
+    } catch (emailError) {
+      console.error('Error sending booking notification email:', emailError);
+      // Continue with the booking process even if email fails
+    }
+    
     res.status(201).json(newBooking);
   } catch (err) {
     next(err);
@@ -59,6 +69,8 @@ exports.getUserBookings = async (req, res, next) => {
 exports.cancelBooking = async (req, res, next) => {
   try {
     const booking = await bookingService.getBookingById(req.params.id);
+
+    console.log(booking);
     
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });

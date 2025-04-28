@@ -95,8 +95,6 @@ exports.completeRegistration = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    // Find provider
     const provider = await providerService.getProviderByEmail(email);
     if (!provider) {
       return res.status(401).json({ message: "Invalid credentials" });
