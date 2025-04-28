@@ -143,6 +143,40 @@ exports.searchListingsByMap = async (params) => {
 };
 
 /**
+ * Helper function to filter listings by amenities
+ * @param {Array} listings - List of listings to filter
+ * @param {Array} selectedFilters - Array of selected filter names
+ * @returns {Array} Filtered listings
+ */
+const applyAmenitiesFilter = (listings, selectedFilters) => {
+  if (!selectedFilters || selectedFilters.length === 0) {
+    return listings;
+  }
+
+  return listings.filter(listing => {
+    // Find the Amenities subsection in the listing's filters
+    const amenitiesSubsection = listing.filters?.subsections?.find(
+      subsection => subsection.name.toLowerCase() === 'amenities'
+    );
+
+    if (!amenitiesSubsection) {
+      return false;
+    }
+
+    // Check both direct filters and subsubsection filters
+    const hasDirectFilterMatch = amenitiesSubsection.filters?.some(filter => 
+      selectedFilters.includes(filter.name)
+    );
+
+    const hasSubsubsectionFilterMatch = amenitiesSubsection.subsubsections?.some(subsection => 
+      subsection.filters?.some(filter => selectedFilters.includes(filter.name))
+    );
+
+    return hasDirectFilterMatch || hasSubsubsectionFilterMatch;
+  });
+};
+
+/**
  * Search for listings based on location and filters
  * @param {Object} params - Search parameters
  * @returns {Object} Object containing listings and pagination info
@@ -156,6 +190,7 @@ exports.searchListings = async (params) => {
     guestCount,
     dogCount,
     dateRange,
+    filters, // New parameter for selected filters
   } = params;
 
   // Calculate skip value for pagination
@@ -196,12 +231,17 @@ exports.searchListings = async (params) => {
 
   try {
     // Get one extra to check if there are more results
-    const listings = await Listing.find(query)
+    let listings = await Listing.find(query)
       .skip(skip)
       .limit(limit + 1)
       .lean();
 
     console.log(`Found ${listings.length} listings for search query`);
+
+    // Apply amenities filter if filters are provided
+    if (filters && filters.length > 0) {
+      listings = applyAmenitiesFilter(listings, filters);
+    }
 
     // Check if there are more results
     const hasMore = listings.length > limit;
