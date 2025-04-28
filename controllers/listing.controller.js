@@ -104,8 +104,23 @@ exports.searchListings = async (req, res, next) => {
     const guestCount = people ? parseInt(people) : null;
     const dogCount = dogs ? parseInt(dogs) : null;
 
-    // Parse filters if provided
-    const selectedFilters = filters ? JSON.parse(filters) : null;
+    // Parse filters if provided - handle both string and array formats
+    let selectedFilters = null;
+    if (filters) {
+      try {
+        // If filters is already an array (from query string), use it directly
+        if (Array.isArray(filters)) {
+          selectedFilters = filters;
+        } else {
+          // Otherwise try to parse it as JSON
+          selectedFilters = JSON.parse(filters);
+        }
+      } catch (error) {
+        console.error('Error parsing filters:', error);
+        // If parsing fails, treat it as a single filter
+        selectedFilters = [filters];
+      }
+    }
 
     // Log received parameters for debugging
     console.log("Search parameters:", {
