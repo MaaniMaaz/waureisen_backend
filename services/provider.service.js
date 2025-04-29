@@ -8,12 +8,14 @@ exports.getProviderById = async (id) => {
   return await Provider.findById(id);
 };
 
-// Get provider's listings (basic info)
 exports.getProviderListings = async (providerId) => {
   return await Listing.find({
     owner: providerId,
     ownerType: "Provider",
-  }).select("title location status");
+  })
+  .select("title location status pricePerNight images listingType totalBookings source createdAt")
+  .populate("owner", "username email profilePicture")
+  .sort({ createdAt: -1 }); // Sort by creation date in descending order (newest first)
 };
 
 // Get listing details
@@ -24,6 +26,107 @@ exports.getListingDetails = async (listingId, providerId) => {
     ownerType: "Provider",
   });
 };
+
+
+exports.unblockDates = async (providerId, listingId, dates) => {
+  try {
+    console.log(`Attempting to unblock dates for listing ${listingId} by provider ${providerId}`);
+    console.log(`Dates to unblock:`, dates);
+    
+    // Verify listing ownership
+    const listing = await Listing.findOne({
+      _id: listingId,
+      owner: providerId,
+      ownerType: "Provider",
+    });
+
+    if (!listing) {
+      throw new Error("Listing not found or not owned by provider");
+    }
+
+    if (!Array.isArray(dates) || dates.length === 0) {
+      throw new Error("No dates provided for unblocking");
+    }
+
+    // Get the UnavailableDate model
+    const UnavailableDate = require('../models/unavailableDate.model');
+    
+    // First, log what dates we're trying to remove
+    console.log(`Attempting to remove the following dates from UnavailableDate collection:`);
+    dates.forEach(date => console.log(` - ${date}`));
+    
+    // Fetch the actual documents we're going to delete (for logging purpose)
+    const documentsToDelete = await UnavailableDate.find({
+      listing: listingId,
+      date: { $in: dates.map(dateStr => new Date(dateStr)) }
+    });
+    
+    console.log(`Found ${documentsToDelete.length} matching documents to delete`);
+    documentsToDelete.forEach(doc => {
+      console.log(` - Document ID: ${doc._id}, Date: ${doc.date}, Format: ${typeof doc.date}`);
+    });
+    
+    // Try delete with the date objects
+    const result = await UnavailableDate.deleteMany({
+      listing: listingId,
+      date: { $in: dates.map(dateStr => new Date(dateStr)) }
+    });
+    
+    console.log(`DeleteMany result: ${JSON.stringify(result)}`);
+    
+    // If no documents were deleted, maybe the dates are stored differently
+    if (result.deletedCount === 0) {
+      console.log("No documents deleted with Date objects. Trying with string format...");
+      
+      // Try deleting with the exact string format
+      const resultWithStrings = await UnavailableDate.deleteMany({
+        listing: listingId,
+        date: { $in: dates }
+      });
+      
+      console.log(`DeleteMany with strings result: ${JSON.stringify(resultWithStrings)}`);
+      
+      if (resultWithStrings.deletedCount === 0) {
+        // If still no luck, try another approach - delete one by one with date comparison
+        console.log("Still no success. Trying one-by-one deletion with date comparison...");
+        
+        let deleteCount = 0;
+        for (const dateStr of dates) {
+          // Convert date string to start/end of day to catch any time variations
+          const startDate = new Date(dateStr);
+          startDate.setHours(0, 0, 0, 0);
+          
+          const endDate = new Date(dateStr);
+          endDate.setHours(23, 59, 59, 999);
+          
+          const deleteResult = await UnavailableDate.deleteMany({
+            listing: listingId,
+            date: { $gte: startDate, $lte: endDate }
+          });
+          
+          deleteCount += deleteResult.deletedCount;
+          console.log(`Deleted ${deleteResult.deletedCount} documents for date ${dateStr}`);
+        }
+        
+        console.log(`Total deleted with date range approach: ${deleteCount}`);
+        return { deletedCount: deleteCount };
+      }
+      
+      return resultWithStrings;
+    }
+    
+    return result;
+  } catch (error) {
+    console.error("Error unblocking dates:", error);
+    throw error;
+  }
+};
+
+
+
+
+
+
 
 exports.getProviderBookings = async (providerId, filters = {}) => {
   try {
