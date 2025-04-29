@@ -7,7 +7,7 @@ const path = require('path');
 require('dotenv').config();
 
 // ───────── MongoDB Setup ─────────
-const MONGO_URI = 'mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenInterhomeCHECK?retryWrites=true&w=majority&appName=ClusterWork';
+const MONGO_URI = 'mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenDB2025?retryWrites=true&w=majority&appName=ClusterWork';
 
 // ───────── API Endpoints ─────────
 const API_BASE = 'https://ws.interhome.com/ih/b2b/V0100';
@@ -448,17 +448,14 @@ async function main() {
     
     console.log(`Found ${listings.length} listings in the JSON file`);
     
-    // Process exactly 5 listings
-    if (listings.length < 5) {
-      throw new Error('Input file must contain at least 5 listings');
-    }
-    const listingsToProcess = listings.slice(0, 5);
-    console.log(`Processing first ${listingsToProcess.length} listings...`);
+    // Process all listings
+    const listingsToProcess = listings;
+    console.log(`Processing ${listingsToProcess.length} listings...`);
     
     const processedListings = [];
     
     // Process each listing
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < listingsToProcess.length; i++) {
       const listing = listingsToProcess[i];
       const code = listing.Code;
       

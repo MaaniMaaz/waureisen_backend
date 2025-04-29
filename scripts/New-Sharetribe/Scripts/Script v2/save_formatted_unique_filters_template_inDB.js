@@ -3,7 +3,7 @@ require('dotenv').config();
 const Filter = require('../../../../models/filter.model');
 const filtersData = require('C:\\Users\\wiki8\\Desktop\\Nova\\@Waureisen\\waureisen_backend\\scripts\\New-Sharetribe\\Scripts\\Script v2\\formatted_unique_filters.json');
 
-const MONGO_URI = "mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenInterhomeCHECK?retryWrites=true&w=majority&appName=ClusterWork";
+const MONGO_URI = "mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenDB2025?retryWrites=true&w=majority&appName=ClusterWork";
 
 async function saveFilters() {
   try {
