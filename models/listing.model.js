@@ -98,7 +98,12 @@ const listingSchema = new mongoose.Schema({
   }],
 
   maxDogs: {
-    type:Number
+    type: Number
+  },
+
+  maxGuests: {
+    type: Number,
+    default: 6  // Default to 6 as used in the frontend
   },
 
   bedRooms: {
