@@ -96,6 +96,7 @@ exports.addOrUpdateSubsection = async (filterId, subsectionData, subsectionId = 
     
     filter.subsections[subsectionIndex].name = subsectionData.name;
     filter.subsections[subsectionIndex].description = subsectionData.description;
+    filter.subsections[subsectionIndex].required = subsectionData.required;
     
     // Update hasSubsections flag if provided
     if (subsectionData.hasSubsections !== undefined) {
@@ -106,6 +107,7 @@ exports.addOrUpdateSubsection = async (filterId, subsectionData, subsectionId = 
     filter.subsections.push({
       name: subsectionData.name,
       description: subsectionData.description,
+      required: subsectionData.required || false,
       predefined: false, // Custom subsections are not predefined
       hasSubsections: subsectionData.hasSubsections || false,
       filters: [],
@@ -159,11 +161,13 @@ exports.addOrUpdateSubsubsection = async (filterId, subsectionId, subsubsectionD
     
     filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].name = subsubsectionData.name;
     filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].description = subsubsectionData.description;
+    filter.subsections[subsectionIndex].subsubsections[subsubsectionIndex].required = subsubsectionData.required;
   } else {
     // Add new subsubsection
     filter.subsections[subsectionIndex].subsubsections.push({
       name: subsubsectionData.name,
       description: subsubsectionData.description,
+      required: subsubsectionData.required || false,
       predefined: false, // Custom subsubsections are not predefined
       filters: []
     });
@@ -592,6 +596,26 @@ const createDefaultFilter = async () => {
   return await defaultFilter.save();
 };
 
+/**
+ * Update the template filter
+ * @param {Object} data - Updated filter data
+ * @returns {Promise<Object>} Updated filter document
+ */
+exports.updateTemplateFilter = async (data) => {
+  // Find the template filter or create a new one
+  let filter = await Filter.findOne({ isTemplate: true });
+  
+  if (!filter) {
+    filter = new Filter({ ...data, isTemplate: true });
+  } else {
+    // Update existing template
+    Object.assign(filter, data);
+    filter.isTemplate = true;
+  }
+  
+  return await filter.save();
+};
+
 module.exports = {
   getAllFilters: exports.getAllFilters,
   getFilterById: exports.getFilterById,
@@ -603,5 +627,10 @@ module.exports = {
   deleteSubsection: exports.deleteSubsection,
   addOrUpdateSubsectionFilter: exports.addOrUpdateSubsectionFilter,
   deleteSubsectionFilter: exports.deleteSubsectionFilter,
-  createDefaultFilter
+  addOrUpdateSubsubsection: exports.addOrUpdateSubsubsection,
+  deleteSubsubsection: exports.deleteSubsubsection,
+  addOrUpdateSubsubsectionFilter: exports.addOrUpdateSubsubsectionFilter,
+  deleteSubsubsectionFilter: exports.deleteSubsubsectionFilter,
+  createDefaultFilter,
+  updateTemplateFilter: exports.updateTemplateFilter
 };

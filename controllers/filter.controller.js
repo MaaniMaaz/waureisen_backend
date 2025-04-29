@@ -329,3 +329,17 @@ exports.getTemplateFilter = async (req, res, next) => {
     next(err);
   }
 };
+
+/**
+ * Update the template filter
+ */
+exports.updateTemplateFilter = async (req, res, next) => {
+  try {
+    const updatedFilter = await filterService.updateTemplateFilter(req.body);
+    res.json(updatedFilter);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = exports;
