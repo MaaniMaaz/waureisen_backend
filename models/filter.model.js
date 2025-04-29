@@ -52,6 +52,10 @@ const subsubsectionSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  required: {
+    type: Boolean,
+    default: false
+  },
   // Filters specific to this subsubsection
   filters: [filterDefinition]
 });
@@ -80,6 +84,10 @@ const filterSchema = new mongoose.Schema({
     },
     // Flag to indicate if this is a predefined subsection that shouldn't be deleted or modified
     predefined: {
+      type: Boolean,
+      default: false
+    },
+    required: {
       type: Boolean,
       default: false
     },
