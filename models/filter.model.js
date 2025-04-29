@@ -12,7 +12,7 @@ const filterDefinition = {
   type: { 
     type: String, 
     required: true,
-    enum: ['text', 'number', 'checkbox', 'select', 'radio', 'file', 'date'],
+    enum: ['text', 'number', 'checkbox', 'select', 'radio', 'file', 'date', 'time', 'toggle'],
     default: 'text'
   },
   // Flag to indicate if this is a predefined filter that shouldn't be deleted or modified
@@ -26,7 +26,7 @@ const filterDefinition = {
   },
   // Options for select or radio types
   options: [{ 
-    type: String,
+    type: mongoose.Schema.Types.Mixed,
     trim: true
   }],
   // For file/image type filters
