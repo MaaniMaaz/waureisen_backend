@@ -558,16 +558,45 @@ exports.getUnavailableDates = async (req, res, next) => {
     }
 };
   
-  /**
-   * Unblock dates for a listing
-   */
-  exports.unblockDates = async (req, res, next) => {
-    try {
-        await providerService.unblockDates(req.user.id, req.body.listingId, req.body.dates);
-        res.status(204).send();
-    } catch (err) {
-        next(err);
+exports.unblockDates = async (req, res, next) => {
+  try {
+    console.log('Received unblock dates request:', req.body);
+    
+    // Validate required fields
+    if (!req.body.listingId) {
+      return res.status(400).json({ message: 'Listing ID is required' });
     }
+    
+    if (!req.body.dates || !Array.isArray(req.body.dates) || req.body.dates.length === 0) {
+      return res.status(400).json({ message: 'Dates array is required and must not be empty' });
+    }
+    
+    // Call the service function with the correct parameters
+    const result = await providerService.unblockDates(
+      req.user.id, 
+      req.body.listingId, 
+      req.body.dates
+    );
+    
+    console.log('Unblock dates result:', result);
+    
+    // Return success if at least one date was unblocked
+    if (result && result.deletedCount > 0) {
+      return res.status(200).json({
+        message: `Successfully unblocked ${result.deletedCount} dates`,
+        deletedCount: result.deletedCount
+      });
+    } 
+    
+    // If no dates were unblocked (maybe they were already unblocked)
+    return res.status(200).json({
+      message: 'No dates were unblocked. They might already be available.',
+      deletedCount: 0
+    });
+  } catch (err) {
+    console.error('Error in unblockDates controller:', err);
+    next(err);
+  }
 };
 
 

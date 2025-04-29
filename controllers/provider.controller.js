@@ -358,6 +358,19 @@ exports.addListing = async (req, res, next) => {
       newListing._id
     );
 
+    // Send listing creation confirmation email to the provider
+    try {
+      const emailService = require('../services/email.service');
+      await emailService.sendListingCreationConfirmationEmail(
+        provider.email,
+        populatedListing
+      );
+      console.log(`Listing creation confirmation email sent to provider ${provider.email}`);
+    } catch (emailError) {
+      console.error('Error sending listing creation email:', emailError);
+      // Continue with the process even if the email fails
+    }
+
     res.status(201).json(populatedListing);
   } catch (err) {
     next(err);
