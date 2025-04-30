@@ -29,16 +29,13 @@ const createPaymentIntent = async (req, res) => {
     const platformFeeAmount = amount * (platformFeePercentage / 100);
     const providerAmount = amount - (stripeFeeAmount + platformFeeAmount);
 
-
-
-    // Step 3: Create Stripe Payment Intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, 
+     const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount * 100,
       currency: currencySmall,
       automatic_payment_methods: {
         enabled: true,
       },
-     
+
       metadata: {
         name: userData?.username,
         email: userData?.email,
@@ -54,9 +51,7 @@ const createPaymentIntent = async (req, res) => {
       },
     });
 
-
-    // Step 4: Return Payment Intent details in the response
-    return res.status(200).json({
+     return res.status(200).json({
       success: true,
       data: {
         message: "Payment Intent created successfully",
@@ -68,7 +63,6 @@ const createPaymentIntent = async (req, res) => {
       },
     });
   } catch (error) {
-    // Step 5: Error Handling
     console.error(error);
     return res.status(500).json({
       success: false,
@@ -79,28 +73,29 @@ const createPaymentIntent = async (req, res) => {
 
 const transferPayment = async (req, res) => {
   try {
-
-    
+    console.log("transfer api called");
     const { connectedAccountId, amount, currency, bookingId } = req?.body;
     const stripeFee = amount * 0.029;
-    const platformFee = (amount - stripeFee) * 0.10;
-
+    const platformFee = (amount - stripeFee) * 0.1;
 
     const transfer = await stripe.transfers.create({
       amount: Math.round(amount - stripeFee - platformFee) * 100,
       currency: currency,
       destination: connectedAccountId,
     });
+    console.log("Amount transfer to provider");
     const transfer2 = await stripe.transfers.create({
       amount: Math.round(platformFee) * 100,
       currency: currency,
       destination: "acct_1RHQnw2MRQIK1rqe",
     });
+    console.log("Amount transfer to platform");
 
-    console.log(transfer ,"transfer 1", transfer2 , "transfer 2")
+    console.log(transfer, "transfer 1", transfer2, "transfer 2");
     if (transfer?.id && transfer2?.id) {
       await Booking.findByIdAndUpdate(bookingId, { status: "confirmed" });
     }
+    console.log("Booking Confirmed!");
     res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
@@ -116,30 +111,61 @@ const refundPayment = async (req, res) => {
   const { bookingId } = req.params;
 
   const booking = await Booking.findById(bookingId);
-  console.log(booking , "booking ka data");
-
-  let amount;
+  console.log(booking, "booking ka data");
+  let amount = 0;
   const totalAmmount = booking?.totalPrice * 100;
   const targetDate = moment(booking?.checkInDate).startOf("day");
   const now = moment().startOf("day");
   const daysLeft = targetDate.diff(now, "days");
 
-  if (daysLeft > 10) {
-    amount = totalAmmount;
-  } else if (daysLeft < 10 && daysLeft > 5) {
-    amount = totalAmmount * 0.5;
-  } else if (daysLeft < 5 && daysLeft > 1) {
-    amount = totalAmmount * 0.25;
-  } else {
-    amount = totalAmmount * 0.1;
+  if (booking?.legal?.cancellationPolicy === "flexible") {
+    if (daysLeft > 1) {
+      amount = totalAmmount;
+    }else if (daysLeft > 0){
+      amount = totalAmmount * 0.5
+    }
+  } else if (booking?.legal?.cancellationPolicy === "moderate") {
+    if (daysLeft > 5) {
+      amount = totalAmmount;
+    } else if (daysLeft > 4) {
+      amount = totalAmmount * 0.5;
+    } else if (daysLeft > 3) {
+      amount = totalAmmount * 0.6;
+    } else if (daysLeft > 2) {
+      amount = totalAmmount * 0.7;
+    } else if (daysLeft > 1) {
+      amount = totalAmmount * 0.8;
+    } else if (daysLeft > 0) {
+      amount = totalAmmount * 0.9;
+    } else {
+      amount = 0;
+    }
+  } else if (booking?.legal?.cancellationPolicy === "strict") {
+    if (daysLeft > 6) {
+      amount = totalAmmount * 0.5;
+    } else if (daysLeft > 5) {
+      amount = totalAmmount * 0.6;
+    } else if (daysLeft > 4) {
+      amount = totalAmmount * 0.7;
+    } else if (daysLeft > 3) {
+      amount = totalAmmount * 0.8;
+    } else if (daysLeft > 2) {
+      amount = totalAmmount * 0.9;
+    } else {
+      amount = 0;
+    }
   }
+
+ 
 
   try {
     const refund = await stripe.refunds.create({
       payment_intent: booking?.paymentIntentId,
       amount: Math.round(amount),
-      // ...(amount && { amount }),
-    });
+     });
+
+    booking.status = "canceled";
+    booking.save();
 
     res.status(200).json({ success: true, refund });
   } catch (error) {
@@ -165,22 +191,19 @@ const getCardDetails = async (req, res) => {
 
 const createStripeAccount = async (req, res) => {
   try {
-    // 1. Create a Stripe Connect account (if not already created)
     const account = await stripe.accounts.create({
-      type: 'express',
-      email: req.body.email, // you should pass the user email from frontend
+      type: "express",
+      email: req.body.email, 
     });
-console.log(account , "account ka data " , account?.details_submitted)
-    // 2. Create an account link for onboarding
+    console.log(account, "account ka data ", account?.details_submitted);
+
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-  refresh_url: `http://localhost:5173/registration?account=failed`, 
-  return_url: `http://localhost:5173/registration?account=${account.id}`, 
-  type: 'account_onboarding',
+      refresh_url: `http://localhost:5173/provider/registration?account=failed`,
+      return_url: `http://localhost:5173/provider/registration?account=${account.id}`,
+      type: "account_onboarding",
     });
 
-    // 3. Optionally: Save the account ID in your DB for future use
-    // await User.findByIdAndUpdate(req.user.id, { stripeAccountId: account.id });
 
     res.json({ url: accountLink.url });
   } catch (error) {
@@ -189,16 +212,16 @@ console.log(account , "account ka data " , account?.details_submitted)
   }
 };
 
-const getStripeAccount = async (req,res) => {
-  try{
-    const {accountId} = req?.params
+const getStripeAccount = async (req, res) => {
+  try {
+    const { accountId } = req?.params;
     const account = await stripe.accounts.retrieve(accountId);
     res.json({ data: account });
-  }catch(err){
+  } catch (err) {
     console.error("Error creating Stripe Connect onboarding link:", error);
     res.status(500).json({ error: err.message });
   }
-}
+};
 
 module.exports = {
   createPaymentIntent,
@@ -206,5 +229,5 @@ module.exports = {
   refundPayment,
   getCardDetails,
   createStripeAccount,
-  getStripeAccount
+  getStripeAccount,
 };
