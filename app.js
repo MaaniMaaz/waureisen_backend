@@ -1,10 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const http = require("http"); 
-const socketIo = require('socket.io');
+const http = require("http");
+const socketIo = require("socket.io");
 const connectDB = require("./configs/database");
-const Booking = require("./models/booking.model.js")
+const Booking = require("./models/booking.model.js");
 const adminRoutes = require("./routes/admin.routes.js");
 const userRoutes = require("./routes/user.routes.js");
 const filterRoutes = require("./routes/filter.routes.js");
@@ -17,10 +17,10 @@ const transactionRoutes = require("./routes/transaction.routes.js");
 const travelMagazineRoutes = require("./routes/travelMagazine.routes.js");
 const voucherRoutes = require("./routes/voucher.routes.js");
 const bookingRoutes = require("./routes/booking.routes.js");
-const conversationRoutes = require('./routes/conversation.routes');
-const verificationRoutes = require('./routes/verification.routes.js');
+const conversationRoutes = require("./routes/conversation.routes");
+const verificationRoutes = require("./routes/verification.routes.js");
 
-const {CronJob} = require("cron");
+const { CronJob } = require("cron");
 const axios = require("axios");
 const newsletterRoutes = require("./routes/newsletter.routes");
 const paymentRoutes = require("./routes/payment.routes.js");
@@ -40,8 +40,8 @@ const io = socketIo(server, {
   cors: {
     origin: "*", // Allow all origins
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-  }
+    allowedHeaders: ["Content-Type", "Authorization"],
+  },
 });
 
 // Connect to MongoDB
@@ -63,7 +63,7 @@ app.use((req, res, next) => {
 });
 
 // Initialize socket handlers
-require('./sockets/chat.socket')(io);
+require("./sockets/chat.socket")(io);
 
 // webhook
 const endpointSecret = process.env.WEBHOOK_SECRET;
@@ -90,15 +90,27 @@ app.post(
       case "payment_intent.succeeded":
         const paymentIntentSucceeded = event.data.object;
 
-        await handlePayment("success", paymentIntentSucceeded.metadata ,event.data.object);
+        await handlePayment(
+          "success",
+          paymentIntentSucceeded.metadata,
+          event.data.object
+        );
         break;
       case "payment_intent.canceled":
         const paymentIntentCanceled = event.data.object;
-        await handlePayment("canceled", paymentIntentCanceled.metadata,event.data.object);
+        await handlePayment(
+          "canceled",
+          paymentIntentCanceled.metadata,
+          event.data.object
+        );
         break;
       case "payment_intent.payment_failed":
         const paymentIntentFailed = event.data.object;
-        await handlePayment("failed", paymentIntentFailed.metadata,event.data.object);
+        await handlePayment(
+          "failed",
+          paymentIntentFailed.metadata,
+          event.data.object
+        );
         break;
       // ... handle other event types
       default:
@@ -111,40 +123,43 @@ app.post(
 );
 
 // cron job for transfer payment
-const scheduleTransferPaymnetJob = new CronJob("* * * * *", 
+const scheduleTransferPaymnetJob = new CronJob(
+  "* * * * *",
   async () => {
-  console.log("Running daily payout job...");
-
-  const startOfDay = new Date();
-startOfDay.setUTCHours(0, 0, 0, 0); // 00:00:00 UTC
-
-const endOfDay = new Date();
-endOfDay.setUTCHours(23, 59, 59, 999); // 23:59:59 UTC
-
-  const bookings = await Booking.find({
-    checkInDate: {
-      $gte: startOfDay,
-      $lte: endOfDay
-    },
-    status:"pending"
-  });
-  
-  for (const booking of bookings) {
-    try {
-      const response = await axios.post('https://waureisen-backend.onrender.com/api/payment/transfer-payment', {
-        connectedAccountId: booking?.providerAccountId,
-        amount: booking?.totalPrice,
-        currency: 'chf',
-        bookingId:booking?._id
-      });
-  } catch (err) {
-    console.error("Failed to make payout:", err.message);
-  }
-  }
-},null,                
-true,                
-"UTC" )
-scheduleTransferPaymnetJob.start()
+    console.log("Running daily payout job...");
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0); // 00:00:00 UTC
+    const endOfDay = new Date();
+    endOfDay.setUTCHours(23, 59, 59, 999); // 23:59:59 UTC
+    const bookings = await Booking.find({
+      checkInDate: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+      status: "pending",
+    });
+    console.log(bookings, "current");
+    for (const booking of bookings) {
+      try {
+        const response = await axios.post(
+          "https://waureisen-backend.onrender.com/api/payment/transfer-payment",
+          {
+            connectedAccountId: booking?.providerAccountId,
+            amount: booking?.totalPrice,
+            currency: "chf",
+            bookingId: booking?._id,
+          }
+        );
+      } catch (err) {
+        console.error("Failed to make payout:", err.message);
+      }
+    }
+  },
+  null,
+  true,
+  "UTC"
+);
+scheduleTransferPaymnetJob.start();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -165,14 +180,14 @@ app.use("/api/providers", providerRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/travel-magazine", travelMagazineRoutes);
 app.use("/api/vouchers", voucherRoutes);
-app.use('/api/email-notifications', emailNotificationRoutes);
-app.use('/api/campers', camperRoutes);
-app.use('/api/newsletters', newsletterRoutes);
-app.use('/api/payment', paymentRoutes);
-app.use('/api/booking', bookingRoutes);
-app.use('/api/conversations', conversationRoutes);
+app.use("/api/email-notifications", emailNotificationRoutes);
+app.use("/api/campers", camperRoutes);
+app.use("/api/newsletters", newsletterRoutes);
+app.use("/api/payment", paymentRoutes);
+app.use("/api/booking", bookingRoutes);
+app.use("/api/conversations", conversationRoutes);
 app.use("/api/interhome", interhomeRoutes);
-app.use('/api/verification', verificationRoutes);
+app.use("/api/verification", verificationRoutes);
 
 // Root route
 app.get("/", (req, res) => {
