@@ -64,20 +64,32 @@ router.get(
   listingController.getPaginatedListings
 );
 
-router.post("/add-listing", verifyToken, isAdmin, async (req, res, next) => {
+router.post("/add-listing", verifyToken, async (req, res, next) => {
   try {
-    // Add admin metadata to the listing
-    const listingData = {
+    const role = req.user?.role;
+    const normalizedRole = role?.toLowerCase();
+
+    if (!["admin", "provider"].includes(normalizedRole)) {
+      return res.status(403).json({ message: "Unauthorized role for creating listings." });
+    }
+
+    const capitalizedRole = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+
+    req.body = {
       ...req.body,
       owner: req.user.id,
-      ownerType: "Admin",
+      ownerType: capitalizedRole,
     };
-    req.body = listingData;
+
     return listingController.createListing(req, res, next);
   } catch (err) {
-    next(err);
+    console.error("API Error:", err);
+    res.status(500).json({ message: "Something went wrong!", error: err.message });
   }
 });
+
+
+
 
 // Customer Management Routes
 router.get(
