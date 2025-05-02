@@ -4,7 +4,7 @@ const Booking = require("../models/booking.model");
 const UnavailableDate = require("../models/unavailableDate.model");
 
 exports.getAllBookings = async () => {
-  return await Booking.find().populate("user").populate("listing");
+  return await Booking.find().populate("user").populate("listing").sort({createdAt:-1});
 };
 
 exports.getBookingById = async (id) => {

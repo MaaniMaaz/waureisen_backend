@@ -19,6 +19,7 @@ const createPaymentIntent = async (req, res) => {
     const currencySmall = currency?.toLowerCase();
 
     const userData = await User?.findById(req?.user?.id);
+    console.log(req?.user?.id , userData , "user Data")
 
     const stripeFeePercentage = 2.9;
     const platformFeePercentage = 10;

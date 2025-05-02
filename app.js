@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const socketIo = require("socket.io");
+const moment = require("moment");
 const connectDB = require("./configs/database");
 const Booking = require("./models/booking.model.js");
 const adminRoutes = require("./routes/admin.routes.js");
@@ -127,10 +128,8 @@ const scheduleTransferPaymnetJob = new CronJob(
   "* * * * *",
   async () => {
     console.log("Running daily payout job...");
-    const startOfDay = new Date();
-    startOfDay.setUTCHours(0, 0, 0, 0); // 00:00:00 UTC
-    const endOfDay = new Date();
-    endOfDay.setUTCHours(23, 59, 59, 999); // 23:59:59 UTC
+    const startOfDay = moment().startOf("day").utc().toDate();
+const endOfDay = moment().endOf("day").utc().toDate();
     const bookings = await Booking.find({
       checkInDate: {
         $gte: startOfDay,
