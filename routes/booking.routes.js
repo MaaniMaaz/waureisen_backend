@@ -2,9 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const bookingController = require('../controllers/booking.controller');
+const { verifyToken } = require('../middlewares/auth');
 
 
 router.get('/', bookingController.getAllBookings);
+
+router.get('/provider', verifyToken, bookingController.getAllProviderBookings);
 
 router.get('/my', bookingController.getUserBookings);
 
