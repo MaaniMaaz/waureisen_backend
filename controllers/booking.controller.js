@@ -11,6 +11,15 @@ exports.getAllBookings = async (req, res, next) => {
   }
 };
 
+exports.getAllProviderBookings = async (req, res, next) => {
+  try {
+    const bookings = await bookingService.getProviderBookings(req?.user?.id);
+    res.json(bookings);
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getBookingById = async (req, res, next) => {
   try {
     const booking = await bookingService.getBookingById(req.params.id);

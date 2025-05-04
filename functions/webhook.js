@@ -7,7 +7,7 @@ dotenv.config();
 
 async function handlePayment(status, payload, eventData) {
   try {
-    const { amount, userId, listing, checkInDate, checkOutDate,providerAccountId } = payload;
+    const { amount, userId, listing,providerId,currency, checkInDate, checkOutDate,providerAccountId } = payload;
 
     console.log(userId, "user id", eventData);
 
@@ -16,10 +16,13 @@ async function handlePayment(status, payload, eventData) {
         user: userId,
         totalPrice: amount,
         listing,
+        provider:providerId,
         checkInDate,
         checkOutDate,
-        paymentIntentId: eventData?.id,
-        providerAccountId:providerAccountId
+        currency,
+        paymentIntentId: eventData?. payment_intent,
+        providerAccountId:providerAccountId,
+        reciept:eventData?.receipt_url
       });
       await Payment.create({
         userId: userId,

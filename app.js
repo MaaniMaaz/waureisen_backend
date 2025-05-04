@@ -85,17 +85,26 @@ app.post(
       console.log(event?.type, err);
       return;
     }
-    console.log(event?.data);
+    console.log(event?.data ,"khali data" , event?.data?.object) ;
     // Handle the event
     switch (event.type) {
-      case "payment_intent.succeeded":
-        const paymentIntentSucceeded = event.data.object;
-
+      case "charge.succeeded":
+        const chargedSucceeded = event.data.object;
+console.log(event?.data?.receipt_url , event?.data?.object?.receipt_url , "receipt url")
         await handlePayment(
           "success",
-          paymentIntentSucceeded.metadata,
+          chargedSucceeded.metadata,
           event.data.object
         );
+        break;
+      case "payment_intent.succeeded":
+        const paymentIntentSucceeded = event.data.object;
+console.log(event?.data?.receipt_url , event?.data?.object?.receipt_url , "receipt url")
+        // await handlePayment(
+        //   "success",
+        //   paymentIntentSucceeded.metadata,
+        //   event.data.object
+        // );
         break;
       case "payment_intent.canceled":
         const paymentIntentCanceled = event.data.object;

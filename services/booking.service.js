@@ -7,6 +7,11 @@ exports.getAllBookings = async () => {
   return await Booking.find().populate("user").populate("listing").sort({createdAt:-1});
 };
 
+exports.getProviderBookings = async (id) => {
+  console.log(id)
+  return await Booking.find({provider:id}).populate("listing").sort({createdAt:-1});
+};
+
 exports.getBookingById = async (id) => {
   return await Booking.findById(id).populate("user").populate("listing");
 };

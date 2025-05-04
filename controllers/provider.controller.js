@@ -196,12 +196,12 @@ exports.updateProvider = async (req, res, next) => {
 
 exports.updateListing = async (req, res, next) => {
   try {
-    const listing = await listingService.getListingById(req.params.id);
-    if (!listing || listing.owner.toString() !== req.user.id) {
-      return res
-        .status(404)
-        .json({ message: "Listing not found or not owned by provider" });
-    }
+    // const listing = await listingService.getListingById(req.params.id);
+    // if (!listing || listing.owner.toString() !== req.user.id) {
+    //   return res
+    //     .status(404)
+    //     .json({ message: "Listing not found or not owned by provider" });
+    // }
     const updatedListing = await listingService.updateListing(
       req.params.id,
       req.body

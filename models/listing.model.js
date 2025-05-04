@@ -28,7 +28,7 @@ const listingSchema = new mongoose.Schema({
     inside: { type: String },
     outside: { type: String },
   },
-
+  
   checkInTime: { type: Date },
   checkOutTime: { type: Date },
 
