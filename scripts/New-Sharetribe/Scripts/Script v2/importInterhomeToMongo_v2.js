@@ -7,7 +7,7 @@ const path = require('path');
 require('dotenv').config();
 
 // ───────── MongoDB Setup ─────────
-const MONGO_URI = 'mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenDB2025?retryWrites=true&w=majority&appName=ClusterWork';
+const MONGO_URI = 'mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenDB2025CHECK?retryWrites=true&w=majority&appName=ClusterWork';
 
 // ───────── API Endpoints ─────────
 const API_BASE = 'https://ws.interhome.com/ih/b2b/V0100';
@@ -438,6 +438,8 @@ async function mapToListing(sharetribeListing, detail, mediaItems) {
 
 // ───────── Main Process ─────────
 async function main() {
+  // Initialize array to track failed listings
+  const failedListings = [];
   await connectMongo();
   
   try {
@@ -453,6 +455,7 @@ async function main() {
     console.log(`Processing ${listingsToProcess.length} listings...`);
     
     const processedListings = [];
+    const failedListings = [];
     
     // Process each listing
     for (let i = 0; i < listingsToProcess.length; i++) {
@@ -511,6 +514,11 @@ async function main() {
         } catch (error) {
           errorCount++;
           console.error(`Error saving listing ${listing.Code}: ${error.message}`);
+          failedListings.push({
+            code: listing.Code,
+            error: error.message,
+            listingData: listing
+          });
         }
       }
       
@@ -534,11 +542,20 @@ async function main() {
   } finally {
     // Disconnect from MongoDB
     mongoose.disconnect();
+fs.writeFileSync(failedListingsPath, JSON.stringify(failedListings, null, 2));
     console.log('MongoDB disconnected');
+    
+    // Save failed listings to JSON file
+    if (failedListings.length > 0) {
+      const failedFilePath = path.join(__dirname, 'failed_listings.json');
+      fs.writeFileSync(failedFilePath, JSON.stringify(failedListings, null, 2));
+      console.log(`✅ Saved ${failedListings.length} failed listings to ${failedFilePath}`);
+    }
   }
 }
 
 main().catch(err => {
   console.error('❌ Fatal error:', err);
   mongoose.disconnect();
+fs.writeFileSync(failedListingsPath, JSON.stringify(failedListings, null, 2));
 });
