@@ -119,6 +119,14 @@ router.put(
   providerProfileController.rejectBooking
 );
 
+
+router.get(
+  "/bookings-total-count",
+  verifyToken,
+  isProvider,
+  providerProfileController.getProviderBookingsCount
+);
+
 // Calendar Management
 router.get(
   "/calendar/unavailable-dates",
