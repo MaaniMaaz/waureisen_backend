@@ -361,13 +361,21 @@ exports.addListing = async (req, res, next) => {
     // Send listing creation confirmation email to the provider
     try {
       const emailService = require('../services/email.service');
+      
+      // Send to provider
       await emailService.sendListingCreationConfirmationEmail(
         provider.email,
         populatedListing
       );
       console.log(`Listing creation confirmation email sent to provider ${provider.email}`);
+      
+      // Also send to admin
+      await emailService.sendListingCreationNotificationToAdmin(
+        {...populatedListing.toObject(), owner: provider}
+      );
+      console.log(`Listing creation notification email sent to admin`);
     } catch (emailError) {
-      console.error('Error sending listing creation email:', emailError);
+      console.error('Error sending listing creation emails:', emailError);
       // Continue with the process even if the email fails
     }
 

@@ -12,4 +12,5 @@ router.get('/card-details',verifyToken,  paymentController.getCardDetails);
 router.post('/connect-stripe',  paymentController.createStripeAccount);
 router.get('/get-account/:id',  paymentController.getStripeAccount);
 
+
 module.exports = router;

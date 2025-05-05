@@ -209,6 +209,31 @@ exports.getProviderBookings = async (req, res, next) => {
 };
 
 
+exports.getProviderBookingsCount = async (req, res, next) => {
+  try {
+    const providerId = req.user.id;
+    
+    // Get provider's listings
+    const listings = await Listing.find({
+      owner: providerId,
+      ownerType: "Provider"
+    }).select("_id");
+    
+    const listingIds = listings.map(listing => listing._id);
+    
+    // Count all bookings for these listings (without pagination or filters)
+    const totalCount = await Booking.countDocuments({
+      listing: { $in: listingIds }
+    });
+    
+    res.json({ totalCount });
+  } catch (error) {
+    console.error("Error counting provider bookings:", error);
+    next(error);
+  }
+};
+
+
 exports.acceptBooking = async (req, res, next) => {
   try {
     // First try to get the booking directly by ID

@@ -1,4 +1,5 @@
 const listingService = require("../services/listing.service");
+const Listing = require('../models/listing.model');
 
 // Controller methods
 exports.getAllListings = async (req, res, next) => {
@@ -47,12 +48,41 @@ exports.createListing = async (req, res, next) => {
   }
 };
 
+
 exports.updateListing = async (req, res, next) => {
   try {
+    const oldListing = await Listing.findById(req.params.id);
     const updatedListing = await listingService.updateListing(
       req.params.id,
       req.body
     );
+
+    // Check if the listing status was changed from 'pending approval' to 'active'
+    if (
+      oldListing.status !== 'active' && 
+      updatedListing.status === 'active' && 
+      updatedListing.ownerType === 'Provider'
+    ) {
+      try {
+        // Get provider email
+        const Provider = require('../models/provider.model');
+        const provider = await Provider.findById(updatedListing.owner);
+        
+        if (provider && provider.email) {
+          // Import the email service
+          const emailService = require('../services/email.service');
+          await emailService.sendListingApprovalEmail(
+            provider.email,
+            updatedListing
+          );
+          console.log(`Listing approval email sent to provider ${provider.email}`);
+        }
+      } catch (emailError) {
+        console.error('Error sending listing approval email:', emailError);
+        // Continue with the process even if the email fails
+      }
+    }
+
     res.json(updatedListing);
   } catch (err) {
     next(err);

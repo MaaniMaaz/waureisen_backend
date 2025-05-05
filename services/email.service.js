@@ -466,11 +466,176 @@ const sendBookingRejectionToCustomer = async (customerEmail, bookingData) => {
   }
 };
 
+
+const sendListingApprovalEmail = async (providerEmail, listingData) => {
+  try {
+    const providerListingsUrl = process.env.PROVIDER_LISTINGS_URL || 'http://localhost:5173/provider/your-listings';
+    
+    // Format the price nicely
+    const formattedPrice = `${listingData.pricePerNight?.price || 0} ${listingData.pricePerNight?.currency || 'CHF'}`;
+    
+    // Create HTML content for email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: providerEmail,
+      subject: 'Waureisen - Your Listing Has Been Approved!',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #B4A481; margin: 0;">Listing Approved!</h2>
+            <p style="color: #767676; margin-top: 5px;">Your property listing is now active on Waureisen</p>
+          </div>
+          
+          <div style="background-color: #f8f8f8; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #4D484D;">Listing Details</h3>
+            
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Property:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${listingData.title || 'Your Property'}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Location:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${listingData.location?.address || 'Address pending'}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Price:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${formattedPrice} per night</p>
+            </div>
+            
+            <div>
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Status:</p>
+              <p style="margin: 5px 0 0; color: #767676;">Active</p>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 20px; padding: 15px; border-radius: 5px; background-color: #f0f7ff; border-left: 4px solid #4299e1;">
+            <h4 style="margin-top: 0; color: #2b6cb0;">What's Next?</h4>
+            <p style="margin-bottom: 10px; color: #4a5568;">
+              Your listing is now approved and visible to potential customers. You'll receive booking notifications via email when customers book your property.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 20px;">
+            <a href="${providerListingsUrl}" style="display: inline-block; background-color: #B4A481; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold;">Go to Listings</a>
+          </div>
+          
+          <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e0e0e0; color: #767676; font-size: 14px;">
+            <p>If you have any questions, please contact our support team.</p>
+            <p>Best regards,<br/>The Waureisen Team</p>
+          </div>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Listing approval email sent to provider (${providerEmail}). Message ID: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending listing approval email:', error);
+    throw new Error('Failed to send listing approval email');
+  }
+};
+
+
+// Add this function to email.service.js after sendListingCreationConfirmationEmail
+
+// Send listing creation notification to admin
+const sendListingCreationNotificationToAdmin = async (listingData) => {
+  try {
+    // Get admin email from environment variable
+    const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'hamzashahid0308@gmail.com';
+    const providerListingsUrl = process.env.ADMIN_LISTINGS_URL || 'http://localhost:5173/admin/accommodations';
+    
+    // Format the price nicely
+    const formattedPrice = `${listingData.pricePerNight?.price || 0} ${listingData.pricePerNight?.currency || 'CHF'}`;
+    
+    // Get provider info if available
+    const providerName = listingData.owner?.firstName && listingData.owner?.lastName ? 
+      `${listingData.owner.firstName} ${listingData.owner.lastName}` : 
+      'A provider';
+    
+    const providerEmail = listingData.owner?.email || 'No email provided';
+    
+    // Create HTML content for admin email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: adminEmail,
+      subject: 'Waureisen - New Listing Created [Admin Notification]',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #B4A481; margin: 0;">New Listing Created</h2>
+            <p style="color: #767676; margin-top: 5px;">${providerName} has created a new property listing</p>
+          </div>
+          
+          <div style="background-color: #f8f8f8; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #4D484D;">Listing Details</h3>
+            
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Provider:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${providerName}</p>
+              <p style="margin: 5px 0 0; color: #767676;">${providerEmail}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Property:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${listingData.title || 'Unnamed Property'}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Location:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${listingData.location?.address || 'Address pending'}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Price:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${formattedPrice} per night</p>
+            </div>
+            
+            <div>
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Status:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${listingData.status || 'pending approval'}</p>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 20px; padding: 15px; border-radius: 5px; background-color: #f0f7ff; border-left: 4px solid #4299e1;">
+            <h4 style="margin-top: 0; color: #2b6cb0;">Action Required</h4>
+            <p style="margin-bottom: 10px; color: #4a5568;">
+              This listing requires review and approval before it becomes visible to customers.
+              Please review the listing details and approve or reject as appropriate.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 20px;">
+            <a href="${providerListingsUrl}" style="display: inline-block; background-color: #B4A481; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold;">Review Listings</a>
+          </div>
+          
+          <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e0e0e0; color: #767676; font-size: 14px;">
+            <p>This is an automated notification from the Waureisen system.</p>
+            <p>Best regards,<br/>The Waureisen Team</p>
+          </div>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Admin notification email sent for new listing. Message ID: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending admin notification email:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   createVerificationCode,
   verifyCode,
   sendBookingNotificationToProvider,
   sendBookingAcceptanceToCustomer,
   sendBookingRejectionToCustomer,
-  sendListingCreationConfirmationEmail
+  sendListingCreationConfirmationEmail,
+  sendListingApprovalEmail,
+  sendListingCreationNotificationToAdmin
 };
