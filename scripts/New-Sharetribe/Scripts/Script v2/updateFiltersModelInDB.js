@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 const Filter = require('../../../../models/filter.model');
 
-const MONGO_URI = "mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenDB2025?retryWrites=true&w=majority&appName=ClusterWork";
+const MONGO_URI = "mongodb+srv://i222469:m4Z9wJXYK7q3adCL@clusterwork.mtqds1t.mongodb.net/waureisenDB2025CHECK?retryWrites=true&w=majority&appName=ClusterWork";
 
 function formatKey(key) {
   if (key === 'facilitiesview') return 'Facilities View';
