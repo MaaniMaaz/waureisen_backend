@@ -17,11 +17,13 @@ exports.getPaginatedListings = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 9;
     const search = req.query.search || "";
+    const filter = req.query.filter || "";
 
     const result = await listingService.getPaginatedListings(
       page,
       limit,
-      search
+      search,
+      filter
     );
     res.json(result);
   } catch (err) {

@@ -4,21 +4,42 @@ exports.getAllListings = async () => {
   return await Listing.find().populate("owner");
 };
 
-exports.getPaginatedListings = async (page = 1, limit = 9, searchTerm = "") => {
+exports.getPaginatedListings = async (page = 1, limit = 9, searchTerm = "", filter = "all") => {
   const skip = (page - 1) * limit;
+console.log(filter);
 
-  // Build the search query
   let query = {};
+
+  // Build search conditions
+  const orConditions = [];
+
   if (searchTerm) {
-    query = {
-      $or: [
-        { title: { $regex: searchTerm, $options: "i" } },
-        { "description.general": { $regex: searchTerm, $options: "i" } },
-      ],
-    };
+    orConditions.push(
+      { title: { $regex: searchTerm, $options: "i" } },
+      { "description.general": { $regex: searchTerm, $options: "i" } }
+    );
   }
 
-  // Count total documents for pagination info
+  if (filter && filter !== "all") {
+    if (filter === "interhome"){
+
+      orConditions.push({
+        provider: { $regex: filter, $options: "i" },
+      });
+    }else{
+
+      orConditions.push({
+        ownerType: { $regex: filter, $options: "i" },
+      });
+    }
+  }
+
+  // Only apply $or if we have conditions
+  if (orConditions.length > 0) {
+    query = { $or: orConditions };
+  }
+
+  // Count total documents for pagination
   const total = await Listing.countDocuments(query);
 
   // Get listings with pagination
@@ -38,6 +59,7 @@ exports.getPaginatedListings = async (page = 1, limit = 9, searchTerm = "") => {
     },
   };
 };
+
 
 exports.getListingById = async (id) => {
   return await Listing.findById(id).populate("owner");
