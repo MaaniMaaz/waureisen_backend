@@ -67,7 +67,7 @@ app.use((req, res, next) => {
 require("./sockets/chat.socket")(io);
 
 // webhook
-const endpointSecret = process.env.WEBHOOK_SECRET;
+const endpointSecret = process.env.WEBHOOK_SECRET; 
 console.log(endpointSecret);
 app.post(
   "/webhook",
