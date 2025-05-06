@@ -83,19 +83,19 @@ const listingSchema = new mongoose.Schema({
     }
   ],
 
-  availability: [{ 
-    timeZone: { type: String },
-    weeklyDefaultSchedule: [{ 
-      day: { 
-        type: String,
-        enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-      },
-      // TBD
-      // available: { type: Boolean, default: true },
-      // openTime: { type: String },  // Format: "HH:mm"
-      // closeTime: { type: String }  // Format: "HH:mm"
-    }]
-  }],
+  // availability: [{ 
+  //   timeZone: { type: String },
+  //   weeklyDefaultSchedule: [{ 
+  //     day: { 
+  //       type: String,
+  //       enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+  //     },
+  //     // TBD
+  //     // available: { type: Boolean, default: true },
+  //     // openTime: { type: String },  // Format: "HH:mm"
+  //     // closeTime: { type: String }  // Format: "HH:mm"
+  //   }]
+  // }],
 
   maxDogs: {
     type: Number
@@ -145,10 +145,11 @@ const listingSchema = new mongoose.Schema({
   // }],
 
   //Details with Icons For Interhome Only 
-  attributes: [{
-    name: { type: String },
-    description: [{ type: String }]
-  }],
+  // To Check 
+  // attributes: [{
+  //   name: { type: String },
+  //   description: [{ type: String }]
+  // }],
 
   // Documents 
 
@@ -173,11 +174,6 @@ const listingSchema = new mongoose.Schema({
     language: { type: String },
     content: { type: String }
   },
-
-
-
-
-
 
   // TBD
   source:{
@@ -218,24 +214,25 @@ const listingSchema = new mongoose.Schema({
     ref: 'Filter'
   },
   // Selected filters for the listing
-  selectedFilters: {
-    generalFilters: [{ name: String, icon: String }],
-    mainFilters: [{ name: String, icon: String }],
-    accomodationFilters: [{ name: String, icon: String }],
-    kitchenFilters: [{ name: String, icon: String }],
-    poolFilters: [{ name: String, icon: String }],
-    wellnessFilters: [{ name: String, icon: String }],
-    kidsFilters: [{ name: String, icon: String }],
-    waterFilters: [{ name: String, icon: String }],
-    cateringFilters: [{ name: String, icon: String }],
-    parkingFilters: [{ name: String, icon: String }],
-    viewFilters: [{ name: String, icon: String }],
-    sportFilters: [{ name: String, icon: String }],
-    smokingFilters: [{ name: String, icon: String }],
-    accessibilityFilters: [{ name: String, icon: String }],
-    descriptionFilters: [{ name: String, icon: String }],
-    dogFilters: [{ name: String, icon: String }]
-  },
+  // Removed From Model and To Remove from existing data run the script removeSelectedFiltersFromListings.js
+  // selectedFilters: {
+  //   generalFilters: [{ name: String, icon: String }],
+  //   mainFilters: [{ name: String, icon: String }],
+  //   accomodationFilters: [{ name: String, icon: String }],
+  //   kitchenFilters: [{ name: String, icon: String }],
+  //   poolFilters: [{ name: String, icon: String }],
+  //   wellnessFilters: [{ name: String, icon: String }],
+  //   kidsFilters: [{ name: String, icon: String }],
+  //   waterFilters: [{ name: String, icon: String }],
+  //   cateringFilters: [{ name: String, icon: String }],
+  //   parkingFilters: [{ name: String, icon: String }],
+  //   viewFilters: [{ name: String, icon: String }],
+  //   sportFilters: [{ name: String, icon: String }],
+  //   smokingFilters: [{ name: String, icon: String }],
+  //   accessibilityFilters: [{ name: String, icon: String }],
+  //   descriptionFilters: [{ name: String, icon: String }],
+  //   dogFilters: [{ name: String, icon: String }]
+  // },
 
   // Analytics
   totalViews: { type: Number, default: 0 }, // Number of views
