@@ -29,6 +29,15 @@ exports.getBookingById = async (req, res, next) => {
   }
 };
 
+exports.getBookingByListingId = async (req, res, next) => {
+  try {
+    const booking = await bookingService.getBookingByListingId(req.params.id);
+    res.json(booking);
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.createBooking = async (req, res, next) => {
   try {
     const newBooking = await bookingService.createBooking(req.body);

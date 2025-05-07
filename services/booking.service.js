@@ -16,6 +16,10 @@ exports.getBookingById = async (id) => {
   return await Booking.findById(id).populate("user").populate("listing");
 };
 
+exports.getBookingByListingId = async (id) => {
+  return await Booking.find({listing:id});
+};
+
 exports.createBooking = async (data) => {
   // to check if the listing is available for the selected dates or is that specific listing is blocked on that specific date by that specific provider
   await validateBookingDates(data.listing, data.checkInDate, data.checkOutDate);
