@@ -65,13 +65,6 @@ router.get(
   isProvider,
   providerProfileController.getProviderAnalytics
 );
-// Auth routes (unprotected)
-router.post('/signup', providerController.signup);
-router.post('/login', providerController.login);
-
-// Protected routes - need token verification
-// Provider analytics route - both endpoints that serve the same function
-router.get('/analytics', verifyToken, isProvider, providerController.getProviderAnalytics);
 
 // Provider adds a new listing
 router.post(

@@ -169,36 +169,6 @@ const endOfDay = moment().endOf("day").utc().toDate();
 );
 scheduleTransferPaymnetJob.start();
 
-  const startOfDay = new Date();
-startOfDay.setUTCHours(0, 0, 0, 0); // 00:00:00 UTC
-
-const endOfDay = new Date();
-endOfDay.setUTCHours(23, 59, 59, 999); // 23:59:59 UTC
-
-  const bookings = await Booking.find({
-    checkInDate: {
-      $gte: startOfDay,
-      $lte: endOfDay
-    },
-    status:"pending"
-  });
-  
-  for (const booking of bookings) {
-    try {
-      const response = await axios.post('https://waureisen-backend.onrender.com/api/payment/transfer-payment', {
-        connectedAccountId: booking?.providerAccountId,
-        amount: booking?.totalPrice,
-        currency: 'chf',
-        bookingId:booking?._id
-      });
-  } catch (err) {
-    console.error("Failed to make payout:", err.message);
-  }
-  }
-},null,                
-true,                
-"UTC" )
-scheduleTransferPaymnetJob.start()
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
