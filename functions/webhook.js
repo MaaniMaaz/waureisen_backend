@@ -31,7 +31,7 @@ async function handlePayment(status, payload, eventData) {
         amount: amount,
       });
 
-      await User.findByIdAndUpdate(userId , {latestChargeId:eventData?.latest_charge})
+      await User.findByIdAndUpdate(userId , {latestChargeId:eventData?.id})
     }
   } catch (error) {
     console.log("error", error);
