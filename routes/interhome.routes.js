@@ -14,7 +14,7 @@ router.get('/prices/:accommodationCode', async (req, res) => {
         Los: los || true,
         Pax: pax,
         Duration: duration,
-        RangeFromDate: checkInDate
+        // RangeFromDate: checkInDate
       },
       headers: {
         'Token': 'XD1mZXqcC6',
@@ -170,7 +170,7 @@ router.get('/availability/:accommodationCode', async (req, res) => {
       }
       
       // Add 7 days to current date for next iteration
-      currentDate.setDate(currentDate.getDate() + 7);
+      currentDate.setDate(currentDate.getDate()+1);
     }
     
     // Return the availability data
