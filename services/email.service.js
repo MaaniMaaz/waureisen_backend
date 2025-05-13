@@ -1,16 +1,32 @@
 const nodemailer = require('nodemailer');
 
-// Create a transporter object
+// Create a transporter object with Hostpoint-specific settings
 const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE || 'gmail',
+  host: 'asmtp.mail.hostpoint.ch', // Use asmtp instead of mail
+  port: 587,
+  secure: false, // Use STARTTLS
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
+    user: process.env.EMAIL_USER || 'hallo@waureisen.com', // Full email address
+    pass: process.env.EMAIL_PASSWORD || 'Waureisen2024+',
   },
+  tls: {
+    // Do not fail on invalid certs
+    rejectUnauthorized: false
+  },
+  debug: true, // Enable verbose logging (for debugging only - remove in production)
 });
 
+// Optional: Verify connection configuration
+transporter.verify(function(error, success) {
+  if (error) {
+    console.log('SMTP Server connection error:', error);
+  } else {
+    console.log('SMTP Server connection established');
+  }
+});
+
+// The rest of your email service code remains the same
 // Store verification codes with expiration
-// In a production environment, consider using Redis instead of in-memory storage
 const verificationCodes = new Map();
 
 // Generate a random 6-digit code
@@ -24,7 +40,10 @@ const sendVerificationEmail = async (email, code, userType) => {
     const greeting = userType === 'provider' ? 'Hello Provider' : 'Hello Customer';
     
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: {
+        name: 'Waureisen',
+        address: process.env.EMAIL_USER || 'hallo@waureisen.com'
+      },
       to: email,
       subject: 'Waureisen - Email Verification Code',
       html: `
@@ -119,7 +138,7 @@ const sendBookingNotificationToProvider = async (providerEmail, bookingData) => 
     
     // Create HTML content for email
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_USER || 'hallo@waureisen.com',
       to: providerEmail,
       subject: 'Waureisen - New Booking Request',
       html: `
@@ -184,192 +203,185 @@ const sendBookingNotificationToProvider = async (providerEmail, bookingData) => 
   }
 };
 
-
 const sendBookingAcceptanceToCustomer = async (customerEmail, bookingData) => {
-    try {
-      const userTripsUrl = process.env.USER_TRIPS_URL || 'https://waureisen.com/trips';
-      const userMessagesUrl = process.env.USER_MESSAGES_URL || 'https://waureisen.com/messages';
-      
-      // Format dates nicely
-      const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        });
-      };
-  
-      const checkInDate = formatDate(bookingData.checkInDate);
-      const checkOutDate = formatDate(bookingData.checkOutDate);
-      
-      // Create trip details link
-      const tripDetailsLink = `${userTripsUrl}?id=${bookingData._id}`;
-      const messagesLink = `${userMessagesUrl}`;
-      
-      // Create HTML content for email
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: customerEmail,
-        subject: 'Waureisen - Your Booking Has Been Confirmed!',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-            <div style="text-align: center; margin-bottom: 20px;">
-              <h2 style="color: #B4A481; margin: 0;">Booking Confirmed!</h2>
-              <p style="color: #767676; margin-top: 5px;">Your booking request has been approved by the property owner</p>
+  try {
+    const userTripsUrl = process.env.USER_TRIPS_URL || 'https://waureisen.com/trips';
+    const userMessagesUrl = process.env.USER_MESSAGES_URL || 'https://waureisen.com/messages';
+    
+    // Format dates nicely
+    const formatDate = (dateString) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    };
+
+    const checkInDate = formatDate(bookingData.checkInDate);
+    const checkOutDate = formatDate(bookingData.checkOutDate);
+    
+    // Create trip details link
+    const tripDetailsLink = `${userTripsUrl}?id=${bookingData._id}`;
+    const messagesLink = `${userMessagesUrl}`;
+    
+    // Create HTML content for email
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'hallo@waureisen.com',
+      to: customerEmail,
+      subject: 'Waureisen - Your Booking Has Been Confirmed!',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #B4A481; margin: 0;">Booking Confirmed!</h2>
+            <p style="color: #767676; margin-top: 5px;">Your booking request has been approved by the property owner</p>
+          </div>
+          
+          <div style="background-color: #f8f8f8; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #4D484D;">Booking Details</h3>
+            
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Property:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${bookingData.listingTitle}</p>
             </div>
             
-            <div style="background-color: #f8f8f8; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-              <h3 style="margin-top: 0; color: #4D484D;">Booking Details</h3>
-              
-              <div style="margin-bottom: 15px;">
-                <p style="margin: 0; font-weight: bold; color: #4D484D;">Property:</p>
-                <p style="margin: 5px 0 0; color: #767676;">${bookingData.listingTitle}</p>
-              </div>
-              
-              <div style="margin-bottom: 15px;">
-                <p style="margin: 0; font-weight: bold; color: #4D484D;">Host:</p>
-                <p style="margin: 5px 0 0; color: #767676;">${bookingData.providerName}</p>
-              </div>
-              
-              <div style="margin-bottom: 15px;">
-                <p style="margin: 0; font-weight: bold; color: #4D484D;">Dates:</p>
-                <p style="margin: 5px 0 0; color: #767676;">Check-in: ${checkInDate}</p>
-                <p style="margin: 5px 0 0; color: #767676;">Check-out: ${checkOutDate}</p>
-              </div>
-              
-              <div style="margin-bottom: 15px;">
-                <p style="margin: 0; font-weight: bold; color: #4D484D;">Guests:</p>
-                <p style="margin: 5px 0 0; color: #767676;">
-                  ${bookingData.capacity.people} ${bookingData.capacity.people > 1 ? 'people' : 'person'}, 
-                  ${bookingData.capacity.dogs} ${bookingData.capacity.dogs > 1 ? 'dogs' : 'dog'}
-                </p>
-              </div>
-              
-              <div>
-                <p style="margin: 0; font-weight: bold; color: #4D484D;">Total Price:</p>
-                <p style="margin: 5px 0 0; color: #767676;">${bookingData.totalPrice} ${bookingData.currency || 'CHF'}</p>
-              </div>
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Host:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${bookingData.providerName}</p>
             </div>
             
-            <div style="margin-bottom: 20px; padding: 15px; border-radius: 5px; background-color: #f0f7ff; border-left: 4px solid #4299e1;">
-              <h4 style="margin-top: 0; color: #2b6cb0;">What's Next?</h4>
-              <p style="margin-bottom: 10px; color: #4a5568;">
-                Your booking is now confirmed. The property owner may contact you with additional details. Please prepare for 
-                your stay and make sure to review any house rules or instructions for check-in.
-              </p>
-              <p style="margin-bottom: 0; color: #4a5568; font-weight: bold;">
-                A MESSAGE HAS BEEN SENT TO YOUR INBOX. <a href="${messagesLink}" style="color: #4299e1; text-decoration: underline;">Check your messages</a> for communication from the host.
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Dates:</p>
+              <p style="margin: 5px 0 0; color: #767676;">Check-in: ${checkInDate}</p>
+              <p style="margin: 5px 0 0; color: #767676;">Check-out: ${checkOutDate}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Guests:</p>
+              <p style="margin: 5px 0 0; color: #767676;">
+                ${bookingData.capacity.people} ${bookingData.capacity.people > 1 ? 'people' : 'person'}, 
+                ${bookingData.capacity.dogs} ${bookingData.capacity.dogs > 1 ? 'dogs' : 'dog'}
               </p>
             </div>
             
-            <div style="text-align: center; margin-bottom: 20px;">
-              <a href="${tripDetailsLink}" style="display: inline-block; background-color: #B4A481; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; margin-right: 10px;">View Trip Details</a>
-              <a href="${messagesLink}" style="display: inline-block; background-color: #4299e1; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold;">View Messages</a>
-            </div>
-            
-            <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e0e0e0; color: #767676; font-size: 14px;">
-              <p>If you have any questions, please contact our support team.</p>
-              <p>Best regards,<br/>The Waureisen Team</p>
+            <div>
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Total Price:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${bookingData.totalPrice} ${bookingData.currency || 'CHF'}</p>
             </div>
           </div>
-        `
-      };
-  
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`Booking acceptance email sent to customer (${customerEmail}). Message ID: ${info.messageId}`);
-      return { success: true, messageId: info.messageId };
-    } catch (error) {
-      console.error('Error sending booking acceptance email:', error);
-      throw new Error('Failed to send booking acceptance email');
-    }
-  };
+          
+          <div style="margin-bottom: 20px; padding: 15px; border-radius: 5px; background-color: #f0f7ff; border-left: 4px solid #4299e1;">
+            <h4 style="margin-top: 0; color: #2b6cb0;">What's Next?</h4>
+            <p style="margin-bottom: 10px; color: #4a5568;">
+              Your booking is now confirmed. The property owner may contact you with additional details. Please prepare for 
+              your stay and make sure to review any house rules or instructions for check-in.
+            </p>
+            <p style="margin-bottom: 0; color: #4a5568; font-weight: bold;">
+              A MESSAGE HAS BEEN SENT TO YOUR INBOX. <a href="${messagesLink}" style="color: #4299e1; text-decoration: underline;">Check your messages</a> for communication from the host.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 20px;">
+            <a href="${tripDetailsLink}" style="display: inline-block; background-color: #B4A481; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; margin-right: 10px;">View Trip Details</a>
+            <a href="${messagesLink}" style="display: inline-block; background-color: #4299e1; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold;">View Messages</a>
+          </div>
+          
+          <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e0e0e0; color: #767676; font-size: 14px;">
+            <p>If you have any questions, please contact our support team.</p>
+            <p>Best regards,<br/>The Waureisen Team</p>
+          </div>
+        </div>
+      `
+    };
 
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Booking acceptance email sent to customer (${customerEmail}). Message ID: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending booking acceptance email:', error);
+    throw new Error('Failed to send booking acceptance email');
+  }
+};
 
-
-  const sendListingCreationConfirmationEmail = async (providerEmail, listingData) => {
-    try {
-      const providerBookingsUrl = process.env.PROVIDER_LISTINGS_URL || 'https://waureisen.com/provider/bookings';
-      
-      // Format the price nicely
-      const formattedPrice = `${listingData.pricePerNight?.price || 0} ${listingData.pricePerNight?.currency || 'CHF'}`;
-      
-      // Create HTML content for email
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: providerEmail,
-        subject: 'Waureisen - Your Listing Has Been Created!',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-            <div style="text-align: center; margin-bottom: 20px;">
-              <h2 style="color: #B4A481; margin: 0;">Listing Created Successfully!</h2>
-              <p style="color: #767676; margin-top: 5px;">Your property listing is now live on Waureisen</p>
+const sendListingCreationConfirmationEmail = async (providerEmail, listingData) => {
+  try {
+    const providerBookingsUrl = process.env.PROVIDER_LISTINGS_URL || 'https://waureisen.com/provider/bookings';
+    
+    // Format the price nicely
+    const formattedPrice = `${listingData.pricePerNight?.price || 0} ${listingData.pricePerNight?.currency || 'CHF'}`;
+    
+    // Create HTML content for email
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'hallo@waureisen.com',
+      to: providerEmail,
+      subject: 'Waureisen - Your Listing Has Been Created!',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #B4A481; margin: 0;">Listing Created Successfully!</h2>
+            <p style="color: #767676; margin-top: 5px;">Your property listing is now live on Waureisen</p>
+          </div>
+          
+          <div style="background-color: #f8f8f8; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #4D484D;">Listing Details</h3>
+            
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Property:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${listingData.title || 'Your New Property'}</p>
             </div>
             
-            <div style="background-color: #f8f8f8; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-              <h3 style="margin-top: 0; color: #4D484D;">Listing Details</h3>
-              
-              <div style="margin-bottom: 15px;">
-                <p style="margin: 0; font-weight: bold; color: #4D484D;">Property:</p>
-                <p style="margin: 5px 0 0; color: #767676;">${listingData.title || 'Your New Property'}</p>
-              </div>
-              
-              <div style="margin-bottom: 15px;">
-                <p style="margin: 0; font-weight: bold; color: #4D484D;">Location:</p>
-                <p style="margin: 5px 0 0; color: #767676;">${listingData.location?.address || 'Address pending'}</p>
-              </div>
-              
-              <div style="margin-bottom: 15px;">
-                <p style="margin: 0; font-weight: bold; color: #4D484D;">Price:</p>
-                <p style="margin: 5px 0 0; color: #767676;">${formattedPrice} per night</p>
-              </div>
-              
-              <div style="margin-bottom: 15px;">
-                <p style="margin: 0; font-weight: bold; color: #4D484D;">Property Type:</p>
-                <p style="margin: 5px 0 0; color: #767676;">${listingData.listingType || 'Not specified'}</p>
-              </div>
-              
-              <div>
-                <p style="margin: 0; font-weight: bold; color: #4D484D;">Status:</p>
-                <p style="margin: 5px 0 0; color: #767676;">${listingData.status || 'pending approval'}</p>
-              </div>
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Location:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${listingData.location?.address || 'Address pending'}</p>
             </div>
             
-            <div style="margin-bottom: 20px; padding: 15px; border-radius: 5px; background-color: #f0f7ff; border-left: 4px solid #4299e1;">
-              <h4 style="margin-top: 0; color: #2b6cb0;">What's Next?</h4>
-              <p style="margin-bottom: 10px; color: #4a5568;">
-                Your listing will be reviewed by our team. Once approved, customers will be able to book your property.
-                You'll receive booking notifications via email and can manage all your bookings in your provider dashboard.
-              </p>
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Price:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${formattedPrice} per night</p>
             </div>
             
-            <div style="text-align: center; margin-bottom: 20px;">
-              <a href="${providerBookingsUrl}" style="display: inline-block; background-color: #B4A481; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold;">View Your Bookings</a>
+            <div style="margin-bottom: 15px;">
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Property Type:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${listingData.listingType || 'Not specified'}</p>
             </div>
             
-            <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e0e0e0; color: #767676; font-size: 14px;">
-              <p>If you have any questions, please contact our support team.</p>
-              <p>Best regards,<br/>The Waureisen Team</p>
+            <div>
+              <p style="margin: 0; font-weight: bold; color: #4D484D;">Status:</p>
+              <p style="margin: 5px 0 0; color: #767676;">${listingData.status || 'pending approval'}</p>
             </div>
           </div>
-        `
-      };
-  
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`Listing creation confirmation email sent to provider (${providerEmail}). Message ID: ${info.messageId}`);
-      return { success: true, messageId: info.messageId };
-    } catch (error) {
-      console.error('Error sending listing creation confirmation email:', error);
-      throw new Error('Failed to send listing creation confirmation email');
-    }
-  };
+          
+          <div style="margin-bottom: 20px; padding: 15px; border-radius: 5px; background-color: #f0f7ff; border-left: 4px solid #4299e1;">
+            <h4 style="margin-top: 0; color: #2b6cb0;">What's Next?</h4>
+            <p style="margin-bottom: 10px; color: #4a5568;">
+              Your listing will be reviewed by our team. Once approved, customers will be able to book your property.
+              You'll receive booking notifications via email and can manage all your bookings in your provider dashboard.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 20px;">
+            <a href="${providerBookingsUrl}" style="display: inline-block; background-color: #B4A481; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold;">View Your Bookings</a>
+          </div>
+          
+          <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e0e0e0; color: #767676; font-size: 14px;">
+            <p>If you have any questions, please contact our support team.</p>
+            <p>Best regards,<br/>The Waureisen Team</p>
+          </div>
+        </div>
+      `
+    };
 
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Listing creation confirmation email sent to provider (${providerEmail}). Message ID: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending listing creation confirmation email:', error);
+    throw new Error('Failed to send listing creation confirmation email');
+  }
+};
 
-
-
-
-// NEW FUNCTION: Send booking rejection notification to customer
+// Send booking rejection notification to customer
 const sendBookingRejectionToCustomer = async (customerEmail, bookingData) => {
   try {
     const searchUrl = process.env.SEARCH_LISTINGS_URL || 'https://waureisen.com/search';
@@ -390,7 +402,7 @@ const sendBookingRejectionToCustomer = async (customerEmail, bookingData) => {
     
     // Create HTML content for email
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_USER || 'hallo@waureisen.com',
       to: customerEmail,
       subject: 'Waureisen - Booking Request Not Available',
       html: `
@@ -466,7 +478,6 @@ const sendBookingRejectionToCustomer = async (customerEmail, bookingData) => {
   }
 };
 
-
 const sendListingApprovalEmail = async (providerEmail, listingData) => {
   try {
     const providerListingsUrl = process.env.PROVIDER_LISTINGS_URL || 'http://localhost:5173/provider/your-listings';
@@ -476,7 +487,7 @@ const sendListingApprovalEmail = async (providerEmail, listingData) => {
     
     // Create HTML content for email
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_USER || 'hallo@waureisen.com',
       to: providerEmail,
       subject: 'Waureisen - Your Listing Has Been Approved!',
       html: `
@@ -538,9 +549,6 @@ const sendListingApprovalEmail = async (providerEmail, listingData) => {
   }
 };
 
-
-// Add this function to email.service.js after sendListingCreationConfirmationEmail
-
 // Send listing creation notification to admin
 const sendListingCreationNotificationToAdmin = async (listingData) => {
   try {
@@ -560,7 +568,7 @@ const sendListingCreationNotificationToAdmin = async (listingData) => {
     
     // Create HTML content for admin email
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL_USER || 'hallo@waureisen.com',
       to: adminEmail,
       subject: 'Waureisen - New Listing Created [Admin Notification]',
       html: `
