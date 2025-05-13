@@ -29,8 +29,7 @@ const camperSchema = new mongoose.Schema({
     required: true 
   },
   category: {
-    type: String,
-    enum: ['Electricity', 'Driver cabin', 'Living area & kitchen', 'Bathroom', 'Dog facilities', 'Additional', 'Security deposit', 'Rules & requirements'],
+    type: [String],
     required: true
   },
   featuredImage: { 
