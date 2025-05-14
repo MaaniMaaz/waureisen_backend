@@ -114,7 +114,6 @@ exports.closeListing = async (req, res, next) => {
   }
 };
 
-// Search listings by location
 exports.searchListings = async (req, res, next) => {
   try {
     const {
@@ -126,6 +125,7 @@ exports.searchListings = async (req, res, next) => {
       dogs,
       dateRange,
       filters,
+      radius = 50, // Add default radius of 500km
     } = req.query;
 
     // Convert parameters to numbers
@@ -135,6 +135,7 @@ exports.searchListings = async (req, res, next) => {
     const limit = parseInt(pageSize);
     const guestCount = people ? parseInt(people) : null;
     const dogCount = dogs ? parseInt(dogs) : null;
+    const searchRadius = parseInt(radius); // Parse radius to number
 
     // Parse filters if provided - handle both string and array formats
     let selectedFilters = null;
@@ -164,6 +165,7 @@ exports.searchListings = async (req, res, next) => {
       dogCount,
       dateRange,
       selectedFilters,
+      searchRadius, // Log the radius
     });
 
     // Validate parameters
@@ -184,6 +186,7 @@ exports.searchListings = async (req, res, next) => {
       dogCount,
       dateRange,
       filters: selectedFilters,
+      radius: searchRadius, // Pass the radius parameter
     };
 
     const result = await listingService.searchListings(searchParams);
@@ -203,20 +206,19 @@ exports.searchListings = async (req, res, next) => {
     });
   }
 };
-
 // Search listings by map bounds
 exports.searchListingsByMap = async (req, res, next) => {
   try {
     const {
       lat,
       lng,
-      radius = 10,
+      radius = 10, // Change default radius from 10 to 500km
       neLat,
       neLng,
       swLat,
       swLng,
       page = 1,
-      limit = 10,
+      limit = 50,
       people,
       dogs,
       dateRange,
