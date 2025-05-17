@@ -790,11 +790,176 @@ function timeRangeToDays(timeRange) {
 }
 
 // Helper function to process time series data
+function processTimeSeriesData(items, timeRange, dataType) {
+  // Different date formats based on time range
+  let dateFormat;
 
+  switch (timeRange) {
+    case "week":
+      dateFormat = { day: "numeric", month: "short" };
+      break;
+    case "month":
+      dateFormat = { day: "numeric", month: "short" };
+      break;
+    case "quarter":
+      dateFormat = { day: "numeric", month: "short" };
+      break;
+    case "year":
+      dateFormat = { month: "short", year: "numeric" };
+      break;
+    default:
+      dateFormat = { day: "numeric", month: "short" };
+  }
 
+  // Group data by date
+  const groupedData = {};
+
+  items.forEach((item) => {
+    const dateField = dataType === "revenue" ? item.date : item.createdAt;
+    const date = new Date(dateField);
+    const dateKey = date.toLocaleDateString("en-US", dateFormat);
+
+    if (!groupedData[dateKey]) {
+      groupedData[dateKey] = {
+        date: dateKey,
+        revenue: 0,
+        bookings: 0,
+      };
+    }
+
+    if (dataType === "revenue") {
+      groupedData[dateKey].revenue += item.amount || 0;
+    } else {
+      groupedData[dateKey].bookings += 1;
+    }
+  });
+
+  // Convert to array and sort by date
+  const result = Object.values(groupedData);
+  result.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  // Ensure we have data for every date in the range
+  if (result.length === 0) {
+    // Generate mock data if empty
+    const mockData = [];
+    const numPoints =
+      timeRange === "week"
+        ? 7
+        : timeRange === "month"
+        ? 30
+        : timeRange === "quarter"
+        ? 12
+        : timeRange === "year"
+        ? 12
+        : 30;
+
+    const today = new Date();
+    const startDate = new Date(today);
+
+    // Set start date based on time range
+    if (timeRange === "week") {
+      startDate.setDate(today.getDate() - 7);
+    } else if (timeRange === "month") {
+      startDate.setMonth(today.getMonth() - 1);
+    } else if (timeRange === "quarter") {
+      startDate.setMonth(today.getMonth() - 3);
+    } else if (timeRange === "year") {
+      startDate.setFullYear(today.getFullYear() - 1);
+    }
+
+    for (let i = 0; i < numPoints; i++) {
+      const mockDate = new Date(startDate);
+      mockDate.setDate(startDate.getDate() + i);
+
+      mockData.push({
+        date: mockDate.toLocaleDateString("en-US", dateFormat),
+        revenue: 0,
+        bookings: 0,
+      });
+    }
+
+    return mockData;
+  }
+
+  return result;
+}
+
+exports.getProviderListings = async (req, res, next) => {
+  try {
+    const providerId = req.user.id;
+
+    // Validate if ID is in valid format
+    if (!mongoose.Types.ObjectId.isValid(providerId)) {
+      return res.status(400).json({ message: "Invalid provider ID format" });
+    }
+
+    // Find all listings owned by this provider
+    const listings = await Listing.find({
+      owner: providerId,
+      ownerType: "Provider",
+    }).populate("owner");
+
+    res.json(listings);
+  } catch (err) {
+    console.error("Error fetching provider listings:", err);
+    next(err);
+  }
+};
 
 // For provider to get bookings for their listings
+exports.getProviderBookings = async (req, res, next) => {
+  try {
+    const providerId = req.user.id;
+    const { status = "all", limit } = req.query;
 
+    console.log("Provider bookings requested for provider ID:", providerId);
+    console.log("With params:", { status, limit });
+
+    // Find all listings owned by this provider
+    const listings = await Listing.find({
+      owner: providerId,
+      ownerType: "Provider",
+    });
+
+    if (!listings || listings.length === 0) {
+      return res.json([]); // Return empty array if no listings found
+    }
+
+    const listingIds = listings.map((listing) => listing._id);
+    console.log(`Found ${listingIds.length} listings for provider`);
+
+    // Build query based on status parameter
+    const query = {
+      listing: { $in: listingIds },
+    };
+
+    if (status !== "all") {
+      query.status = status;
+    }
+
+    console.log("Booking query:", JSON.stringify(query));
+
+    // Create the booking query with optional limit
+    let bookingsQuery = Booking.find(query)
+      .populate("user")
+      .populate("listing")
+      .sort({ createdAt: -1 });
+
+    // Apply limit if provided
+    if (limit) {
+      bookingsQuery = bookingsQuery.limit(parseInt(limit));
+    }
+
+    // Execute query
+    const bookings = await bookingsQuery.exec();
+    console.log(`Found ${bookings.length} bookings`);
+
+    res.json(bookings);
+  } catch (err) {
+    console.error("Error fetching provider bookings:", err);
+    next(err);
+  }
+};
 
 exports.getBookingDetails = async (req, res, next) => {
   try {
@@ -889,171 +1054,4 @@ exports.getPublicProviderListings = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-
 };
-function processTimeSeriesData(bookings, timeRange, dataType) {
-  // Different date formats based on time range
-  let dateFormat;
-
-  switch(timeRange) {
-    case 'week':
-      dateFormat = { day: 'numeric', month: 'short' };
-      break;
-    case 'month':
-      dateFormat = { day: 'numeric', month: 'short' };
-      break;
-    case 'quarter':
-      dateFormat = { day: 'numeric', month: 'short' };
-      break;
-    case 'year':
-      dateFormat = { month: 'short', year: 'numeric' };
-      break;
-    default:
-      dateFormat = { day: 'numeric', month: 'short' };
-  }
-
-  // Group data by date
-  const groupedData = {};
-
-  items.forEach(item => {
-    const dateField = dataType === 'revenue' ? item.date : item.createdAt;
-    const date = new Date(dateField);
-    const dateKey = date.toLocaleDateString('en-US', dateFormat);
-
-    if (!groupedData[dateKey]) {
-      groupedData[dateKey] = {
-        date: dateKey,
-        revenue: 0,
-        bookings: 0
-      };
-    }
-
-    if (dataType === 'revenue') {
-      groupedData[dateKey].revenue += item.amount || 0;
-    } else {
-      groupedData[dateKey].bookings += 1;
-    }
-  });
-
-  // Convert to array and sort by date
-  const result = Object.values(groupedData);
-  result.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-  // Ensure we have data for every date in the range
-  if (result.length === 0) {
-    // Generate mock data if empty
-    const mockData = [];
-    const numPoints = timeRange === 'week' ? 7 :
-                      timeRange === 'month' ? 30 :
-                      timeRange === 'quarter' ? 12 :
-                      timeRange === 'year' ? 12 : 30;
-
-    const today = new Date();
-    const startDate = new Date(today);
-    
-    // Set start date based on time range
-    if (timeRange === 'week') {
-      startDate.setDate(today.getDate() - 7);
-    } else if (timeRange === 'month') {
-      startDate.setMonth(today.getMonth() - 1);
-    } else if (timeRange === 'quarter') {
-      startDate.setMonth(today.getMonth() - 3);
-    } else if (timeRange === 'year') {
-      startDate.setFullYear(today.getFullYear() - 1);
-    }
-
-    for (let i = 0; i < numPoints; i++) {
-      const mockDate = new Date(startDate);
-      mockDate.setDate(startDate.getDate() + i);
-
-      mockData.push({
-        date: mockDate.toLocaleDateString('en-US', dateFormat),
-        revenue: 0,
-        bookings: 0
-      });
-    }
-
-    return mockData;
-  }
-
-  return result;
-}
-
-exports.getProviderListings = async (req, res, next) => {
-  try {
-    const providerId = req.user.id;
-    
-    // Validate if ID is in valid format
-    if (!mongoose.Types.ObjectId.isValid(providerId)) {
-      return res.status(400).json({ message: 'Invalid provider ID format' });
-    }
-
-    // Find all listings owned by this provider
-    const listings = await Listing.find({
-      owner: providerId,
-      ownerType: 'Provider'
-    }).populate('owner');
-
-    res.json(listings);
-  } catch (err) {
-    console.error('Error fetching provider listings:', err);
-    next(err);
-  }
-};
-
-
-// For provider to get bookings for their listings
-exports.getProviderBookings = async (req, res, next) => {
-  try {
-    const providerId = req.user.id;
-    const { status = 'all', limit } = req.query;
-    
-    console.log('Provider bookings requested for provider ID:', providerId);
-    console.log('With params:', { status, limit });
-    
-    // Find all listings owned by this provider
-    const listings = await Listing.find({
-      owner: providerId,
-      ownerType: 'Provider'
-    });
-
-    if (!listings || listings.length === 0) {
-      return res.json([]);  // Return empty array if no listings found
-    }
-
-    const listingIds = listings.map(listing => listing._id);
-    console.log(`Found ${listingIds.length} listings for provider`);
-
-    // Build query based on status parameter
-    const query = {
-      listing: { $in: listingIds }
-    };
-
-    if (status !== 'all') {
-      query.status = status;
-    }
-
-    console.log('Booking query:', JSON.stringify(query));
-
-    // Create the booking query with optional limit
-    let bookingsQuery = Booking.find(query)
-      .populate('user')
-      .populate('listing')
-      .sort({ createdAt: -1 });
-
-    // Apply limit if provided
-    if (limit) {
-      bookingsQuery = bookingsQuery.limit(parseInt(limit));
-    }
-
-    // Execute query
-    const bookings = await bookingsQuery.exec();
-    console.log(`Found ${bookings.length} bookings`);
-
-    res.json(bookings);
-  } catch (err) {
-    console.error('Error fetching provider bookings:', err);
-    next(err);
-  }
-};
-
