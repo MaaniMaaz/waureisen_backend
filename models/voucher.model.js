@@ -10,6 +10,11 @@ const voucherSchema = new mongoose.Schema({
     eur: { type: Number, default: 0 }
   },
 
+  travelAmount: {
+    amount: { type: Number, default: 0 },
+    currency: { type: String, enum: ['CHF', 'EUR'], default: 'CHF' }
+  },
+
   validUntil: { type: Date },
   status: { type: String, enum: ['active', 'expired'], default: 'active' },
 
