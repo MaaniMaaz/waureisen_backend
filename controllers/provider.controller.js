@@ -1,13 +1,13 @@
-const mongoose = require("mongoose");
-const providerService = require("../services/provider.service");
-const listingService = require("../services/listing.service");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/user.model");
-const Listing = require("../models/listing.model");
-const Booking = require("../models/booking.model");
-const Transaction = require("../models/transaction.model");
-const Review = require("../models/review.model");
+const mongoose = require('mongoose');
+const providerService = require('../services/provider.service');
+const listingService = require('../services/listing.service');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user.model');
+const Listing = require('../models/listing.model');
+const Booking = require('../models/booking.model');
+const Transaction = require('../models/transaction.model');
+const Review = require('../models/review.model');
 
 exports.signup = async (req, res, next) => {
   try {
@@ -150,12 +150,12 @@ exports.getProviderById = async (req, res, next) => {
   try {
     // Validate if ID is in valid format
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid provider ID format" });
+      return res.status(400).json({ message: 'Invalid provider ID format' });
     }
 
     const provider = await providerService.getProviderById(req.params.id);
     if (!provider) {
-      return res.status(404).json({ message: "Provider not found" });
+      return res.status(404).json({ message: 'Provider not found' });
     }
 
     res.json(provider);
@@ -290,12 +290,12 @@ exports.deleteProvider = async (req, res, next) => {
   try {
     // Validate if ID is in valid format
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid provider ID format" });
+      return res.status(400).json({ message: 'Invalid provider ID format' });
     }
 
     const deleted = await providerService.deleteProvider(req.params.id);
     if (!deleted) {
-      return res.status(404).json({ message: "Provider not found" });
+      return res.status(404).json({ message: 'Provider not found' });
     }
 
     res.status(204).send();
@@ -331,7 +331,7 @@ exports.addListing = async (req, res, next) => {
 
     // Validate if ID is in valid format
     if (!mongoose.Types.ObjectId.isValid(providerId)) {
-      return res.status(400).json({ message: "Invalid provider ID format" });
+      return res.status(400).json({ message: 'Invalid provider ID format' });
     }
 
     const listingData = req.body;
@@ -344,7 +344,7 @@ exports.addListing = async (req, res, next) => {
 
     // Add owner reference to listing data
     listingData.owner = providerId;
-    listingData.ownerType = "Provider";
+    listingData.ownerType = 'Provider';
 
     // Create new listing using listing service
     const newListing = await listingService.createListing(listingData);
@@ -354,9 +354,7 @@ exports.addListing = async (req, res, next) => {
     await provider.save();
 
     // Return the populated listing data
-    const populatedListing = await listingService.getListingById(
-      newListing._id
-    );
+    const populatedListing = await listingService.getListingById(newListing._id);
 
     // Send listing creation confirmation email to the provider
     try {
@@ -391,12 +389,12 @@ exports.getProviderProfile = async (req, res, next) => {
 
     // Validate if ID is in valid format
     if (!mongoose.Types.ObjectId.isValid(providerId)) {
-      return res.status(400).json({ message: "Invalid provider ID format" });
+      return res.status(400).json({ message: 'Invalid provider ID format' });
     }
 
     const provider = await providerService.getProviderById(providerId);
     if (!provider) {
-      return res.status(404).json({ message: "Provider not found" });
+      return res.status(404).json({ message: 'Provider not found' });
     }
 
     // Return sanitized profile (no password)
@@ -411,7 +409,7 @@ exports.getProviderProfile = async (req, res, next) => {
       profilePicture: provider.profilePicture,
       aboutYou: provider.aboutYou,
       createdAt: provider.createdAt,
-      updatedAt: provider.updatedAt,
+      updatedAt: provider.updatedAt
     };
 
     res.json(profile);
@@ -423,42 +421,42 @@ exports.getProviderProfile = async (req, res, next) => {
 exports.getProviderAnalytics = async (req, res, next) => {
   try {
     // Add debug log for troubleshooting
-    console.log("Provider analytics requested for user ID:", req.user.id);
+    console.log('Provider analytics requested for user ID:', req.user.id);
 
-    const timeRange = req.query.timeRange || "month";
+    const timeRange = req.query.timeRange || 'month';
     const providerId = req.user.id;
 
     // Validate if ID is in valid format
     if (!mongoose.Types.ObjectId.isValid(providerId)) {
-      console.error("Invalid provider ID format:", providerId);
-      return res.status(400).json({ message: "Invalid provider ID format" });
+      console.error('Invalid provider ID format:', providerId);
+      return res.status(400).json({ message: 'Invalid provider ID format' });
     }
 
     // Get provider details
     const provider = await User.findById(providerId);
 
     if (!provider) {
-      return res.status(404).json({ message: "Provider not found" });
+      return res.status(404).json({ message: 'Provider not found' });
     }
 
     // Define date ranges based on timeRange
     const currentDate = new Date();
     let startDate;
 
-    switch (timeRange) {
-      case "week":
+    switch(timeRange) {
+      case 'week':
         startDate = new Date(currentDate);
         startDate.setDate(currentDate.getDate() - 7);
         break;
-      case "month":
+      case 'month':
         startDate = new Date(currentDate);
         startDate.setMonth(currentDate.getMonth() - 1);
         break;
-      case "quarter":
+      case 'quarter':
         startDate = new Date(currentDate);
         startDate.setMonth(currentDate.getMonth() - 3);
         break;
-      case "year":
+      case 'year':
         startDate = new Date(currentDate);
         startDate.setFullYear(currentDate.getFullYear() - 1);
         break;
@@ -470,10 +468,10 @@ exports.getProviderAnalytics = async (req, res, next) => {
     // Find all listings owned by this provider
     const listings = await Listing.find({
       owner: providerId,
-      ownerType: "Provider",
+      ownerType: 'Provider'
     });
 
-    const listingIds = listings.map((listing) => listing._id);
+    const listingIds = listings.map(listing => listing._id);
 
     // Get bookings for the date range
     const bookings = await Booking.find({
