@@ -22,7 +22,6 @@ const bookingSchema = new mongoose.Schema({
   providerAccountId: { type: String, required: true },
 
   // TBD if needed or not
-
   // Added capacity object with people and dogs fields
   capacity: {
     people: { type: Number, default: 1 },

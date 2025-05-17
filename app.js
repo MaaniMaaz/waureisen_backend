@@ -18,14 +18,14 @@ const transactionRoutes = require("./routes/transaction.routes.js");
 const travelMagazineRoutes = require("./routes/travelMagazine.routes.js");
 const voucherRoutes = require("./routes/voucher.routes.js");
 const bookingRoutes = require("./routes/booking.routes.js");
-const conversationRoutes = require("./routes/conversation.routes");
-const verificationRoutes = require("./routes/verification.routes.js");
+const newsletterRoutes = require('./routes/newsletter.routes');
+const paymentRoutes = require('./routes/payment.routes.js');
+const interhomeRoutes = require('./routes/interhome.routes');
+const conversationRoutes = require('./routes/conversation.routes');
+const verificationRoutes = require('./routes/verification.routes.js');
 
 const { CronJob } = require("cron");
 const axios = require("axios");
-const newsletterRoutes = require("./routes/newsletter.routes");
-const paymentRoutes = require("./routes/payment.routes.js");
-const interhomeRoutes = require("./routes/interhome.routes");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 const { handlePayment } = require("./functions/webhook.js");
 

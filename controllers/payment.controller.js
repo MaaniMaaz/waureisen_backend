@@ -18,10 +18,12 @@ const createPaymentIntent = async (req, res) => {
     } = req.body;
 
     const currencySmall = currency?.toLowerCase();
+  
 
     const userData = await User?.findById(req?.user?.id);
     console.log(req?.user?.id , userData , "user Data")
 
+    // Step 1: Calculate fees (Assume 2.9% for Stripe + 10% for platform)
     const stripeFeePercentage = 2.9;
     const platformFeePercentage = 10;
 
