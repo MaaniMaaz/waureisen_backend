@@ -78,11 +78,16 @@ exports.deleteListing = async (id) => {
   await Listing.findByIdAndDelete(id);
 };
 
+/**
+ * Search for listings by map bounds
+ * @param {Object} params - Search parameters
+ * @returns {Object} Object containing listings and pagination info
+ */
 exports.searchListingsByMap = async (params) => {
   const {
     latitude,
     longitude,
-    radius = 10,
+    radius = 10, // Default to 500km instead of 10km
     bounds,
     page,
     limit,
@@ -135,9 +140,6 @@ exports.searchListingsByMap = async (params) => {
     query["capacity.pets"] = { $gte: dogCount };
   }
 
-  // Add date range filter if provided
-  // This would depend on your data model
-
   // Count total matching documents (for pagination info)
   const total = await Listing.countDocuments(query);
 
@@ -147,7 +149,7 @@ exports.searchListingsByMap = async (params) => {
     .limit(limit + 1) // Get one extra to check if there are more
     .lean();
 
-  console.log(`Found ${listings.length} listings for map search`);
+  console.log(`Found ${listings.length} listings for map search with radius ${radius}km`);
 
   // Check if there are more results
   const hasMore = listings.length > limit;
@@ -229,16 +231,22 @@ const applyAmenitiesFilter = (listings, selectedFilters) => {
  * @param {Object} params - Search parameters
  * @returns {Object} Object containing listings and pagination info
  */
+/**
+ * Search for listings based on location and filters
+ * @param {Object} params - Search parameters
+ * @returns {Object} Object containing listings and pagination info
+ */
 exports.searchListings = async (params) => {
   const {
     latitude,
     longitude,
     page = 1,
-    limit = 10,
+    limit = 100,
     guestCount,
     dogCount,
     dateRange,
     filters,
+    radius = 10, // Default to 500km if not provided
   } = params;
 
   // Calculate skip value for pagination
@@ -251,13 +259,16 @@ exports.searchListings = async (params) => {
   };
 
   if (latitude && longitude) {
+    // Convert radius to meters
+    const searchRadius = radius * 1000;
+    
     query["location.coordinates"] = {
       $near: {
         $geometry: {
           type: "Point",
           coordinates: [longitude, latitude],
         },
-        $maxDistance: 50000,
+        $maxDistance: searchRadius, // Use the provided radius parameter (in meters)
       },
     };
   }
@@ -278,7 +289,7 @@ exports.searchListings = async (params) => {
       .limit(limit + 1)
       .lean();
 
-    console.log(`Found ${listings.length} listings for search query`);
+    console.log(`Found ${listings.length} listings for search query with radius ${radius}km`);
 
     if (filters && filters.length > 0) {
       listings = applyAmenitiesFilter(listings, filters);
@@ -299,7 +310,6 @@ exports.searchListings = async (params) => {
     throw error;
   }
 };
-
 /**
  * Delete a listing by ID for a specific provider
  * @param {string} listingId - The listing ID
