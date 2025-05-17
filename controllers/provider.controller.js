@@ -38,7 +38,7 @@ exports.signup = async (req, res, next) => {
     const token = jwt.sign(
       { id: newProvider._id, role: "provider" },
       process.env.JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "30d" }
     );
 
     res.status(201).json({
@@ -119,7 +119,7 @@ exports.login = async (req, res, next) => {
     const token = jwt.sign(
       { id: provider._id, role: "provider" },
       process.env.JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "30d" }
     );
 
     res.json({
@@ -1054,6 +1054,7 @@ exports.getPublicProviderListings = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+
 };
 function processTimeSeriesData(bookings, timeRange, dataType) {
   // Different date formats based on time range
@@ -1220,3 +1221,4 @@ exports.getProviderBookings = async (req, res, next) => {
     next(err);
   }
 };
+
