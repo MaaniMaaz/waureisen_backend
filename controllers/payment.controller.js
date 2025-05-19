@@ -201,8 +201,8 @@ const createStripeAccount = async (req, res) => {
 
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: `http://localhost:5173/provider/registration?account=failed`,
-      return_url: `http://localhost:5173/provider/registration?account=${account.id}`,
+      refresh_url: `https://waureisen.com/provider/registration?account=failed`,
+      return_url: `https://waureisen.com/provider/registration?account=${account.id}`,
       type: "account_onboarding",
     });
 

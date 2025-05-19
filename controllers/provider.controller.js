@@ -48,6 +48,7 @@ exports.signup = async (req, res, next) => {
         id: newProvider._id,
         username: newProvider.username,
         email: newProvider.email,
+         profileCompleted: newProvider.profileCompleted,
       },
     });
   } catch (err) {
@@ -84,6 +85,7 @@ exports.completeRegistration = async (req, res, next) => {
         email: updatedProvider.email,
         profileStatus: updatedProvider.profileStatus,
         registrationStatus: updatedProvider.registrationStatus,
+         profileCompleted: provider.profileCompleted,
       },
     });
   } catch (err) {
@@ -130,6 +132,7 @@ exports.login = async (req, res, next) => {
         username: provider.username,
         email: provider.email,
         profileStatus: provider.profileStatus,
+        profileCompleted: provider.profileCompleted,
       },
     });
   } catch (err) {

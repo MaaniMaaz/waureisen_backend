@@ -315,6 +315,7 @@ exports.completeProviderRegistration = async (providerId, data) => {
       ...data,
       registrationStatus: "complete",
       profileStatus: "pending verification",
+      profileCompleted:true,
     },
     { new: true }
   );

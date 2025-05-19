@@ -9,7 +9,6 @@ async function handlePayment(status, payload, eventData) {
   try {
     const { amount, userId, listing,providerId,currency, checkInDate, checkOutDate,providerAccountId } = payload;
 
-    console.log(userId, "user id", eventData);
 
     if (status === "success") {
       const newBooking = await bookingService.createBooking({
