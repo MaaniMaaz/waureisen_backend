@@ -203,6 +203,8 @@ const createStripeAccount = async (req, res) => {
       account: account.id,
       refresh_url: `https://waureisen.com/provider/registration?account=failed`,
       return_url: `https://waureisen.com/provider/registration?account=${account.id}`,
+      // refresh_url: `http://localhost:5173/provider/registration?account=failed`,
+      // return_url: `http://localhost:5173/provider/registration?account=${account.id}`,
       type: "account_onboarding",
     });
 
@@ -217,6 +219,7 @@ const createStripeAccount = async (req, res) => {
 const getStripeAccount = async (req, res) => {
   try {
     const { accountId } = req?.params;
+    // console.log(accountId)
     const account = await stripe.accounts.retrieve(accountId);
     res.json({ data: account });
   } catch (err) {
