@@ -15,6 +15,9 @@ exports.signup = async (req, res, next) => {
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
+ const year = new Date().getFullYear();
+      const randomNum = Math.floor(10000 + Math.random() * 90000); // 5-digit number
+      const customerNumber = `WAU-${year}-${randomNum}`;
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -28,7 +31,8 @@ exports.signup = async (req, res, next) => {
       firstName,
       lastName,
       terms: ["default_terms"], // Required field as per model
-      profileStatus: "not verified",
+      profileStatus: "verified",
+      customerNumber,
     });
 
     // Generate token

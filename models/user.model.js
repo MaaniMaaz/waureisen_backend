@@ -78,7 +78,7 @@ const userSchema = new mongoose.Schema({
   profileStatus:{
     type: String,
     enum: ['not verified','pending verification', 'verified', 'banned'],
-    default: 'not verified',
+    default: 'verified',
   } ,
 
 

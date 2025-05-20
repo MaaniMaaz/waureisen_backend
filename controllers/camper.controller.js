@@ -38,6 +38,23 @@ exports.getCamperById = async (req, res, next) => {
     next(err);
   }
 };
+/**
+ * Get camper by Title
+ */
+exports.getCamperBytitle = async (req, res, next) => {
+  try {
+    const camper = await camperService.getCamperByTitle(req.params.title);
+    
+    if (camper?.length < 1) {
+      return res.status(404).json({ message: 'Camper not found' });
+    }
+    
+    res.status(200).json(camper[0]);
+  } catch (err) {
+    console.error(`Error fetching camper :`, err);
+    next(err);
+  }
+};
 
 /**
  * Create new camper
@@ -51,6 +68,14 @@ exports.createCamper = async (req, res, next) => {
       return res.status(400).json({ 
         message: 'Missing required fields: title, description, category, and featuredImage are required' 
       });
+    }
+    const isCamperExist = await camperService?.getCamperByTitle(title)
+    
+    if(isCamperExist?.length > 0 ){
+      return res.status(400).json({ 
+        message: 'Camper already exist with this title, change the title to post.' 
+      });
+
     }
     
     if (!Array.isArray(content) || content.length === 0) {

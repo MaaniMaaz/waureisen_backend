@@ -22,7 +22,8 @@ const contentElementSchema = new mongoose.Schema({
 const camperSchema = new mongoose.Schema({
   title: { 
     type: String, 
-    required: true 
+    required: true ,
+    unique:true
   },
   description: { 
     type: String, 
@@ -30,7 +31,7 @@ const camperSchema = new mongoose.Schema({
   },
   category: {
     type: [String],
-    required: true
+    required: false
   },
   featuredImage: { 
     type: String,  // Cloudinary URL

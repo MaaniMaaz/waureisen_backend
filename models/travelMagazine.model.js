@@ -28,6 +28,9 @@ const travelMagazineSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
+  country: { 
+    type: String, 
+  },
   category: {
     type: String,
     enum: ['Destinations', 'Food & Cuisine', 'Travel Tips', 'Pet Travel'],

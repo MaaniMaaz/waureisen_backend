@@ -21,6 +21,13 @@ exports.getTravelMagazineById = async (id) => {
     .populate('author', 'username email');
 };
 
+exports.getTravelMagazineByTitle = async (title) => {
+  return await TravelMagazine.find({ 
+    title: { $regex: new RegExp(`^${title}$`, 'i') } 
+  })
+    .populate('author', 'username email');
+};
+
 /**
  * Create a new travel magazine post
  * @param {Object} data - Post data

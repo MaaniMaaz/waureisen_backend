@@ -40,6 +40,24 @@ exports.getTravelMagazineById = async (req, res, next) => {
 };
 
 /**
+ * Get travel magazine post by Title
+ */
+exports.getTravelMagazineByTitle = async (req, res, next) => {
+  try {
+    const travelMagazine = await travelMagazineService.getTravelMagazineByTitle(req.params.title);
+    
+    if (travelMagazine?.length < 1) {
+      return res.status(404).json({ message: 'Blog post not found' });
+    }
+    
+    res.json(travelMagazine[0]);
+  } catch (err) {
+    console.error(`Error fetching travel magazine:`, err);
+    next(err);
+  }
+};
+
+/**
  * Create new travel magazine post
  */
 exports.createTravelMagazine = async (req, res, next) => {
@@ -51,6 +69,15 @@ exports.createTravelMagazine = async (req, res, next) => {
       return res.status(400).json({ 
         message: 'Missing required fields: title, description, category, and featuredImage are required' 
       });
+    }
+
+    const isMagazineExist = await travelMagazineService?.getTravelMagazineByTitle(title)
+    
+    if(isMagazineExist?.length > 0 ){
+      return res.status(400).json({ 
+        message: 'Magazine already exist with this title, change the title to post.' 
+      });
+
     }
     
     if (!Array.isArray(content) || content.length === 0) {

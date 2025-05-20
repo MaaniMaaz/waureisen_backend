@@ -21,6 +21,12 @@ exports.getCamperById = async (id) => {
     .populate('author', 'username email');
 };
 
+exports.getCamperByTitle = async (title) => {
+ return await Camper.find({ 
+  title: { $regex: new RegExp(`^${title}$`, 'i') } 
+}).populate('author', 'username email');
+};
+
 /**
  * Create a new camper
  * @param {Object} data - Camper data
