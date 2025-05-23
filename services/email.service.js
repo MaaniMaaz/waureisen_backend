@@ -480,7 +480,7 @@ const sendBookingRejectionToCustomer = async (customerEmail, bookingData) => {
 
 const sendListingApprovalEmail = async (providerEmail, listingData) => {
   try {
-    const providerListingsUrl = process.env.PROVIDER_LISTINGS_URL || 'http://localhost:5173/provider/your-listings';
+    const providerListingsUrl = process.env.PROVIDER_LISTINGS_URL || 'https://www.waureisen.com/provider/your-listings';
     
     // Format the price nicely
     const formattedPrice = `${listingData.pricePerNight?.price || 0} ${listingData.pricePerNight?.currency || 'CHF'}`;
@@ -553,8 +553,8 @@ const sendListingApprovalEmail = async (providerEmail, listingData) => {
 const sendListingCreationNotificationToAdmin = async (listingData) => {
   try {
     // Get admin email from environment variable
-    const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'hamzashahid0308@gmail.com';
-    const providerListingsUrl = process.env.ADMIN_LISTINGS_URL || 'http://localhost:5173/admin/accommodations';
+    const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'hallo@waureisen.com';
+    const providerListingsUrl = process.env.ADMIN_LISTINGS_URL || 'https://www.waureisen.com/admin/accommodations';
     
     // Format the price nicely
     const formattedPrice = `${listingData.pricePerNight?.price || 0} ${listingData.pricePerNight?.currency || 'CHF'}`;
