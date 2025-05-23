@@ -289,23 +289,74 @@ exports.updateProviderStatus = async (req, res, next) => {
   }
 };
 
+
 exports.deleteProvider = async (req, res, next) => {
   try {
+    const providerId = req.params.id;
+    
     // Validate if ID is in valid format
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid provider ID format" });
+    if (!mongoose.Types.ObjectId.isValid(providerId)) {
+      return res.status(400).json({ 
+        message: "Invalid provider ID format",
+        error: "INVALID_ID_FORMAT"
+      });
     }
 
-    const deleted = await providerService.deleteProvider(req.params.id);
+    console.log(`Attempting to delete provider: ${providerId}`);
+
+    // Check if provider exists first
+    const provider = await providerService.getProviderById(providerId);
+    if (!provider) {
+      return res.status(404).json({ 
+        message: "Provider not found",
+        error: "PROVIDER_NOT_FOUND"
+      });
+    }
+
+    // Perform the deletion
+    const deleted = await providerService.deleteProvider(providerId);
+    
     if (!deleted) {
-      return res.status(404).json({ message: "Provider not found" });
+      return res.status(500).json({ 
+        message: "Failed to delete provider",
+        error: "DELETION_FAILED"
+      });
     }
 
-    res.status(204).send();
+    console.log(`Successfully deleted provider: ${providerId}`);
+    
+    // Send success response
+    res.status(200).json({ 
+      message: "Provider deleted successfully",
+      providerId: providerId
+    });
+    
   } catch (err) {
-    next(err);
+    console.error("Error in deleteProvider controller:", err);
+    
+    // Check for specific error types
+    if (err.name === 'CastError') {
+      return res.status(400).json({ 
+        message: "Invalid provider ID",
+        error: "INVALID_ID"
+      });
+    }
+    
+    if (err.code === 11000) {
+      return res.status(400).json({ 
+        message: "Database constraint violation",
+        error: "CONSTRAINT_VIOLATION"
+      });
+    }
+    
+    // Generic error response
+    res.status(500).json({ 
+      message: "Internal server error while deleting provider",
+      error: "INTERNAL_SERVER_ERROR"
+    });
   }
 };
+
 
 exports.getListingDetails = async (req, res, next) => {
   try {

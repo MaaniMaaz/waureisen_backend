@@ -2,6 +2,8 @@ const Provider = require("../models/provider.model");
 const Listing = require("../models/listing.model");
 const Booking = require("../models/booking.model");
 const UnavailableDate = require("../models/unavailableDate.model");
+const Transaction = require("../models/transaction.model");  // Add this line
+const Review = require("../models/review.model");      
 
 // Basic provider operations
 exports.getProviderById = async (id) => {
@@ -777,6 +779,80 @@ exports.updateProviderSettings = async (providerId, settings) => {
     return updatedProvider;
   } catch (error) {
     console.error('Error updating provider settings:', error);
+    throw error;
+  }
+};
+
+
+ 
+
+// Then your deleteProvider function should work correctly:
+exports.deleteProvider = async (providerId) => {
+  try {
+    console.log(`Starting deletion process for provider: ${providerId}`);
+    
+    // Validate provider exists
+    const provider = await Provider.findById(providerId);
+    if (!provider) {
+      console.log(`Provider ${providerId} not found`);
+      return false;
+    }
+
+    // Step 1: Find all listings owned by this provider
+    const listings = await Listing.find({
+      owner: providerId,
+      ownerType: "Provider",
+    });
+    
+    const listingIds = listings.map(listing => listing._id);
+    console.log(`Found ${listings.length} listings to delete`);
+
+    // Step 2: Delete all bookings for these listings
+    if (listingIds.length > 0) {
+      const bookingDeleteResult = await Booking.deleteMany({
+        listing: { $in: listingIds }
+      });
+      console.log(`Deleted ${bookingDeleteResult.deletedCount} bookings`);
+
+      // Step 3: Delete all unavailable dates for these listings
+      const unavailableDatesResult = await UnavailableDate.deleteMany({
+        listing: { $in: listingIds }
+      });
+      console.log(`Deleted ${unavailableDatesResult.deletedCount} unavailable dates`);
+
+      // Step 4: Delete all reviews for these listings
+      const reviewDeleteResult = await Review.deleteMany({
+        listing: { $in: listingIds }
+      });
+      console.log(`Deleted ${reviewDeleteResult.deletedCount} reviews`);
+
+      // Step 5: Delete all listings
+      const listingDeleteResult = await Listing.deleteMany({
+        owner: providerId,
+        ownerType: "Provider"
+      });
+      console.log(`Deleted ${listingDeleteResult.deletedCount} listings`);
+    }
+
+    // Step 6: Delete transactions related to this provider
+    const transactionDeleteResult = await Transaction.deleteMany({
+      user: providerId
+    });
+    console.log(`Deleted ${transactionDeleteResult.deletedCount} transactions`);
+
+    // Step 7: Finally delete the provider
+    const result = await Provider.findByIdAndDelete(providerId);
+    
+    if (result) {
+      console.log(`Successfully deleted provider: ${providerId}`);
+      return true;
+    } else {
+      console.log(`Failed to delete provider: ${providerId}`);
+      return false;
+    }
+
+  } catch (error) {
+    console.error(`Error deleting provider ${providerId}:`, error);
     throw error;
   }
 };

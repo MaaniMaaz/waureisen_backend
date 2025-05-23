@@ -290,3 +290,333 @@ exports.searchListingsByMap = async (req, res, next) => {
     });
   }
 };
+
+
+// Update Listing Search logic
+
+// Updated listing.controller.js - getStreamedListings function
+// Complete updated getStreamedListings function for listing.controller.js
+
+/**
+ * Get paginated listings with proper total count and page details
+ * Supports traditional pagination with page and limit parameters
+ */
+exports.getStreamedListings = async (req, res, next) => {
+  try {
+    const {
+      limit = 12,
+      skip = 0,
+      page = 1,
+      lat,
+      lng,
+      radius = 500, // Default to 500km
+      people,
+      dogs,
+      filters: filtersParam,
+      priceMin,
+      priceMax
+    } = req.query;
+
+    console.log("Raw filters param:", filtersParam);
+    console.log("Pagination params:", { limit, skip, page });
+
+    // Initialize empty filters
+    let filters = {};
+    
+    // Process filters with careful handling for double-encoded strings
+    if (filtersParam) {
+      try {
+        // Detect if this is a JSON string (already stringified)
+        // and handle various possible formats
+        let parsedFilters;
+        
+        if (typeof filtersParam === 'string') {
+          // Try to clean the string if it looks like it's double-encoded
+          let cleanedParam = filtersParam;
+          
+          // Remove outer quotes if present
+          if (cleanedParam.startsWith('"') && cleanedParam.endsWith('"')) {
+            cleanedParam = cleanedParam.slice(1, -1);
+          }
+          
+          // Replace escaped quotes if needed
+          cleanedParam = cleanedParam.replace(/\\"/g, '"');
+          
+          // Try to parse the JSON
+          parsedFilters = JSON.parse(cleanedParam);
+        } else {
+          // If it's already an object
+          parsedFilters = filtersParam;
+        }
+        
+        // Ensure we got a proper object
+        if (parsedFilters && typeof parsedFilters === 'object') {
+          filters = parsedFilters;
+          console.log("Successfully parsed filters:", filters);
+        }
+      } catch (error) {
+        console.error("Error parsing filters:", error, filtersParam);
+        // Continue with empty filters
+      }
+    }
+
+    // Setup location if coordinates provided
+    const location = lat && lng ? {
+      lat: parseFloat(lat),
+      lng: parseFloat(lng)
+    } : null;
+
+    // Add guest and dog count to filters
+    if (people) {
+      filters.guestCount = parseInt(people);
+    }
+    
+    if (dogs) {
+      filters.dogCount = parseInt(dogs);
+    }
+
+    // Create a separate priceRange object
+    let priceRangeObj = {};
+    
+    if (priceMin) {
+      priceRangeObj.min = parseInt(priceMin);
+    }
+    
+    if (priceMax) {
+      priceRangeObj.max = parseInt(priceMax);
+    }
+    
+    // Only add priceRange if we have either min or max
+    if (Object.keys(priceRangeObj).length > 0) {
+      filters.priceRange = priceRangeObj;
+    }
+
+    console.log("Processed filters:", JSON.stringify(filters, null, 2));
+    console.log("Using radius:", radius, "km");
+
+    // Fetch paginated results with the adjusted parameters
+    const result = await listingService.getStreamedListings({
+      limit: parseInt(limit),
+      skip: parseInt(skip),
+      page: parseInt(page),
+      filters,
+      location,
+      radius: parseFloat(radius) // Make sure radius is passed correctly
+    });
+
+    // Ensure we always return an array of listings, even if empty
+    const listings = result.listings || [];
+    
+    // Log what we're returning
+    console.log(`Returning ${listings.length} listings out of ${result.total || 'unknown'} total`);
+
+    // Calculate total pages
+    const totalPages = Math.ceil((result.total || listings.length) / parseInt(limit)) || 1;
+    
+    // Return success response with data and pagination info
+    res.status(200).json({
+      success: true,
+      listings: listings,
+      total: result.total || listings.length, // Include the total count
+      page: parseInt(page),
+      totalPages: totalPages,
+      hasMore: parseInt(page) < totalPages
+    });
+  } catch (error) {
+    console.error("Error fetching streamed listings:", error);
+    // Return an empty array instead of an error for better UX
+    res.status(200).json({
+      success: true,
+      listings: [],
+      total: 0,
+      page: 1,
+      totalPages: 0,
+      hasMore: false,
+      error: error.message
+    });
+  }
+};
+/**
+ * Get a single listing by ID
+ * For individual fetching during stream loading
+ */
+exports.getSingleListing = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Listing ID is required"
+      });
+    }
+
+    const listing = await listingService.getSingleListing(id);
+    
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      listing
+    });
+  } catch (error) {
+    console.error(`Error fetching single listing:`, error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching listing",
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Get multiple listings by IDs
+ * For efficient batch loading
+ */
+exports.getListingsByIds = async (req, res, next) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid listing IDs array is required"
+      });
+    }
+
+    const listings = await listingService.getListingsByIds(ids);
+    
+    res.status(200).json({
+      success: true,
+      listings
+    });
+  } catch (error) {
+    console.error("Error fetching listings by IDs:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching listings",
+      error: error.message
+    });
+  }
+};
+
+
+
+exports.getListingDiagnostics = async (req, res, next) => {
+  try {
+    const diagnostics = {
+      counts: {},
+      schema: {},
+      samples: []
+    };
+    
+    // Get base counts
+    diagnostics.counts.total = await Listing.countDocuments();
+    diagnostics.counts.active = await Listing.countDocuments({ status: "active" });
+    diagnostics.counts.withCoordinates = await Listing.countDocuments({ 
+      "location.coordinates": { $exists: true } 
+    });
+    
+    // Check for various data issues
+    diagnostics.counts.withCapacity = await Listing.countDocuments({ 
+      "capacity.people": { $exists: true } 
+    });
+    
+    diagnostics.counts.withCapacityAndActive = await Listing.countDocuments({ 
+      status: "active",
+      "capacity.people": { $exists: true } 
+    });
+    
+    diagnostics.counts.withCapacityGTE1 = await Listing.countDocuments({ 
+      "capacity.people": { $gte: 1 } 
+    });
+    
+    diagnostics.counts.withActiveAndCapacityGTE1 = await Listing.countDocuments({ 
+      status: "active",
+      "capacity.people": { $gte: 1 } 
+    });
+    
+    // Check price
+    diagnostics.counts.withPrice = await Listing.countDocuments({ 
+      "pricePerNight.price": { $exists: true } 
+    });
+    
+    diagnostics.counts.withPriceLTE10000 = await Listing.countDocuments({ 
+      "pricePerNight.price": { $lte: 10000 } 
+    });
+    
+    // Get schema information - what fields do listings have?
+    try {
+      // Get a sample listing
+      const sampleListing = await Listing.findOne({ status: "active" }).lean();
+      
+      if (sampleListing) {
+        // Extract schema
+        diagnostics.schema.topLevel = Object.keys(sampleListing);
+        
+        if (sampleListing.capacity) {
+          diagnostics.schema.capacity = Object.keys(sampleListing.capacity);
+        }
+        
+        if (sampleListing.location) {
+          diagnostics.schema.location = Object.keys(sampleListing.location);
+          
+          if (sampleListing.location.coordinates) {
+            diagnostics.schema.coordinates = 
+              `Array with ${sampleListing.location.coordinates.length} items: ${sampleListing.location.coordinates}`;
+          }
+        }
+        
+        if (sampleListing.pricePerNight) {
+          diagnostics.schema.pricePerNight = Object.keys(sampleListing.pricePerNight);
+        }
+      }
+    } catch (error) {
+      diagnostics.schemaError = error.message;
+    }
+    
+    // Get a few sample listings for inspection
+    try {
+      // Get 3 random listings
+      const randomListings = await Listing.aggregate([
+        { $match: { status: "active" } },
+        { $sample: { size: 3 } }
+      ]);
+      
+      // Get details of each listing
+      for (const listing of randomListings) {
+        const simplifiedListing = {
+          _id: listing._id,
+          title: listing.title,
+          status: listing.status,
+          coordinates: listing.location?.coordinates,
+          locationType: listing.location?.type,
+          capacity: listing.capacity,
+          pricePerNight: listing.pricePerNight
+        };
+        
+        diagnostics.samples.push(simplifiedListing);
+      }
+    } catch (error) {
+      diagnostics.samplesError = error.message;
+    }
+    
+    // Return the diagnostic data
+    res.status(200).json({
+      success: true,
+      diagnostics
+    });
+  } catch (error) {
+    console.error("Error getting listing diagnostics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error getting listing diagnostics",
+      error: error.message
+    });
+  }
+};
