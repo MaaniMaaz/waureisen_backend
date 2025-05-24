@@ -1054,7 +1054,7 @@ exports.deleteProviderListing = async (req, res, next) => {
         .json({ message: "Listing not found or not owned by provider" });
     }
 
-    res.status(204).send();
+    res.status(200).json({ message: "listing deleted" });
   } catch (err) {
     next(err);
   }
