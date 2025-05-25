@@ -3,6 +3,7 @@ dotenv.config({ path: "./.env" });
 const moment = require("moment");
 const Booking = require("../models/booking.model");
 const User = require("../models/user.model");
+const Listing = require("../models/listing.model");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 const createPaymentIntent = async (req, res) => {
@@ -20,7 +21,7 @@ const createPaymentIntent = async (req, res) => {
     const currencySmall = currency?.toLowerCase();
 
     const userData = await User?.findById(req?.user?.id);
-    console.log(req?.user?.id , userData , "user Data")
+    console.log(req?.user?.id, userData, "user Data");
 
     const stripeFeePercentage = 2.9;
     const platformFeePercentage = 10;
@@ -29,7 +30,7 @@ const createPaymentIntent = async (req, res) => {
     const platformFeeAmount = amount * (platformFeePercentage / 100);
     const providerAmount = amount - (stripeFeeAmount + platformFeeAmount);
 
-     const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await stripe.paymentIntents.create({
       amount: amount * 100,
       currency: currencySmall,
       automatic_payment_methods: {
@@ -53,7 +54,7 @@ const createPaymentIntent = async (req, res) => {
       },
     });
 
-     return res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
         message: "Payment Intent created successfully",
@@ -113,20 +114,21 @@ const refundPayment = async (req, res) => {
   const { bookingId } = req.params;
 
   const booking = await Booking.findById(bookingId);
-  console.log(booking, "booking ka data");
+  const listing = await Listing.findById(booking?.listing);
+  console.log(booking, "booking ka data", listing?.legal?.cancellationPolicy);
   let amount = 0;
   const totalAmmount = booking?.totalPrice * 100;
   const targetDate = moment(booking?.checkInDate).startOf("day");
   const now = moment().startOf("day");
   const daysLeft = targetDate.diff(now, "days");
 
-  if (booking?.legal?.cancellationPolicy === "flexible") {
+  if (listing?.legal?.cancellationPolicy === "flexible") {
     if (daysLeft > 1) {
       amount = totalAmmount;
-    }else if (daysLeft > 0){
-      amount = totalAmmount * 0.5
+    } else if (daysLeft > 0) {
+      amount = totalAmmount * 0.5;
     }
-  } else if (booking?.legal?.cancellationPolicy === "moderate") {
+  } else if (listing?.legal?.cancellationPolicy === "moderate") {
     if (daysLeft > 5) {
       amount = totalAmmount;
     } else if (daysLeft > 4) {
@@ -142,7 +144,7 @@ const refundPayment = async (req, res) => {
     } else {
       amount = 0;
     }
-  } else if (booking?.legal?.cancellationPolicy === "strict") {
+  } else if (listing?.legal?.cancellationPolicy === "strict") {
     if (daysLeft > 6) {
       amount = totalAmmount * 0.5;
     } else if (daysLeft > 5) {
@@ -156,18 +158,61 @@ const refundPayment = async (req, res) => {
     } else {
       amount = 0;
     }
-  }
+  } else if (listing?.legal?.cancellationPolicy === "custom") {
+    if (
+      Array.isArray(listing?.customRefundPolicies) &&
+      listing.customRefundPolicies.length > 0
+    ) {
+      // Sort policies in descending order by days (highest days first)
+      const sortedPolicies = [...listing.customRefundPolicies].sort(
+        (a, b) => Number(b.days) - Number(a.days)
+      );
 
- 
+      console.log("Days left:", daysLeft);
+      console.log("Sorted policies:", sortedPolicies);
+
+      let matched = false;
+
+      // Find the appropriate policy tier
+      for (let i = 0; i < sortedPolicies.length; i++) {
+        const policyDays = Number(sortedPolicies[i].days);
+        const refundPercent = Number(sortedPolicies[i].refundAmount) / 100;
+
+        console.log(`Checking policy: ${policyDays} days, ${refundPercent * 100}% refund`);
+
+        // If daysLeft is greater than or equal to this policy's days threshold
+        if (daysLeft >= policyDays) {
+          amount = totalAmmount * refundPercent;
+          matched = true;
+          console.log(`Matched policy: ${policyDays} days, getting ${refundPercent * 100}% refund`);
+          break;
+        }
+      }
+
+      // If no policy matched (daysLeft is less than the smallest threshold)
+      if (!matched) {
+        // Get the policy with the smallest days value (last in sorted array)
+        const smallestPolicy = sortedPolicies[sortedPolicies.length - 1];
+        const smallestDays = Number(smallestPolicy.days);
+        const smallestRefund = Number(smallestPolicy.refundAmount) / 100;
+        
+        // If daysLeft is less than the smallest threshold, use that policy's refund
+        if (daysLeft < smallestDays) {
+          amount = totalAmmount * smallestRefund;
+          console.log(`Below smallest threshold (${smallestDays} days), getting ${smallestRefund * 100}% refund`);
+        }
+      }
+    }
+  }
 
   try {
     const refund = await stripe.refunds.create({
       payment_intent: booking?.paymentIntentId,
       amount: Math.round(amount),
-     });
+    });
 
     booking.status = "canceled";
-    booking.save();
+    await booking.save();
 
     res.status(200).json({ success: true, refund });
   } catch (error) {
@@ -195,7 +240,7 @@ const createStripeAccount = async (req, res) => {
   try {
     const account = await stripe.accounts.create({
       type: "express",
-      email: req.body.email, 
+      email: req.body.email,
     });
     console.log(account, "account ka data ", account?.details_submitted);
 
@@ -207,7 +252,6 @@ const createStripeAccount = async (req, res) => {
       // return_url: `http://localhost:5173/provider/registration?account=${account.id}`,
       type: "account_onboarding",
     });
-
 
     res.json({ url: accountLink.url });
   } catch (error) {

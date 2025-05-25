@@ -207,12 +207,13 @@ const listingSchema = new mongoose.Schema({
     enum: ['Waureisen', 'Interhome', 'Europarcs', 'Bergkultur'],
     default: 'Waureisen'
   },
+  customRefundPolicies: [],
 
-  // Reference to filter model
   filters: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Filter'
   },
+  // Reference to filter model
   // Selected filters for the listing
   // Removed From Model and To Remove from existing data run the script removeSelectedFiltersFromListings.js
   // selectedFilters: {

@@ -8,6 +8,9 @@ const Listing = require("../models/listing.model");
 exports.getListingById = async (id) => {
   return await Listing.findById(id).populate("owner");
 };
+exports.getListingByIdWithFilters = async (id) => {
+  return await Listing.findById(id).populate("filters");
+};
 
 exports.createListing = async (data) => {
   const newListing = new Listing(data);

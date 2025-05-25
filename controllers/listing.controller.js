@@ -40,6 +40,14 @@ exports.getListingById = async (req, res, next) => {
     next(err);
   }
 };
+exports.getListingByIdWithFilters = async (req, res, next) => {
+  try {
+    const listing = await listingService.getListingByIdWithFilters(req.params.id);
+    res.json(listing);
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.createListing = async (req, res, next) => {
   try {

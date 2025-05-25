@@ -21,13 +21,13 @@ exports.getProviderListings = async (providerId) => {
 };
 
 // Get listing details
-exports.getListingDetails = async (listingId, providerId) => {
-  return await Listing.findOne({
-    _id: listingId,
-    owner: providerId,
-    ownerType: "Provider",
-  });
-};
+// exports.getListingDetails = async (listingId, providerId) => {
+//   return await Listing.findOne({
+//     _id: listingId,
+//     owner: providerId,
+//     ownerType: "Provider",
+//   });
+// };
 
 
 exports.unblockDates = async (providerId, listingId, dates) => {
@@ -853,6 +853,58 @@ exports.deleteProvider = async (providerId) => {
 
   } catch (error) {
     console.error(`Error deleting provider ${providerId}:`, error);
+    throw error;
+  }
+};
+
+
+
+
+
+
+// /extra code
+exports.createListingWithFilters = async (listingData) => {
+  try {
+    const { filterData, ...actualListingData } = listingData;
+    // Create the listing first
+    const Listing = require('../models/listing.model');
+    const listing = new Listing(actualListingData);
+    const savedListing = await listing.save();
+    if (savedListing && filterData) {
+      // Create the filter document linked to this specific listing
+      filterData.listing = savedListing._id;
+      filterData.isTemplate = false; // This is NOT a template
+      const filter = new Filter(filterData);
+      const savedFilter = await filter.save();
+      // Update the listing with the filter reference
+      if (savedFilter) {
+        savedListing.filters = savedFilter._id;
+        await savedListing.save();
+      }
+      console.log('Created listing with filter:', {
+        listingId: savedListing._id,
+        filterId: savedFilter._id
+      });
+    }
+    return savedListing;
+  } catch (error) {
+    console.error('Error creating listing with filters:', error);
+    throw error;
+  }
+};
+// Update the existing getListingDetails function to populate filters
+exports.getListingDetails = async (listingId, providerId) => {
+  try {
+    const listing = await Listing.findOne({
+      _id: listingId,
+      owner: providerId,
+      ownerType: "Provider",
+    }).populate("filters"); // Populate the filter data
+
+    console.log("filter wala data" , listing)
+    return listing;
+  } catch (error) {
+    console.error('Error getting listing details:', error);
     throw error;
   }
 };

@@ -18,6 +18,7 @@ router.get('/map', listingController.searchListingsByMap);
 
 // Get listing by ID
 router.get('/:id', listingController.getListingById);
+router.get('/with-filters/:id', listingController.getListingByIdWithFilters);
 
 // Create a new listing
 router.post('/', listingController.createListing);

@@ -4,6 +4,7 @@ const router = express.Router();
 const { verifyToken } = require("../middlewares/auth");
 const { isProvider } = require("../middlewares/role");
 const providerController = require("../controllers/provider.controller");
+const extraController = require("../controllers/extra.controller");
 const providerProfileController = require("../controllers/provider.profile.controller");
 
 // Auth routes (no authentication required)
@@ -16,6 +17,30 @@ router.post(
   isProvider,
   providerController.completeRegistration
 );
+
+// extra controller work start
+router.post(
+  "/listing-with-filter",
+  verifyToken,
+  // isProvider,
+  extraController.AddListingWithFilter
+  
+);
+router.put(
+  "/listing-with-filter/:listingId",
+  verifyToken,
+  isProvider,
+  extraController.EditListingWithFilter
+  
+);
+router.get(
+  "/listing-filter/:id",
+  verifyToken,
+  // isProvider,
+  extraController.GetFilterOfListingById
+  
+);
+// extra controller work end
 
 // Profile routes
 router.get(
