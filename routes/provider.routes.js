@@ -29,7 +29,7 @@ router.post(
 router.put(
   "/listing-with-filter/:listingId",
   verifyToken,
-  isProvider,
+  // isProvider,
   extraController.EditListingWithFilter
   
 );
