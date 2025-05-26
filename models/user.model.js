@@ -29,6 +29,13 @@ const userSchema = new mongoose.Schema({
   gender: { type: String, default: '' },
   isProvider: { type: Boolean, default: false },
   
+  // Newsletter subscription status
+  newsletter: {
+    type: String,
+    enum: ['on', 'off'],
+    default: 'off'
+  },
+  
   // Added dogs array
   dogs: [{
     name: { type: String, default: '' },
