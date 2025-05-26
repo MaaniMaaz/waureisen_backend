@@ -136,6 +136,24 @@ exports.searchListings = async (req, res, next) => {
       radius = 50, // Add default radius of 500km
     } = req.query;
 
+    // Get search filters from headers
+    const searchFiltersHeader = req.headers['searchfiltersdata'];
+    let searchFilters = null;
+    
+    if (searchFiltersHeader) {
+      try {
+        searchFilters = JSON.parse(searchFiltersHeader);
+        console.log('Received search filters from headers:', searchFilters);
+      } catch (error) {
+        console.error('Error parsing search filters from headers:', error);
+      }
+    } else {
+      console.log('No search filters found in headers');
+    }
+
+    // Log all headers for debugging
+    console.log('All request headers:', req.headers);
+
     // Convert parameters to numbers
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lng);
@@ -161,6 +179,12 @@ exports.searchListings = async (req, res, next) => {
         // If parsing fails, treat it as a single filter
         selectedFilters = [filters];
       }
+    }
+
+    // Merge searchFilters from headers with existing filters if needed
+    if (searchFilters) {
+      console.log('Merging search filters with existing filters:', { searchFilters, selectedFilters });
+      selectedFilters = { ...selectedFilters, ...searchFilters };
     }
 
     // Log received parameters for debugging
