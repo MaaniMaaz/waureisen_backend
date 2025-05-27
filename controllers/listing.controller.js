@@ -1,5 +1,6 @@
 const listingService = require("../services/listing.service");
 const Listing = require('../models/listing.model');
+const Filter = require('../models/filter.model');
 
 // Controller methods
 exports.getAllListings = async (req, res, next) => {
@@ -446,6 +447,7 @@ exports.getStreamedListings = async (req, res, next) => {
     if (searchFilters) {
       try {
         const parsedFilters = typeof searchFilters === 'string' ? JSON.parse(searchFilters) : searchFilters;
+        console.log("Parsed search filters:", parsedFilters);
         
         if (parsedFilters.ranges) {
           // Filter listings based on ranges
@@ -476,16 +478,80 @@ exports.getStreamedListings = async (req, res, next) => {
 
             return true;
           });
+        }
 
-          // Update total count to reflect filtered results
-          totalCount = filteredListings.length;
-          
-          console.log("Filtering results:", {
-            originalTotal: allResults.total,
-            filteredCount: filteredListings.length,
-            newTotal: totalCount
+        // Apply facility filters if they exist
+        if (parsedFilters.selected) {
+          console.log("Applying facility filters:", parsedFilters.selected);
+          const facilityKeys = [
+            'dog facilities',
+            'facilities parking',
+            'facilities wellness',
+            'facilities accommodation features',
+            'facilities kids',
+            'facilities kitchen',
+            'facilities main filters',
+            'facilities smoking',
+            'facilities sport',
+            'facilities to do nearby',
+            'facilities view'
+          ];
+
+          // Populate filters for all listings
+          const populatedListings = await Promise.all(
+            filteredListings.map(async (listing) => {
+              if (listing.filters) {
+                const populatedFilters = await Filter.findById(listing.filters).lean();
+                return { ...listing, filters: populatedFilters };
+              }
+              return listing;
+            })
+          );
+
+          filteredListings = populatedListings.filter(listing => {
+            if (!listing.filters) return false;
+
+            //console.log("Listing filters:", listing.filters);
+            // Find the Amenities subsection
+            const amenitiesSubsection = listing.filters.subsections?.find(sub => sub.name === 'Amenities');
+            if (!amenitiesSubsection) return false;
+
+            for (const key of facilityKeys) {
+              const arr = parsedFilters.selected[key];
+              if (!arr || arr.length === 0) continue;
+
+              //console.log("Arrrrrrrrrrr:", arr);
+
+              // Find matching subsubsection by comparing lowercase names
+              const matchingSubsubsection = amenitiesSubsection.subsubsections?.find(
+                subsub => subsub.name.toLowerCase() === key.toLowerCase()
+              );
+
+              console.log("Matching subsubsection:", matchingSubsubsection);
+              console.log("Key:", key);
+              console.log("Filters:", parsedFilters.selected[key]);
+
+              if (!matchingSubsubsection) return false;
+
+              // Check if any of the values match the filter names (case-sensitive)
+              const hasMatchingFilter = matchingSubsubsection.filters?.some(
+                filter => arr.includes(filter.name)
+              );
+
+              if (!hasMatchingFilter) return false;
+            }
+            return true;
           });
         }
+
+        // Update total count to reflect filtered results
+        totalCount = filteredListings.length;
+        
+        console.log("Filtering results:", {
+          originalTotal: allResults.total,
+          filteredCount: filteredListings.length,
+          newTotal: totalCount
+        });
       } catch (error) {
         console.error("Error applying search filters:", error);
       }
