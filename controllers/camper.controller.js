@@ -62,9 +62,9 @@ exports.getCamperBytitle = async (req, res, next) => {
 exports.createCamper = async (req, res, next) => {
   try {
     // Validation
-    const { title, description, category, featuredImage, content } = req.body;
+    const { title, description,  featuredImage, content } = req.body;
     
-    if (!title || !description || !category || !featuredImage) {
+    if (!title || !description  || !featuredImage) {
       return res.status(400).json({ 
         message: 'Missing required fields: title, description, category, and featuredImage are required' 
       });

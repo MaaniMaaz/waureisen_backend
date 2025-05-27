@@ -4,12 +4,12 @@ const mongoose = require('mongoose');
 const contentElementSchema = new mongoose.Schema({
   type: { 
     type: String, 
-    enum: ['h1', 'h2', 'p', 'link', 'cta'],
+    enum: ['h1', 'h2', 'p', 'link', 'cta' , 'img'],
     required: true 
   },
   text: { 
     type: String, 
-    required: true 
+    // required: true 
   },
   url: { 
     type: String,
