@@ -341,13 +341,16 @@ exports.getStreamedListings = async (req, res, next) => {
       page = 1,
       lat,
       lng,
-      radius = 500, // Default to 500km
+      radius = 500,
       people,
       dogs,
       filters: filtersParam,
       priceMin,
-      priceMax
+      priceMax,
+      searchFilters
     } = req.query;
+
+    console.log("Search filters:", searchFilters);
 
     console.log("Raw filters param:", filtersParam);
     console.log("Pagination params:", { limit, skip, page });
@@ -426,37 +429,90 @@ exports.getStreamedListings = async (req, res, next) => {
     console.log("Processed filters:", JSON.stringify(filters, null, 2));
     console.log("Using radius:", radius, "km");
 
-    // Fetch paginated results with the adjusted parameters
-    const result = await listingService.getStreamedListings({
-      limit: parseInt(limit),
-      skip: parseInt(skip),
-      page: parseInt(page),
+    // First, get all listings without pagination to apply filters
+    const allResults = await listingService.getStreamedListings({
+      limit: 1000, // Get a large number to ensure we get all listings
+      skip: 0,
+      page: 1,
       filters,
       location,
-      radius: parseFloat(radius) // Make sure radius is passed correctly
+      radius: parseFloat(radius)
     });
 
-    // Ensure we always return an array of listings, even if empty
-    const listings = result.listings || [];
-    
-    // Log what we're returning
-    console.log(`Returning ${listings.length} listings out of ${result.total || 'unknown'} total`);
+    let filteredListings = allResults.listings;
+    let totalCount = allResults.total;
 
-    // Calculate total pages
-    const totalPages = Math.ceil((result.total || listings.length) / parseInt(limit)) || 1;
+    // Apply search filters to the results if they exist
+    if (searchFilters) {
+      try {
+        const parsedFilters = typeof searchFilters === 'string' ? JSON.parse(searchFilters) : searchFilters;
+        
+        if (parsedFilters.ranges) {
+          // Filter listings based on ranges
+          filteredListings = allResults.listings.filter(listing => {
+            // Check rooms range
+            if (parsedFilters.ranges.rooms) {
+              const rooms = listing.bedRooms || 0;
+              if (rooms < parsedFilters.ranges.rooms.min || rooms > parsedFilters.ranges.rooms.max) {
+                return false;
+              }
+            }
+
+            // Check bathrooms range
+            if (parsedFilters.ranges.bathrooms) {
+              const bathrooms = listing.washrooms || 0;
+              if (bathrooms < parsedFilters.ranges.bathrooms.min || bathrooms > parsedFilters.ranges.bathrooms.max) {
+                return false;
+              }
+            }
+
+            // Check price range
+            if (parsedFilters.ranges.price) {
+              const price = listing.pricePerNight?.price || 0;
+              if (price < parsedFilters.ranges.price.min || price > parsedFilters.ranges.price.max) {
+                return false;
+              }
+            }
+
+            return true;
+          });
+
+          // Update total count to reflect filtered results
+          totalCount = filteredListings.length;
+          
+          console.log("Filtering results:", {
+            originalTotal: allResults.total,
+            filteredCount: filteredListings.length,
+            newTotal: totalCount
+          });
+        }
+      } catch (error) {
+        console.error("Error applying search filters:", error);
+      }
+    }
+
+    // Now apply pagination to the filtered results
+    const startIndex = (parseInt(page) - 1) * parseInt(limit);
+    const endIndex = startIndex + parseInt(limit);
+    const paginatedListings = filteredListings.slice(startIndex, endIndex);
+
+    // Calculate total pages based on filtered total
+    const totalPages = Math.ceil(totalCount / parseInt(limit)) || 1;
     
+    console.log(`Returning ${paginatedListings.length} listings out of ${totalCount} total (page ${page} of ${totalPages})`);
+
     // Return success response with data and pagination info
     res.status(200).json({
       success: true,
-      listings: listings,
-      total: result.total || listings.length, // Include the total count
+      listings: paginatedListings,
+      total: totalCount,
       page: parseInt(page),
       totalPages: totalPages,
       hasMore: parseInt(page) < totalPages
     });
+
   } catch (error) {
     console.error("Error fetching streamed listings:", error);
-    // Return an empty array instead of an error for better UX
     res.status(200).json({
       success: true,
       listings: [],
@@ -468,6 +524,8 @@ exports.getStreamedListings = async (req, res, next) => {
     });
   }
 };
+
+
 /**
  * Get a single listing by ID
  * For individual fetching during stream loading
