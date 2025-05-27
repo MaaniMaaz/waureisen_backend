@@ -114,17 +114,22 @@ exports.createCamper = async (req, res, next) => {
 exports.updateCamper = async (req, res, next) => {
   try {
     // Check if camper exists
-    const camper = await camperService.getCamperById(req.params.id);
+    console.log(req.params.id);
     
-    if (!camper) {
+    const camper = await camperService.getCamperByTitle(req.params.id);
+    console.log(camper, camper);
+    
+    if (!camper[0]) {
       return res.status(404).json({ message: 'Camper not found' });
     }
     
     // Update camper
     const updatedCamper = await camperService.updateCamper(
-      req.params.id, 
+      camper[0]._id, 
       { ...req.body, updatedAt: Date.now() }
     );
+
+    console.log(camper , updatedCamper)
     
     res.json(updatedCamper);
   } catch (err) {
