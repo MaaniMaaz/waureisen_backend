@@ -76,7 +76,6 @@ const createPaymentIntent = async (req, res) => {
 
 const transferPayment = async (req, res) => {
   try {
-    console.log("transfer api called");
     const { connectedAccountId, amount, currency, bookingId } = req?.body;
     const stripeFee = amount * 0.029;
     const platformFee = (amount - stripeFee) * 0.1;
@@ -92,9 +91,7 @@ const transferPayment = async (req, res) => {
       currency: currency,
       destination: "acct_1RHQnw2MRQIK1rqe",
     });
-    console.log("Amount transfer to platform");
-
-    console.log(transfer, "transfer 1", transfer2, "transfer 2");
+    
     if (transfer?.id && transfer2?.id) {
       await Booking.findByIdAndUpdate(bookingId, { status: "confirmed" });
     }
@@ -168,8 +165,7 @@ const refundPayment = async (req, res) => {
         (a, b) => Number(b.days) - Number(a.days)
       );
 
-      console.log("Days left:", daysLeft);
-      console.log("Sorted policies:", sortedPolicies);
+     
 
       let matched = false;
 
@@ -178,8 +174,7 @@ const refundPayment = async (req, res) => {
         const policyDays = Number(sortedPolicies[i].days);
         const refundPercent = Number(sortedPolicies[i].refundAmount) / 100;
 
-        console.log(`Checking policy: ${policyDays} days, ${refundPercent * 100}% refund`);
-
+       
         // If daysLeft is greater than or equal to this policy's days threshold
         if (daysLeft >= policyDays) {
           amount = totalAmmount * refundPercent;
@@ -267,7 +262,7 @@ const getStripeAccount = async (req, res) => {
     const account = await stripe.accounts.retrieve(accountId);
     res.json({ data: account });
   } catch (err) {
-    console.error("Error creating Stripe Connect onboarding link:", error);
+    console.error("Error creating Stripe Connect onboarding link:", err);
     res.status(500).json({ error: err.message });
   }
 };
