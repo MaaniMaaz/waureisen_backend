@@ -354,14 +354,9 @@ exports.blockDates = async (providerId, blockData) => {
         // Booking starts during the blocked period
         { checkInDate: { $gte: new Date(startDate), $lte: new Date(endDate) } },
         // Booking ends during the blocked period
-        {
-          checkOutDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
-        },
+        { checkOutDate: { $gte: new Date(startDate), $lte: new Date(endDate) } },
         // Booking spans the entire blocked period
-        {
-          checkInDate: { $lte: new Date(startDate) },
-          checkOutDate: { $gte: new Date(endDate) },
-        },
+        { checkInDate: { $lte: new Date(startDate) }, checkOutDate: { $gte: new Date(endDate) } },
       ],
       status: { $in: ["confirmed", "pending"] },
     });
@@ -373,41 +368,75 @@ exports.blockDates = async (providerId, blockData) => {
     // Check if dates are in the past
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     if (new Date(startDate) < today) {
       throw new Error("Cannot block dates in the past");
     }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    // First, check for existing blocked dates in the range
+    const existingBlockedDates = await UnavailableDate.find({
+      listing: listingId,
+      date: {
+        $gte: new Date(startDate + 'T00:00:00.000Z'),
+        $lte: new Date(endDate + 'T23:59:59.999Z')
+      }
+    });
+
+    // Create a Set of existing dates for quick lookup
+    const existingDatesSet = new Set(
+      existingBlockedDates.map(doc => {
+        const date = new Date(doc.date);
+        return date.toISOString().split('T')[0];
+      })
+    );
+
     const blockedDates = [];
 
+    // Create start and end dates with proper time components
+    const start = new Date(startDate + 'T00:00:00.000Z');
+    const end = new Date(endDate + 'T23:59:59.999Z');
+
+    // Log the date range we're working with
+    console.log('Date range for blocking:', {
+      start: start.toISOString(),
+      end: end.toISOString()
+    });
+
     // Create entries for each day in the range
-    for (
-      let date = new Date(start);
-      date <= end;
-      date.setDate(date.getDate() + 1)
-    ) {
-      // Create a new date object for each day to avoid reference issues
-      const dateClone = new Date(date);
-      // Set to noon UTC to avoid timezone issues
-      dateClone.setUTCHours(12, 0, 0, 0);
+    let currentDate = new Date(start);
+    while (currentDate.toISOString().split('T')[0] <= end.toISOString().split('T')[0]) {
+      // Format date to YYYY-MM-DD for comparison
+      const dateStr = currentDate.toISOString().split('T')[0];
       
-      blockedDates.push({
-        listing: listingId,
-        date: dateClone,
-        reason,
-        createdBy: providerId,
-        createdByType: "Provider",
-      });
+      // Only add if date doesn't already exist
+      if (!existingDatesSet.has(dateStr)) {
+        // Create a new date object for each day
+        const dateClone = new Date(currentDate);
+        // Set to noon UTC to avoid timezone issues
+        dateClone.setUTCHours(12, 0, 0, 0);
+        
+        blockedDates.push({
+          listing: listingId,
+          date: dateClone,
+          reason,
+          createdBy: providerId,
+          createdByType: "Provider",
+        });
+      }
+      
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     console.log(`Creating ${blockedDates.length} unavailable date entries`);
+    console.log('Dates to be blocked:', blockedDates.map(d => d.date.toISOString().split('T')[0]));
     
-    // Use insertMany with ordered: false to continue even if some entries fail due to duplicates
+    if (blockedDates.length === 0) {
+      return { message: "All dates in the range are already blocked" };
+    }
+
+    // Use insertMany with ordered: false to continue even if some entries fail
     const result = await UnavailableDate.insertMany(blockedDates, { ordered: false })
       .catch(error => {
-        // Handle duplicate key errors (some dates might already be blocked)
         if (error.code === 11000) {
           console.log('Some dates already blocked (duplicate key error):', error.message);
           return error.insertedDocs || [];
