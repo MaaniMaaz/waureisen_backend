@@ -149,7 +149,6 @@ router.get(
 router.get(
   "/calendar/unavailable-dates",
   verifyToken,
-  isProvider,
   providerProfileController.getUnavailableDates
 );
 router.post(
