@@ -559,15 +559,44 @@ exports.getProviderTransactions = async (req, res, next) => {
 
 exports.getUnavailableDates = async (req, res, next) => {
   try {
-      const filters = {
-          listingId: req.query.listingId,
-          startDate: req.query.startDate,
-          endDate: req.query.endDate
-      };
-      const unavailableDates = await providerService.getUnavailableDates(req.user.id, filters);
-      res.json(unavailableDates);
+    const { listingId, startDate, endDate, providerId } = req.query;
+    
+    let targetProviderId;
+    
+    // Option 1: If providerId is directly provided in query
+    if (providerId) {
+      targetProviderId = providerId;
+    }
+    // Option 2: If listingId is provided, get provider through listing
+    else if (listingId) {
+      const listing = await Listing.findById(listingId);
+      if (!listing) {
+        return res.status(404).json({
+          success: false,
+          message: "Listing not found"
+        });
+      }
+      targetProviderId = listing.owner;
+    }
+    // Option 3: No provider identification provided
+    else {
+      return res.status(400).json({
+        success: false,
+        message: "Either providerId or listingId must be provided"
+      });
+    }
+    
+    const filters = {
+      listingId: listingId,
+      startDate: startDate,
+      endDate: endDate
+    };
+    
+    const unavailableDates = await providerService.getUnavailableDates(targetProviderId, filters);
+    res.json(unavailableDates);
   } catch (err) {
-      next(err);
+    console.error("Error in getUnavailableDates:", err);
+    next(err);
   }
 };
   

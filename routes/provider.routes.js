@@ -146,9 +146,9 @@ router.get(
 );
 
 // Calendar Management
+// Public endpoint - no authentication required
 router.get(
   "/calendar/unavailable-dates",
-  verifyToken,
   providerProfileController.getUnavailableDates
 );
 router.post(
