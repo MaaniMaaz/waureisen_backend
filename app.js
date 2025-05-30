@@ -79,10 +79,10 @@ app.post(
 
     try {
       event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
-      console.log(event?.type);
+      console.log(event?.type , "event type");
     } catch (err) {
       response.status(400).send(`Webhook Error: ${err.message}`);
-      console.log(event?.type, err);
+      console.log(event?.type, err , "event error");
       return;
     }
     console.log(event?.data ,"khali data" , event?.data?.object) ;

@@ -52,6 +52,8 @@ const listingSchema = new mongoose.Schema({
   pricePerNight: { 
     price: { type: Number, required: true, default: 0 },
     currency: { type: String, required: true , default: 'CHF'},
+    discount: { type: Number, default: 0 },
+    isDiscountActivate: { type: Boolean, default: false },
   }, 
   
   // Optional -- Can Be Empty or Array
@@ -82,7 +84,9 @@ const listingSchema = new mongoose.Schema({
      },
     }
   ],
-
+additionalDoc: {
+    type: String 
+  },
   // availability: [{ 
   //   timeZone: { type: String },
   //   weeklyDefaultSchedule: [{ 
