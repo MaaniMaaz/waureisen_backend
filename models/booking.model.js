@@ -16,6 +16,8 @@ const bookingSchema = new mongoose.Schema({
   checkOutDate: { type: Date, required: true },
 
 
+  isPayoutReleased: { type: Boolean, default:false  },
+
   currency: { type: String, required: true },
   reciept: { type: String, required: true },
   paymentIntentId: { type: String, required: true },

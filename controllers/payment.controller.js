@@ -93,7 +93,8 @@ const transferPayment = async (req, res) => {
     });
     
     if (transfer?.id && transfer2?.id) {
-      await Booking.findByIdAndUpdate(bookingId, { status: "confirmed" });
+      
+      await Booking.findByIdAndUpdate(bookingId, {isPayoutReleased:true  });
     }
     console.log("Booking Confirmed!");
     res.status(200).json({ success: true });
@@ -119,13 +120,13 @@ const refundPayment = async (req, res) => {
   const now = moment().startOf("day");
   const daysLeft = targetDate.diff(now, "days");
 
-  if (listing?.legal?.cancellationPolicy === "flexible") {
+  if (listing?.legal?.cancellationPolicy === "Flexible (Full refund 1 day prior to arrival)") {
     if (daysLeft > 1) {
       amount = totalAmmount;
     } else if (daysLeft > 0) {
       amount = totalAmmount * 0.5;
     }
-  } else if (listing?.legal?.cancellationPolicy === "moderate") {
+  } else if (listing?.legal?.cancellationPolicy === "Moderate (Full refund 5 days prior to arrival)") {
     if (daysLeft > 5) {
       amount = totalAmmount;
     } else if (daysLeft > 4) {
@@ -141,7 +142,7 @@ const refundPayment = async (req, res) => {
     } else {
       amount = 0;
     }
-  } else if (listing?.legal?.cancellationPolicy === "strict") {
+  } else if (listing?.legal?.cancellationPolicy === "Strict (50% refund up to 1 week prior to arrival)") {
     if (daysLeft > 6) {
       amount = totalAmmount * 0.5;
     } else if (daysLeft > 5) {

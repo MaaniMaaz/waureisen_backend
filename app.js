@@ -144,13 +144,14 @@ const endOfDay = moment().endOf("day").utc().toDate();
         $gte: startOfDay,
         $lte: endOfDay,
       },
-      status: "pending",
+      status: "confirmed",
+      isPayoutReleased:false
     });
     console.log(bookings, "current");
     for (const booking of bookings) {
       try {
         const response = await axios.post(
-          "https://waureisen-backend.onrender.com/api/payment/transfer-payment",
+          "http://localhost:5000/api/payment/transfer-payment",
           {
             connectedAccountId: booking?.providerAccountId,
             amount: booking?.totalPrice,
