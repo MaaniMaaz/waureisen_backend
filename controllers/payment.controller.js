@@ -4,6 +4,7 @@ const moment = require("moment");
 const Booking = require("../models/booking.model");
 const User = require("../models/user.model");
 const Listing = require("../models/listing.model");
+const Payment = require("../models/payment.model");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 const createPaymentIntent = async (req, res) => {
@@ -114,47 +115,51 @@ const refundPayment = async (req, res) => {
   const booking = await Booking.findById(bookingId);
   const listing = await Listing.findById(booking?.listing);
   console.log(booking, "booking ka data", listing?.legal?.cancellationPolicy);
-  let amount = 0;
-  const totalAmmount = booking?.totalPrice * 100;
+  
+  let refundPercentage = 0;
+  const totalAmount = booking?.totalPrice * 100; // Convert to cents for Stripe
   const targetDate = moment(booking?.checkInDate).startOf("day");
   const now = moment().startOf("day");
   const daysLeft = targetDate.diff(now, "days");
 
+  // Calculate refund percentage based on cancellation policy
   if (listing?.legal?.cancellationPolicy === "Flexible (Full refund 1 day prior to arrival)") {
     if (daysLeft > 1) {
-      amount = totalAmmount;
+      refundPercentage = 1.0; // 100%
     } else if (daysLeft > 0) {
-      amount = totalAmmount * 0.5;
+      refundPercentage = 0.5; // 50%
+    } else {
+      refundPercentage = 0; // 0%
     }
   } else if (listing?.legal?.cancellationPolicy === "Moderate (Full refund 5 days prior to arrival)") {
     if (daysLeft > 5) {
-      amount = totalAmmount;
+      refundPercentage = 1.0; // 100%
     } else if (daysLeft > 4) {
-      amount = totalAmmount * 0.5;
+      refundPercentage = 0.5; // 50%
     } else if (daysLeft > 3) {
-      amount = totalAmmount * 0.6;
+      refundPercentage = 0.6; // 60%
     } else if (daysLeft > 2) {
-      amount = totalAmmount * 0.7;
+      refundPercentage = 0.7; // 70%
     } else if (daysLeft > 1) {
-      amount = totalAmmount * 0.8;
+      refundPercentage = 0.8; // 80%
     } else if (daysLeft > 0) {
-      amount = totalAmmount * 0.9;
+      refundPercentage = 0.9; // 90%
     } else {
-      amount = 0;
+      refundPercentage = 0; // 0%
     }
   } else if (listing?.legal?.cancellationPolicy === "Strict (50% refund up to 1 week prior to arrival)") {
     if (daysLeft > 6) {
-      amount = totalAmmount * 0.5;
+      refundPercentage = 0.5; // 50%
     } else if (daysLeft > 5) {
-      amount = totalAmmount * 0.6;
+      refundPercentage = 0.6; // 60%
     } else if (daysLeft > 4) {
-      amount = totalAmmount * 0.7;
+      refundPercentage = 0.7; // 70%
     } else if (daysLeft > 3) {
-      amount = totalAmmount * 0.8;
+      refundPercentage = 0.8; // 80%
     } else if (daysLeft > 2) {
-      amount = totalAmmount * 0.9;
+      refundPercentage = 0.9; // 90%
     } else {
-      amount = 0;
+      refundPercentage = 0; // 0%
     }
   } else if (listing?.legal?.cancellationPolicy === "custom") {
     if (
@@ -166,8 +171,6 @@ const refundPayment = async (req, res) => {
         (a, b) => Number(b.days) - Number(a.days)
       );
 
-     
-
       let matched = false;
 
       // Find the appropriate policy tier
@@ -175,10 +178,9 @@ const refundPayment = async (req, res) => {
         const policyDays = Number(sortedPolicies[i].days);
         const refundPercent = Number(sortedPolicies[i].refundAmount) / 100;
 
-       
         // If daysLeft is greater than or equal to this policy's days threshold
         if (daysLeft >= policyDays) {
-          amount = totalAmmount * refundPercent;
+          refundPercentage = refundPercent;
           matched = true;
           console.log(`Matched policy: ${policyDays} days, getting ${refundPercent * 100}% refund`);
           break;
@@ -194,23 +196,47 @@ const refundPayment = async (req, res) => {
         
         // If daysLeft is less than the smallest threshold, use that policy's refund
         if (daysLeft < smallestDays) {
-          amount = totalAmmount * smallestRefund;
+          refundPercentage = smallestRefund;
           console.log(`Below smallest threshold (${smallestDays} days), getting ${smallestRefund * 100}% refund`);
         }
       }
     }
   }
 
+  // Calculate the refund amount after deducting Stripe fee (2.9%)
+  const stripeFeePercentage = 0.029; // 2.9%
+  const eligibleRefundAmount = totalAmount * refundPercentage;
+  
+  // Deduct Stripe fee from the eligible refund amount
+  const stripeFeeDeduction = totalAmount * stripeFeePercentage;
+  const finalRefundAmount = Math.max(0, eligibleRefundAmount - stripeFeeDeduction);
+
+  console.log(`Original amount: ${totalAmount / 100}`);
+  console.log(`Refund percentage: ${refundPercentage * 100}%`);
+  console.log(`Eligible refund before Stripe fee: ${eligibleRefundAmount / 100}`);
+  console.log(`Stripe fee deduction: ${stripeFeeDeduction / 100}`);
+  console.log(`Final refund amount: ${finalRefundAmount / 100}`);
+
   try {
     const refund = await stripe.refunds.create({
       payment_intent: booking?.paymentIntentId,
-      amount: Math.round(amount),
+      amount: Math.round(finalRefundAmount),
     });
 
     booking.status = "canceled";
     await booking.save();
 
-    res.status(200).json({ success: true, refund });
+    res.status(200).json({ 
+      success: true, 
+      refund,
+      refundDetails: {
+        originalAmount: totalAmount / 100,
+        refundPercentage: refundPercentage * 100,
+        eligibleRefund: eligibleRefundAmount / 100,
+        stripeFeeDeducted: stripeFeeDeduction / 100,
+        finalRefundAmount: finalRefundAmount / 100
+      }
+    });
   } catch (error) {
     console.error("Refund error:", error);
     res.status(500).json({ success: false, error: error.message });
@@ -268,6 +294,136 @@ const getStripeAccount = async (req, res) => {
   }
 };
 
+
+const recordSuccessfulTransaction = async (paymentIntent) => {
+  try {
+    const metadata = paymentIntent.metadata;
+    
+    // Create payment record
+    const payment = new Payment({
+      userId: metadata.userId,
+      bookingId: null, // Will be updated when booking is created
+      amount: parseFloat(metadata.amount),
+      status: 'success',
+      transactionId: paymentIntent.id,
+      currency: metadata.currency,
+      method: 'card',
+      details: `Booking payment - ${metadata.amount} ${metadata.currency.toUpperCase()}`,
+      date: new Date(),
+      // Store additional payment breakdown
+      fees: {
+        stripeFee: parseFloat(metadata.stripeFeeAmount),
+        platformFee: parseFloat(metadata.platformFeeAmount),
+        providerAmount: parseFloat(metadata.providerAmount)
+      }
+    });
+
+    await payment.save();
+    console.log('Transaction recorded:', payment._id);
+    
+    return payment;
+  } catch (error) {
+    console.error('Error recording transaction:', error);
+  }
+};
+
+const getAllTransactions = async (req, res) => {
+  try {
+    // First, let's get data from bookings since that's where your payment data currently lives
+    const bookings = await Booking.find({ status: { $ne: 'pending' } })
+      .populate('user', 'firstName lastName username email customerNumber')
+      .populate('listing', 'title')
+      .sort({ createdAt: -1 });
+
+    // Transform booking data to transaction format
+    const transactions = bookings.map(booking => {
+      const user = booking.user || {};
+      const amount = booking.totalPrice || 0;
+      const currency = booking.currency || 'EUR';
+      
+      return {
+        _id: booking._id,
+        transactionId: booking.paymentIntentId || booking._id,
+        user: {
+          _id: user._id,
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          username: user.username || '',
+          email: user.email || '',
+          customerNumber: user.customerNumber || ''
+        },
+        amount: {
+          [currency.toLowerCase()]: amount,
+          chf: currency.toUpperCase() === 'CHF' ? amount : 0,
+          eur: currency.toUpperCase() === 'EUR' ? amount : 0
+        },
+        currency: currency,
+        method: 'card',
+        details: `Booking payment - ${booking.listing?.title || 'Property'} (${booking.checkInDate ? new Date(booking.checkInDate).toLocaleDateString() : 'N/A'} - ${booking.checkOutDate ? new Date(booking.checkOutDate).toLocaleDateString() : 'N/A'})`,
+        status: booking.status === 'confirmed' ? 'paid' : booking.status,
+        date: booking.createdAt,
+        booking: booking
+      };
+    });
+
+    res.json(transactions);
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+const updateTransactionStatus = async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    const { status } = req.body;
+
+    // Update booking status since that's where your data lives
+    const booking = await Booking.findByIdAndUpdate(
+      transactionId,
+      { status: status === 'canceled' ? 'canceled' : status },
+      { new: true }
+    );
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    res.json({ success: true, booking });
+  } catch (error) {
+    console.error('Error updating transaction:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+const handlePaymentSuccess = async (req, res) => {
+  try {
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    } catch (err) {
+      console.log('Webhook signature verification failed.', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle the event
+    if (event.type === 'payment_intent.succeeded') {
+      const paymentIntent = event.data.object;
+      await recordSuccessfulTransaction(paymentIntent);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 module.exports = {
   createPaymentIntent,
   transferPayment,
@@ -275,4 +431,7 @@ module.exports = {
   getCardDetails,
   createStripeAccount,
   getStripeAccount,
+  handlePaymentSuccess,
+  getAllTransactions,
+  updateTransactionStatus,
 };
