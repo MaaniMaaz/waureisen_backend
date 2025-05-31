@@ -91,7 +91,7 @@ const transferPayment = async (req, res) => {
     const transfer2 = await stripe.transfers.create({
       amount: Math.round(platformFee) * 100,
       currency: currency,
-      destination: "acct_1RHQnw2MRQIK1rqe",
+      destination: "acct_1QPmjyRuFURKkwuQ",
     });
     
     if (transfer?.id && transfer2?.id) {
