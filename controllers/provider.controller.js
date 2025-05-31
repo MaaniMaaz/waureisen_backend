@@ -8,6 +8,8 @@ const Listing = require("../models/listing.model");
 const Booking = require("../models/booking.model");
 const Transaction = require("../models/transaction.model");
 const Review = require("../models/review.model");
+const Provider = require("../models/provider.model");
+const { sendPasswordResetToken } = require("../services/email.service");
 
 exports.signup = async (req, res, next) => {
   try {
@@ -56,6 +58,62 @@ exports.signup = async (req, res, next) => {
   }
 };
 
+exports.forgotPassword = async (req, res) => {
+  
+  try {
+    const { email } = req.body;
+    const provider = await Provider.findOne({ email });
+    if (!provider) {
+       return res.status(400).json({ message: "provider not exist" });
+   
+    }
+    const passwordResetToken = Math.floor(100000 + Math.random() * 900000);
+    const passwordResetTokenExpires = new Date(Date.now() + 10 * 60 * 1000);
+    provider.passwordResetToken = passwordResetToken;
+    provider.passwordResetTokenExpires = passwordResetTokenExpires;
+    // console.log(passwordResetToken);
+    await provider.save();
+    await sendPasswordResetToken(email , passwordResetToken ,"provider")
+    
+     return res.status(200).json({ message: `Password reset token sent to ${email}` });
+   
+  } catch (error) {
+    console.log(error);
+    
+     return res.status(500).json({ message: "Something went wrong" });
+   
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  
+  try {
+    const { email, passwordResetToken, password } = req.body;
+    const user = await Provider.findOne({ email }).select("+password");
+    if (!user) {
+       return res.status(404).json({ message: "User does not exist" });
+
+    }
+    if (
+      user.passwordResetToken.toString() !== passwordResetToken.toString() ||
+      user.passwordResetTokenExpires < Date.now()
+    ) {
+       return res.status(400).json({ message: "Invalid token" });
+   
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    user.passwordResetToken = null;
+    user.passwordResetTokenExpires = null;
+    await user.save();
+     return res.status(200).json({ message: "Password reset successfully" });
+   
+  } catch (error) {
+     return res.status(500).json({ message: "Something went wrong" });
+   
+  }
+};
 // Add this new endpoint after the existing signup function in provider.controller.js
 
 exports.completeRegistration = async (req, res, next) => {

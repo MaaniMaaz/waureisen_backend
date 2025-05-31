@@ -88,6 +88,8 @@ const userSchema = new mongoose.Schema({
     default: 'verified',
   } ,
 
+  passwordResetToken: { type: String },
+  passwordResetTokenExpires: { type: Date },
 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

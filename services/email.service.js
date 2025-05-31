@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const moment = require('moment')
 
 // Create a transporter object with Hostpoint-specific settings
 const transporter = nodemailer.createTransport({
@@ -59,6 +60,76 @@ const sendVerificationEmail = async (email, code, userType) => {
           <p>Best regards,<br/>The Waureisen Team</p>
         </div>
       `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    throw new Error('Failed to send verification email');
+  }
+};
+
+// Send password reset token
+const sendPasswordResetToken = async (email, code, userType) => {
+  try {
+    const greeting = userType === 'provider' ? 'Hello Provider' : 'Hello Customer';
+    
+    const mailOptions = {
+      from: {
+        name: 'Waureisen',
+        address: process.env.EMAIL_USER || 'hallo@waureisen.com'
+      },
+      to: email,
+      subject: 'Waureisen - Password Reset Token',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <h2 style="color: #B4A481;">${greeting}</h2>
+          <p>Password Reset Token!</p>
+          <p>Please use the following verification code to change your password:</p>
+          <div style="background-color: #f8f8f8; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+            ${code}
+          </div>
+          <p>This code will expire in 10 minutes.</p>
+          <p>If you didn't request this code, please ignore this email.</p>
+          <p>Best regards,<br/>The Waureisen Team</p>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    throw new Error('Failed to send verification email');
+  }
+};
+
+// Send cancel booking
+const sendCancelBooking = async (email,booking , listing ) => {
+  try {
+   
+    const mailOptions = {
+      from: {
+        name: 'Waureisen',
+        address: process.env.EMAIL_USER || 'hallo@waureisen.com'
+      },
+      to: email,
+      subject: 'Waureisen - Booking Cancelled',
+      html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+  <h2 style="color: #B4A481;">Booking Cancelled</h2>
+
+  <p><strong>${booking?.user?.firstName + " " + booking?.user?.lastName}</strong>, has cancelled the booking for your accommodation: <strong>${listing?.title}</strong>.</p>
+
+  <p>The details are mentioned below:</p>
+  <p>Accommodation ID: <strong>${listing?._id}</strong></p>
+  <p>Accommodation Name: <strong>${listing?.title}</strong></p>
+  <p>CheckIn Date: <strong>${moment(listing?.checkInTime).format("DD/MM/YYYY")}</strong></p>
+  <p>CheckOut Date: <strong>${moment(listing?.checkOutTime).format("DD/MM/YYYY")}</strong></p>
+
+  <p>Best regards,<br />The Waureisen Team</p>
+</div>
+`
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -640,6 +711,8 @@ const sendListingCreationNotificationToAdmin = async (listingData) => {
 module.exports = {
   createVerificationCode,
   verifyCode,
+  sendPasswordResetToken,
+  sendCancelBooking,
   sendBookingNotificationToProvider,
   sendBookingAcceptanceToCustomer,
   sendBookingRejectionToCustomer,

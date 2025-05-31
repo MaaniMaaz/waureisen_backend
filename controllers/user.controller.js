@@ -3,6 +3,8 @@ const bookingService = require("../services/booking.service");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const newsletterService = require("../services/newsletter.service");
+const User = require("../models/user.model");
+const { sendPasswordResetToken } = require("../services/email.service");
 
 // Add these new methods at the beginning of the file
 exports.signup = async (req, res, next) => {
@@ -100,6 +102,60 @@ exports.login = async (req, res, next) => {
     });
   } catch (err) {
     next(err);
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+       return res.status(400).json({ message: "User not exist" });
+   
+    }
+    const passwordResetToken = Math.floor(100000 + Math.random() * 900000);
+    const passwordResetTokenExpires = new Date(Date.now() + 10 * 60 * 1000);
+    user.passwordResetToken = passwordResetToken;
+    user.passwordResetTokenExpires = passwordResetTokenExpires;
+    console.log(passwordResetToken);
+    await user.save();
+    await sendPasswordResetToken(email , passwordResetToken ,"customer")
+     return res.status(200).json({ message: `Password reset token sent to ${email}` });
+   
+  } catch (error) {
+     return res.status(500).json({ message: "Something went wrong" });
+   
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  
+  try {
+    const { email, passwordResetToken, password } = req.body;
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+       return res.status(404).json({ message: "User does not exist" });
+
+    }
+    if (
+      user.passwordResetToken.toString() !== passwordResetToken.toString() ||
+      user.passwordResetTokenExpires < Date.now()
+    ) {
+       return res.status(400).json({ message: "Invalid token" });
+   
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    user.passwordResetToken = null;
+    user.passwordResetTokenExpires = null;
+    await user.save();
+     return res.status(200).json({ message: "Password reset successfully" });
+   
+  } catch (error) {
+     return res.status(500).json({ message: "Something went wrong" });
+   
   }
 };
 

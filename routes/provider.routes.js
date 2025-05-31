@@ -10,6 +10,8 @@ const providerProfileController = require("../controllers/provider.profile.contr
 // Auth routes (no authentication required)
 router.post("/signup", providerController.signup);
 router.post("/login", providerController.login);
+router.post("/forgot-password", providerController.forgotPassword);
+router.post("/reset-password", providerController.resetPassword);
 
 router.post(
   "/complete-registration",

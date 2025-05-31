@@ -9,6 +9,8 @@ const { isUser } = require("../middlewares/role");
 // Auth routes
 router.post("/signup", userController.signup);
 router.post("/login", userController.login);
+router.post("/forgot-password", userController.forgotPassword);
+router.post("/reset-password", userController.resetPassword);
 
 // Protected routes
 // Add these routes before other user routes

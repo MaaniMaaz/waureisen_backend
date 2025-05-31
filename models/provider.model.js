@@ -75,6 +75,10 @@ const providerSchema = new mongoose.Schema({
   },
   heardAboutUs: { type: String },
 
+  
+  passwordResetToken: { type: String },
+  passwordResetTokenExpires: { type: Date },
+
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

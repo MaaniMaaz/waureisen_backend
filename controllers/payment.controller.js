@@ -5,6 +5,7 @@ const Booking = require("../models/booking.model");
 const User = require("../models/user.model");
 const Listing = require("../models/listing.model");
 const Payment = require("../models/payment.model");
+const { sendCancelBooking } = require("../services/email.service");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 const createPaymentIntent = async (req, res) => {
@@ -112,7 +113,7 @@ const transferPayment = async (req, res) => {
 const refundPayment = async (req, res) => {
   const { bookingId } = req.params;
 
-  const booking = await Booking.findById(bookingId);
+  const booking = await Booking.findById(bookingId).populate("user provider");
   const listing = await Listing.findById(booking?.listing);
   console.log(booking, "booking ka data", listing?.legal?.cancellationPolicy);
   
@@ -237,6 +238,7 @@ const refundPayment = async (req, res) => {
         finalRefundAmount: finalRefundAmount / 100
       }
     });
+    await sendCancelBooking(booking?.provider?.email , booking , listing)
   } catch (error) {
     console.error("Refund error:", error);
     res.status(500).json({ success: false, error: error.message });
