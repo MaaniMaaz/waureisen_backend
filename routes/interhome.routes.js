@@ -188,4 +188,53 @@ router.get('/availability/:accommodationCode', async (req, res) => {
   }
 });
 
+
+
+router.get("/accommodation/all" , async (req,res) => {
+  try {
+     const response = await axios.get(`https://ws.interhome.com/ih/b2b/V0100/accommodation/list`, {
+    
+      headers: {
+        'Token': 'XD1mZXqcC6',
+        'PartnerId': 'CH1002557'
+      }
+    });
+   res.status(200).json({
+  message: "API successful",
+  data: response.data
+});
+
+  }catch (error){
+     console.error('Error fetching Interhome availability:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+router.get("/accommodation/detail/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const response = await axios.get(`https://ws.interhome.com/ih/b2b/V0100/accommodation/${id}`, {
+      headers: {
+        'Token': 'XD1mZXqcC6',
+        'PartnerId': 'CH1002557'
+      }
+    });
+
+    console.log(`✅ Detail fetched for ID: ${id}`, response.data);
+
+    res.status(200).json({
+      message: "API successful",
+      data: response.data
+    });
+
+  } catch (error) {
+    console.error(`❌ Error fetching detail for ID: ${req.params.id}`, error.message);
+
+    res.status(500).json({
+      error: error.message || "Unknown error occurred"
+    });
+  }
+});
+
 module.exports = router;
