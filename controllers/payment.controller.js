@@ -219,10 +219,17 @@ const refundPayment = async (req, res) => {
   console.log(`Final refund amount: ${finalRefundAmount / 100}`);
 
   try {
-    const refund = await stripe.refunds.create({
-      payment_intent: booking?.paymentIntentId,
-      amount: Math.round(finalRefundAmount),
-    });
+    let refund ;
+    if (Math.round(finalRefundAmount) > 0){
+
+      refund = await stripe.refunds.create({
+        payment_intent: booking?.paymentIntentId,
+        amount: Math.round(finalRefundAmount),
+      });
+    }else {
+      refund = `You booking has been canceled with ${Math.round(finalRefundAmount)} refund amount`
+    }
+
 
     booking.status = "canceled";
     await booking.save();
@@ -300,7 +307,7 @@ const getStripeAccount = async (req, res) => {
 const recordSuccessfulTransaction = async (paymentIntent) => {
   try {
     const metadata = paymentIntent.metadata;
-    
+    console.log(paymentIntent , "intent")
     // Create payment record
     const payment = new Payment({
       userId: metadata.userId,
@@ -413,8 +420,10 @@ const handlePaymentSuccess = async (req, res) => {
     }
 
     // Handle the event
+    console.log(event?.data?.object , event.type , "klok")
     if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object;
+
       await recordSuccessfulTransaction(paymentIntent);
     }
 
