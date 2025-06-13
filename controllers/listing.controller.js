@@ -334,253 +334,200 @@ exports.searchListingsByMap = async (req, res, next) => {
  * Get paginated listings with proper total count and page details
  * Supports traditional pagination with page and limit parameters
  */
-exports.getStreamedListings = async (req, res, next) => {
+exports.getStreamedListings = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
     const {
-      limit = 12,
-      skip = 0,
-      page = 1,
-      lat,
       lng,
-      radius = 500,
-      people,
-      dogs,
-      filters: filtersParam,
+      lat,
+      radius = 500000, // default 500km
+      filters = {},
       priceMin,
       priceMax,
-      searchFilters
+      searchFilters = {}
     } = req.query;
-
-    console.log("Search filters:", searchFilters);
-
-    console.log("Raw filters param:", filtersParam);
-    console.log("Pagination params:", { limit, skip, page });
-
-    // Initialize empty filters
-    let filters = {};
-    
-    // Process filters with careful handling for double-encoded strings
-    if (filtersParam) {
-      try {
-        // Detect if this is a JSON string (already stringified)
-        // and handle various possible formats
-        let parsedFilters;
+    const matchStage = {};
+    if (filters?.guestCount) {
+      matchStage.$or = [
+        { 'maxGuests': { $gte: parseInt(filters.guestCount) } },
         
-        if (typeof filtersParam === 'string') {
-          // Try to clean the string if it looks like it's double-encoded
-          let cleanedParam = filtersParam;
-          
-          // Remove outer quotes if present
-          if (cleanedParam.startsWith('"') && cleanedParam.endsWith('"')) {
-            cleanedParam = cleanedParam.slice(1, -1);
+      ];
+    }
+// if (filters?.ranges?.people?.min > 1) {
+//       matchStage['capacity.people'] = { $gte: filters.ranges.people.min };
+//     }
+//     if (filters?.ranges?.rooms?.min > 1) {
+//       matchStage.rooms = { $gte: filters.ranges.rooms.min };
+//     }
+//     if (filters?.ranges?.bathrooms?.min > 1) {
+//       matchStage.bathrooms = { $gte: filters.ranges.bathrooms.min };
+//     }
+//     if (priceMin || priceMax) {
+//       matchStage.price = {};
+//       if (priceMax) matchStage.price.$lte = parseFloat(priceMax);
+//     }
+    const selectedValues = Object.values(searchFilters?.selected || {})
+      .flat()
+      .filter(Boolean);
+    const selectedMatch = selectedValues.length
+      ? {
+          $expr: {
+            $gt: [
+              {
+                $size: {
+                  $filter: {
+                    input: {
+                      $concatArrays: [
+                        {
+                          $reduce: {
+                            input: '$filters.subsections',
+                            initialValue: [],
+                            in: {
+                              $concatArrays: [
+                                '$$value',
+                                {
+                                  $map: {
+                                    input: {
+                                      $ifNull: ['$$this.filters', []]
+                                    },
+                                    as: 'f',
+                                    in: '$$f.name'
+                                  }
+                                },
+                                {
+                                  $reduce: {
+                                    input: { $ifNull: ['$$this.subsubsections', []] },
+                                    initialValue: [],
+                                    in: {
+                                      $concatArrays: [
+                                        '$$value',
+                                        {
+                                          $map: {
+                                            input: {
+                                              $ifNull: ['$$this.filters', []]
+                                            },
+                                            as: 'sf',
+                                            in: '$$sf.name'
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    as: 'filterName',
+                    cond: { $in: ['$$filterName', selectedValues] }
+                  }
+                }
+              },
+              0
+            ]
           }
-          
-          // Replace escaped quotes if needed
-          cleanedParam = cleanedParam.replace(/\\"/g, '"');
-          
-          // Try to parse the JSON
-          parsedFilters = JSON.parse(cleanedParam);
-        } else {
-          // If it's already an object
-          parsedFilters = filtersParam;
         }
-        
-        // Ensure we got a proper object
-        if (parsedFilters && typeof parsedFilters === 'object') {
-          filters = parsedFilters;
-          console.log("Successfully parsed filters:", filters);
-        }
-      } catch (error) {
-        console.error("Error parsing filters:", error, filtersParam);
-        // Continue with empty filters
+      : {};
+    const geoNearStage = {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [parseFloat(lng), parseFloat(lat)]
+        },
+        distanceField: 'distance',
+        maxDistance: parseFloat(radius),
+        spherical: true
       }
+    };
+ const pipeline = [
+  {
+    $geoNear: {
+      near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+      distanceField: "distance",
+      maxDistance: parseFloat(radius),
+      spherical: true
     }
+  },
 
-    // Setup location if coordinates provided
-    const location = lat && lng ? {
-      lat: parseFloat(lat),
-      lng: parseFloat(lng)
-    } : null;
-
-    // Add guest and dog count to filters
-    if (people) {
-      filters.guestCount = parseInt(people);
+  // Step 2: Lookup filters from external collection
+  {
+    $lookup: {
+      from: "filters",            // Name of the filters collection
+      localField: "filters",      // Field in listings (likely an ObjectId or array of ids)
+      foreignField: "_id",        // Field in filters collection
+      as: "filtersData"
     }
-    
-    if (dogs) {
-      filters.dogCount = parseInt(dogs);
+  },
+
+  // Step 3: Match selected filters (using joined filtersData)
+  // ...(selectedValues.length > 0
+  //   ? [
+  //       {
+  //         $match: {
+  //           "filtersData.filters.name": { $in: selectedValues }
+  //         }
+  //       }
+  //     ]
+  //   : []
+  // ),
+
+  // Step 4: Match guestCount, ranges, etc.
+  // ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
+
+  // Step 5: Facet for data + totalCount
+  {
+    $facet: {
+      data: [{ $skip: skip }, { $limit: limit }],
+      totalCount: [{ $count: "count" }]
     }
+  }
+];
 
-    // Create a separate priceRange object
-    let priceRangeObj = {};
-    
-    if (priceMin) {
-      priceRangeObj.min = parseInt(priceMin);
-    }
-    
-    if (priceMax) {
-      priceRangeObj.max = parseInt(priceMax);
-    }
-    
-    // Only add priceRange if we have either min or max
-    if (Object.keys(priceRangeObj).length > 0) {
-      filters.priceRange = priceRangeObj;
-    }
-
-    console.log("Processed filters:", JSON.stringify(filters, null, 2));
-    console.log("Using radius:", radius, "km");
-
-    // First, get all listings without pagination to apply filters
-    const allResults = await listingService.getStreamedListings({
-      limit: 1000, // Get a large number to ensure we get all listings
-      skip: 0,
-      page: 1,
-      filters,
-      location,
-      radius: parseFloat(radius)
-    });
-
-    let filteredListings = allResults.listings;
-    let totalCount = allResults.total;
-
-    // Apply search filters to the results if they exist
-    if (searchFilters) {
-      try {
-        const parsedFilters = typeof searchFilters === 'string' ? JSON.parse(searchFilters) : searchFilters;
-        console.log("Parsed search filters:", parsedFilters);
-        
-        if (parsedFilters.ranges) {
-          // Filter listings based on ranges
-          filteredListings = allResults.listings.filter(listing => {
-            // Check rooms range
-            if (parsedFilters.ranges.rooms) {
-              const rooms = listing.bedRooms || 0;
-              if (rooms < parsedFilters.ranges.rooms.min || rooms > parsedFilters.ranges.rooms.max) {
-                return false;
-              }
-            }
-
-            // Check bathrooms range
-            if (parsedFilters.ranges.bathrooms) {
-              const bathrooms = listing.washrooms || 0;
-              if (bathrooms < parsedFilters.ranges.bathrooms.min || bathrooms > parsedFilters.ranges.bathrooms.max) {
-                return false;
-              }
-            }
-
-            // Check price range
-            if (parsedFilters.ranges.price) {
-              const price = listing.pricePerNight?.price || 0;
-              if (price < parsedFilters.ranges.price.min || price > parsedFilters.ranges.price.max) {
-                return false;
-              }
-            }
-
-            return true;
-          });
+    // const result = await Listing.aggregate(pipeline);
+   const listings = await Listing.aggregate([
+  {
+    $geoNear: {
+      near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+      distanceField: "distance",
+      maxDistance: 150000, // 500 km
+      spherical: true
+    },
+  },
+  ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
+  {
+        $facet: {
+          data: [
+            { $skip: skip },
+            { $limit: limit }
+          ],
+          totalCount: [
+            { $count: 'count' }
+          ]
         }
-
-        // Apply facility filters if they exist
-        if (parsedFilters.selected) {
-          console.log("Applying facility filters:", parsedFilters.selected);
-          const facilityKeys = [
-            'dog facilities',
-            'facilities parking',
-            'facilities wellness',
-            'facilities accommodation features',
-            'facilities kids',
-            'facilities kitchen',
-            'facilities main filters',
-            'facilities smoking',
-            'facilities sport',
-            'facilities to do nearby',
-            'facilities view'
-          ];
-
-          // Populate filters for all listings
-          const populatedListings = await Promise.all(
-            filteredListings.map(async (listing) => {
-              if (listing.filters) {
-                const populatedFilters = await Filter.findById(listing.filters).lean();
-                return { ...listing, filters: populatedFilters };
-              }
-              return listing;
-            })
-          );
-
-          filteredListings = populatedListings.filter(listing => {
-            if (!listing.filters) return false;
-
-            //console.log("Listing filters:", listing.filters);
-            // Find the Amenities subsection
-            const amenitiesSubsection = listing.filters.subsections?.find(sub => sub.name === 'Amenities');
-            if (!amenitiesSubsection) return false;
-
-            for (const key of facilityKeys) {
-              const arr = parsedFilters.selected[key];
-              if (!arr || arr.length === 0) continue;
-
-              //console.log("Arrrrrrrrrrr:", arr);
-
-              // Find matching subsubsection by comparing lowercase names
-              const matchingSubsubsection = amenitiesSubsection.subsubsections?.find(
-                subsub => subsub.name.toLowerCase() === key.toLowerCase()
-              );
-
-              console.log("Matching subsubsection:", matchingSubsubsection);
-              console.log("Key:", key);
-              console.log("Filters:", parsedFilters.selected[key]);
-
-              if (!matchingSubsubsection) return false;
-
-              // Check if any of the values match the filter names (case-sensitive)
-              const hasMatchingFilter = matchingSubsubsection.filters?.some(
-                filter => arr.includes(filter.name)
-              );
-
-              if (!hasMatchingFilter) return false;
-            }
-            return true;
-          });
-        }
-
-        // Update total count to reflect filtered results
-        totalCount = filteredListings.length;
-        
-        console.log("Filtering results:", {
-          originalTotal: allResults.total,
-          filteredCount: filteredListings.length,
-          newTotal: totalCount
-        });
-      } catch (error) {
-        console.error("Error applying search filters:", error);
       }
-    }
+]);
+console.log(listings);
 
-    // Now apply pagination to the filtered results
-    const startIndex = (parseInt(page) - 1) * parseInt(limit);
-    const endIndex = startIndex + parseInt(limit);
-    const paginatedListings = filteredListings.slice(startIndex, endIndex);
 
-    // Calculate total pages based on filtered total
-    const totalPages = Math.ceil(totalCount / parseInt(limit)) || 1;
-    
-    console.log(`Returning ${paginatedListings.length} listings out of ${totalCount} total (page ${page} of ${totalPages})`);
-
-    // Return success response with data and pagination info
+    // const listings = result[0].data;
+    const total = listings[0].totalCount[0]?.count || 0;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const hasMore = page < totalPages;
     res.status(200).json({
       success: true,
-      listings: paginatedListings,
-      total: totalCount,
-      page: parseInt(page),
-      totalPages: totalPages,
-      hasMore: parseInt(page) < totalPages
+      listings: listings[0]?.data,
+      total,
+      totalPages,
+      hasMore
     });
-
   } catch (error) {
-    console.error("Error fetching streamed listings:", error);
-    res.status(200).json({
-      success: true,
+    console.error('Error in getStreamedListings:', error);
+    res.status(500).json({
+      success: false,
       listings: [],
       total: 0,
       page: 1,
@@ -590,6 +537,268 @@ exports.getStreamedListings = async (req, res, next) => {
     });
   }
 };
+
+
+
+
+
+
+// exports.getStreamedListings = async (req, res, next) => {
+//   try {
+//     const {
+//       limit = 12,
+//       skip = 0,
+//       page = 1,
+//       lat,
+//       lng,
+//       radius = 500,
+//       people,
+//       dogs,
+//       filters: filtersParam,
+//       priceMin,
+//       priceMax,
+//       searchFilters
+//     } = req.query;
+
+//     console.log("Search filters:", searchFilters);
+
+//     console.log("Raw filters param:", filtersParam);
+//     console.log("Pagination params:", { limit, skip, page });
+
+//     // Initialize empty filters
+//     let filters = {};
+    
+//     // Process filters with careful handling for double-encoded strings
+//     if (filtersParam) {
+//       try {
+//         // Detect if this is a JSON string (already stringified)
+//         // and handle various possible formats
+//         let parsedFilters;
+        
+//         if (typeof filtersParam === 'string') {
+//           // Try to clean the string if it looks like it's double-encoded
+//           let cleanedParam = filtersParam;
+          
+//           // Remove outer quotes if present
+//           if (cleanedParam.startsWith('"') && cleanedParam.endsWith('"')) {
+//             cleanedParam = cleanedParam.slice(1, -1);
+//           }
+          
+//           // Replace escaped quotes if needed
+//           cleanedParam = cleanedParam.replace(/\\"/g, '"');
+          
+//           // Try to parse the JSON
+//           parsedFilters = JSON.parse(cleanedParam);
+//         } else {
+//           // If it's already an object
+//           parsedFilters = filtersParam;
+//         }
+        
+//         // Ensure we got a proper object
+//         if (parsedFilters && typeof parsedFilters === 'object') {
+//           filters = parsedFilters;
+//           console.log("Successfully parsed filters:", filters);
+//         }
+//       } catch (error) {
+//         console.error("Error parsing filters:", error, filtersParam);
+//         // Continue with empty filters
+//       }
+//     }
+
+//     // Setup location if coordinates provided
+//     const location = lat && lng ? {
+//       lat: parseFloat(lat),
+//       lng: parseFloat(lng)
+//     } : null;
+
+//     // Add guest and dog count to filters
+//     if (people) {
+//       filters.guestCount = parseInt(people);
+//     }
+    
+//     if (dogs) {
+//       filters.dogCount = parseInt(dogs);
+//     }
+
+//     // Create a separate priceRange object
+//     let priceRangeObj = {};
+    
+//     if (priceMin) {
+//       priceRangeObj.min = parseInt(priceMin);
+//     }
+    
+//     if (priceMax) {
+//       priceRangeObj.max = parseInt(priceMax);
+//     }
+    
+//     // Only add priceRange if we have either min or max
+//     if (Object.keys(priceRangeObj).length > 0) {
+//       filters.priceRange = priceRangeObj;
+//     }
+
+//     console.log("Processed filters:", JSON.stringify(filters, null, 2));
+//     console.log("Using radius:", radius, "km");
+
+//     // First, get all listings without pagination to apply filters
+//     const allResults = await listingService.getStreamedListings({
+//       limit: 10, // Get a large number to ensure we get all listings
+//       skip: 0,
+//       page: 1,
+//       filters,
+//       location,
+//       radius: parseFloat(radius)
+//     });
+
+//     let filteredListings = allResults.listings;
+//     let totalCount = allResults.total;
+
+//     // Apply search filters to the results if they exist
+//     if (searchFilters) {
+//       try {
+//         const parsedFilters = typeof searchFilters === 'string' ? JSON.parse(searchFilters) : searchFilters;
+//         console.log("Parsed search filters:", parsedFilters);
+        
+//         if (parsedFilters.ranges) {
+//           // Filter listings based on ranges
+//           filteredListings = allResults.listings.filter(listing => {
+//             // Check rooms range
+//             if (parsedFilters.ranges.rooms) {
+//               const rooms = listing.bedRooms || 0;
+//               if (rooms < parsedFilters.ranges.rooms.min || rooms > parsedFilters.ranges.rooms.max) {
+//                 return false;
+//               }
+//             }
+
+//             // Check bathrooms range
+//             if (parsedFilters.ranges.bathrooms) {
+//               const bathrooms = listing.washrooms || 0;
+//               if (bathrooms < parsedFilters.ranges.bathrooms.min || bathrooms > parsedFilters.ranges.bathrooms.max) {
+//                 return false;
+//               }
+//             }
+
+//             // Check price range
+//             if (parsedFilters.ranges.price) {
+//               const price = listing.pricePerNight?.price || 0;
+//               if (price < parsedFilters.ranges.price.min || price > parsedFilters.ranges.price.max) {
+//                 return false;
+//               }
+//             }
+
+//             return true;
+//           });
+//         }
+
+//         // Apply facility filters if they exist
+//         if (parsedFilters.selected) {
+//           console.log("Applying facility filters:", parsedFilters.selected);
+//           const facilityKeys = [
+//             'dog facilities',
+//             'facilities parking',
+//             'facilities wellness',
+//             'facilities accommodation features',
+//             'facilities kids',
+//             'facilities kitchen',
+//             'facilities main filters',
+//             'facilities smoking',
+//             'facilities sport',
+//             'facilities to do nearby',
+//             'facilities view'
+//           ];
+
+//           // Populate filters for all listings
+//           const populatedListings = await Promise.all(
+//             filteredListings.map(async (listing) => {
+//               if (listing.filters) {
+//                 const populatedFilters = await Filter.findById(listing.filters).lean();
+//                 return { ...listing, filters: populatedFilters };
+//               }
+//               return listing;
+//             })
+//           );
+
+//           filteredListings = populatedListings.filter(listing => {
+//             if (!listing.filters) return false;
+
+//             //console.log("Listing filters:", listing.filters);
+//             // Find the Amenities subsection
+//             const amenitiesSubsection = listing.filters.subsections?.find(sub => sub.name === 'Amenities');
+//             if (!amenitiesSubsection) return false;
+
+//             for (const key of facilityKeys) {
+//               const arr = parsedFilters.selected[key];
+//               if (!arr || arr.length === 0) continue;
+
+//               //console.log("Arrrrrrrrrrr:", arr);
+
+//               // Find matching subsubsection by comparing lowercase names
+//               const matchingSubsubsection = amenitiesSubsection.subsubsections?.find(
+//                 subsub => subsub.name.toLowerCase() === key.toLowerCase()
+//               );
+
+//               console.log("Matching subsubsection:", matchingSubsubsection);
+//               console.log("Key:", key);
+//               console.log("Filters:", parsedFilters.selected[key]);
+
+//               if (!matchingSubsubsection) return false;
+
+//               // Check if any of the values match the filter names (case-sensitive)
+//               const hasMatchingFilter = matchingSubsubsection.filters?.some(
+//                 filter => arr.includes(filter.name)
+//               );
+
+//               if (!hasMatchingFilter) return false;
+//             }
+//             return true;
+//           });
+//         }
+
+//         // Update total count to reflect filtered results
+//         totalCount = filteredListings.length;
+        
+//         console.log("Filtering results:", {
+//           originalTotal: allResults.total,
+//           filteredCount: filteredListings.length,
+//           newTotal: totalCount
+//         });
+//       } catch (error) {
+//         console.error("Error applying search filters:", error);
+//       }
+//     }
+
+//     // Now apply pagination to the filtered results
+//     const startIndex = (parseInt(page) - 1) * parseInt(limit);
+//     const endIndex = startIndex + parseInt(limit);
+//     const paginatedListings = filteredListings.slice(startIndex, endIndex);
+
+//     // Calculate total pages based on filtered total
+//     const totalPages = Math.ceil(totalCount / parseInt(limit)) || 1;
+    
+//     console.log(`Returning ${paginatedListings.length} listings out of ${totalCount} total (page ${page} of ${totalPages})`);
+
+//     // Return success response with data and pagination info
+//     res.status(200).json({
+//       success: true,
+//       listings: paginatedListings,
+//       total: totalCount,
+//       page: parseInt(page),
+//       totalPages: totalPages,
+//       hasMore: parseInt(page) < totalPages
+//     });
+
+//   } catch (error) {
+//     console.error("Error fetching streamed listings:", error);
+//     res.status(200).json({
+//       success: true,
+//       listings: [],
+//       total: 0,
+//       page: 1,
+//       totalPages: 0,
+//       hasMore: false,
+//       error: error.message
+//     });
+//   }
+// };
 
 
 /**
