@@ -1,6 +1,7 @@
 const listingService = require("../services/listing.service");
-const Listing = require('../models/listing.model');
-const Filter = require('../models/filter.model');
+const Listing = require("../models/listing.model");
+const Filter = require("../models/filter.model");
+const {storeListingInRedis,getStoredListings } = require("../functions/redis");
 
 // Controller methods
 exports.getAllListings = async (req, res, next) => {
@@ -43,7 +44,9 @@ exports.getListingById = async (req, res, next) => {
 };
 exports.getListingByIdWithFilters = async (req, res, next) => {
   try {
-    const listing = await listingService.getListingByIdWithFilters(req.params.id);
+    const listing = await listingService.getListingByIdWithFilters(
+      req.params.id
+    );
     res.json(listing);
   } catch (err) {
     next(err);
@@ -59,7 +62,6 @@ exports.createListing = async (req, res, next) => {
   }
 };
 
-
 exports.updateListing = async (req, res, next) => {
   try {
     const oldListing = await Listing.findById(req.params.id);
@@ -70,26 +72,28 @@ exports.updateListing = async (req, res, next) => {
 
     // Check if the listing status was changed from 'pending approval' to 'active'
     if (
-      oldListing.status !== 'active' && 
-      updatedListing.status === 'active' && 
-      updatedListing.ownerType === 'Provider'
+      oldListing.status !== "active" &&
+      updatedListing.status === "active" &&
+      updatedListing.ownerType === "Provider"
     ) {
       try {
         // Get provider email
-        const Provider = require('../models/provider.model');
+        const Provider = require("../models/provider.model");
         const provider = await Provider.findById(updatedListing.owner);
-        
+
         if (provider && provider.email) {
           // Import the email service
-          const emailService = require('../services/email.service');
+          const emailService = require("../services/email.service");
           await emailService.sendListingApprovalEmail(
             provider.email,
             updatedListing
           );
-          console.log(`Listing approval email sent to provider ${provider.email}`);
+          console.log(
+            `Listing approval email sent to provider ${provider.email}`
+          );
         }
       } catch (emailError) {
-        console.error('Error sending listing approval email:', emailError);
+        console.error("Error sending listing approval email:", emailError);
         // Continue with the process even if the email fails
       }
     }
@@ -138,22 +142,22 @@ exports.searchListings = async (req, res, next) => {
     } = req.query;
 
     // Get search filters from headers
-    const searchFiltersHeader = req.headers['searchfiltersdata'];
+    const searchFiltersHeader = req.headers["searchfiltersdata"];
     let searchFilters = null;
-    
+
     if (searchFiltersHeader) {
       try {
         searchFilters = JSON.parse(searchFiltersHeader);
-        console.log('Received search filters from headers:', searchFilters);
+        console.log("Received search filters from headers:", searchFilters);
       } catch (error) {
-        console.error('Error parsing search filters from headers:', error);
+        console.error("Error parsing search filters from headers:", error);
       }
     } else {
-      console.log('No search filters found in headers');
+      console.log("No search filters found in headers");
     }
 
     // Log all headers for debugging
-    console.log('All request headers:', req.headers);
+    console.log("All request headers:", req.headers);
 
     // Convert parameters to numbers
     const latitude = parseFloat(lat);
@@ -176,7 +180,7 @@ exports.searchListings = async (req, res, next) => {
           selectedFilters = JSON.parse(filters);
         }
       } catch (error) {
-        console.error('Error parsing filters:', error);
+        console.error("Error parsing filters:", error);
         // If parsing fails, treat it as a single filter
         selectedFilters = [filters];
       }
@@ -184,7 +188,10 @@ exports.searchListings = async (req, res, next) => {
 
     // Merge searchFilters from headers with existing filters if needed
     if (searchFilters) {
-      console.log('Merging search filters with existing filters:', { searchFilters, selectedFilters });
+      console.log("Merging search filters with existing filters:", {
+        searchFilters,
+        selectedFilters,
+      });
       selectedFilters = { ...selectedFilters, ...searchFilters };
     }
 
@@ -324,7 +331,6 @@ exports.searchListingsByMap = async (req, res, next) => {
   }
 };
 
-
 // Update Listing Search logic
 
 // Updated listing.controller.js - getStreamedListings function
@@ -334,214 +340,292 @@ exports.searchListingsByMap = async (req, res, next) => {
  * Get paginated listings with proper total count and page details
  * Supports traditional pagination with page and limit parameters
  */
-exports.getStreamedListings = async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 10;
-    const page = parseInt(req.query.page) || 1;
-    const skip = (page - 1) * limit;
-    const {
-      lng,
-      lat,
-      radius = 500000, // default 500km
-      filters = {},
-      priceMin,
-      priceMax,
-      searchFilters = {}
-    } = req.query;
-    const matchStage = {};
-    if (filters?.guestCount) {
-      matchStage.$or = [
-        { 'maxGuests': { $gte: parseInt(filters.guestCount) } },
-        
-      ];
-    }
-// if (filters?.ranges?.people?.min > 1) {
-//       matchStage['capacity.people'] = { $gte: filters.ranges.people.min };
-//     }
-//     if (filters?.ranges?.rooms?.min > 1) {
-//       matchStage.rooms = { $gte: filters.ranges.rooms.min };
-//     }
-//     if (filters?.ranges?.bathrooms?.min > 1) {
-//       matchStage.bathrooms = { $gte: filters.ranges.bathrooms.min };
-//     }
-//     if (priceMin || priceMax) {
-//       matchStage.price = {};
-//       if (priceMax) matchStage.price.$lte = parseFloat(priceMax);
-//     }
-    const selectedValues = Object.values(searchFilters?.selected || {})
-      .flat()
-      .filter(Boolean);
-    const selectedMatch = selectedValues.length
-      ? {
-          $expr: {
-            $gt: [
-              {
-                $size: {
-                  $filter: {
-                    input: {
-                      $concatArrays: [
-                        {
-                          $reduce: {
-                            input: '$filters.subsections',
-                            initialValue: [],
-                            in: {
-                              $concatArrays: [
-                                '$$value',
-                                {
-                                  $map: {
-                                    input: {
-                                      $ifNull: ['$$this.filters', []]
-                                    },
-                                    as: 'f',
-                                    in: '$$f.name'
-                                  }
-                                },
-                                {
-                                  $reduce: {
-                                    input: { $ifNull: ['$$this.subsubsections', []] },
-                                    initialValue: [],
-                                    in: {
-                                      $concatArrays: [
-                                        '$$value',
-                                        {
-                                          $map: {
-                                            input: {
-                                              $ifNull: ['$$this.filters', []]
-                                            },
-                                            as: 'sf',
-                                            in: '$$sf.name'
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    as: 'filterName',
-                    cond: { $in: ['$$filterName', selectedValues] }
-                  }
-                }
-              },
-              0
-            ]
-          }
-        }
-      : {};
-    const geoNearStage = {
-      $geoNear: {
-        near: {
-          type: 'Point',
-          coordinates: [parseFloat(lng), parseFloat(lat)]
-        },
-        distanceField: 'distance',
-        maxDistance: parseFloat(radius),
-        spherical: true
-      }
-    };
- const pipeline = [
-  {
-    $geoNear: {
-      near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
-      distanceField: "distance",
-      maxDistance: parseFloat(radius),
-      spherical: true
-    }
-  },
+// exports.getStreamedListings = async (req, res) => {
+//   try {
+//     const limit = parseInt(req.query.limit) || 10;
+//     const page = parseInt(req.query.page) || 1;
+//     const skip = (page - 1) * limit;
+//     const {
+//       lng,
+//       lat,
+//       radius = 500000, // default 500km
+//       filters = {
+//         dateRange: { start: null, end: null },
+//         amenities: [],
+//         guestCount: 1,
+//         dogCount: 0,
+//       },
+//       priceMin,
+//       priceMax,
+//       searchFilters = {},
+//     } = req.query;
+//   //  await storeListingInRedis()
+//    const allListings = await getStoredListings()
+//     const matchStage = {};
+//     const searchStage = {};
+//     const parsedFilters = JSON.parse(filters);
+//     const parsedSearchFilters = JSON.parse(searchFilters);
+//     console.log(parsedSearchFilters, searchFilters);
+//     // parse filter
+//     // if (parsedFilters["guestCount"]) {
+//     //   matchStage.maxGuests = { $gte: parseInt(parsedFilters["guestCount"]) };
+//     // }
 
-  // Step 2: Lookup filters from external collection
-  {
-    $lookup: {
-      from: "filters",            // Name of the filters collection
-      localField: "filters",      // Field in listings (likely an ObjectId or array of ids)
-      foreignField: "_id",        // Field in filters collection
-      as: "filtersData"
-    }
-  },
+//     // // parse search filter
+//     // if (parsedSearchFilters?.ranges?.bathrooms) {
+//     //   const min = parseInt(parsedSearchFilters.ranges.bathrooms.min);
+//     //   const max = parseInt(parsedSearchFilters.ranges.bathrooms.max);
 
-  // Step 3: Match selected filters (using joined filtersData)
-  // ...(selectedValues.length > 0
-  //   ? [
-  //       {
-  //         $match: {
-  //           "filtersData.filters.name": { $in: selectedValues }
-  //         }
-  //       }
-  //     ]
-  //   : []
-  // ),
+//     //   searchStage.washrooms = {
+//     //     $gte: min,
+//     //     $lte: max,
+//     //   };
+//     // }
+//     // if (parsedSearchFilters?.ranges?.rooms) {
+//     //   const min = parseInt(parsedSearchFilters.ranges.rooms.min);
+//     //   const max = parseInt(parsedSearchFilters.ranges.rooms.max);
 
-  // Step 4: Match guestCount, ranges, etc.
-  // ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
+//     //   searchStage["rooms.number"] = { $gte: min, $lte: max };
+//     // }
+//     // if (parsedSearchFilters?.ranges?.peoples) {
+//     //   const min = parseInt(parsedSearchFilters.ranges.peoples.min);
+//     //   const max = parseInt(parsedSearchFilters.ranges.peoples.max);
 
-  // Step 5: Facet for data + totalCount
-  {
-    $facet: {
-      data: [{ $skip: skip }, { $limit: limit }],
-      totalCount: [{ $count: "count" }]
-    }
-  }
-];
+//     //   searchStage.maxGuests = {
+//     //     $gte: min,
+//     //     $lte: max,
+//     //   };
+//     // }
+//     // if (parsedSearchFilters?.ranges?.dogs) {
+//     //   const min = parseInt(parsedSearchFilters.ranges.dogs.min);
+//     //   const max = parseInt(parsedSearchFilters.ranges.dogs.max);
 
-    // const result = await Listing.aggregate(pipeline);
-   const listings = await Listing.aggregate([
-  {
-    $geoNear: {
-      near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
-      distanceField: "distance",
-      maxDistance: 150000, // 500 km
-      spherical: true
-    },
-  },
-  ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
-  {
-        $facet: {
-          data: [
-            { $skip: skip },
-            { $limit: limit }
-          ],
-          totalCount: [
-            { $count: 'count' }
-          ]
-        }
-      }
-]);
-console.log(listings);
+//     //   searchStage.maxDogs = {
+//     //     $gte: min,
+//     //     $lte: max,
+//     //   };
+//     // }
 
-
-    // const listings = result[0].data;
-    const total = listings[0].totalCount[0]?.count || 0;
-    const totalPages = Math.ceil(total / limit) || 1;
-    const hasMore = page < totalPages;
-    res.status(200).json({
-      success: true,
-      listings: listings[0]?.data,
-      total,
-      totalPages,
-      hasMore
-    });
-  } catch (error) {
-    console.error('Error in getStreamedListings:', error);
-    res.status(500).json({
-      success: false,
-      listings: [],
-      total: 0,
-      page: 1,
-      totalPages: 0,
-      hasMore: false,
-      error: error.message
-    });
-  }
-};
+//     // const listings = await Listing.aggregate([
+//     //   {
+//     //     $geoNear: {
+//     //       near: {
+//     //         type: "Point",
+//     //         coordinates: [parseFloat(lng), parseFloat(lat)],
+//     //       },
+//     //       distanceField: "distance",
+//     //       maxDistance: 150000, // 150 km
+//     //       spherical: true,
+//     //     },
+//     //   },
+//     //   {
+//     //     $addFields: {
+//     //       distanceInfo: { $round: [{ $divide: ["$distance", 1000] }, 2] },
+//     //     },
+//     //   },
+//     //   ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
+//     //   ...(Object.keys(searchStage).length > 0 ? [{ $match: searchStage }] : []),
+//     //   {
+//     //     $lookup: {
+//     //       from: "filters", // Name of the filters collection
+//     //       localField: "filters", // Field in listings (likely an ObjectId or array of ids)
+//     //       foreignField: "_id", // Field in filters collection
+//     //       as: "filters",
+//     //     },
+//     //   },
+//     //   {
+//     //     $unwind: "$filters",
+//     //   },
+//     //   ...(selectedValues.length > 0
+//     //     ? [
+//     //         {
+//     //           $match: {
+//     //             $expr: {
+//     //               $gt: [
+//     //                 {
+//     //                   $size: {
+//     //                     $filter: {
+//     //                       input: {
+//     //                         $reduce: {
+//     //                           input: "$filters.subsections",
+//     //                           initialValue: [],
+//     //                           in: {
+//     //                             $concatArrays: [
+//     //                               "$$value",
+//     //                               {
+//     //                                 $reduce: {
+//     //                                   input: {
+//     //                                     $ifNull: ["$$this.filters", []],
+//     //                                   },
+//     //                                   initialValue: [],
+//     //                                   in: {
+//     //                                     $concatArrays: [
+//     //                                       "$$value",
+//     //                                       [{ name: "$$this.name" }],
+//     //                                     ],
+//     //                                   },
+//     //                                 },
+//     //                               },
+//     //                               {
+//     //                                 $reduce: {
+//     //                                   input: {
+//     //                                     $ifNull: ["$$this.subsubsections", []],
+//     //                                   },
+//     //                                   initialValue: [],
+//     //                                   in: {
+//     //                                     $concatArrays: [
+//     //                                       "$$value",
+//     //                                       {
+//     //                                         $reduce: {
+//     //                                           input: {
+//     //                                             $ifNull: ["$$this.filters", []],
+//     //                                           },
+//     //                                           initialValue: [],
+//     //                                           in: {
+//     //                                             $concatArrays: [
+//     //                                               "$$value",
+//     //                                               [{ name: "$$this.name" }],
+//     //                                             ],
+//     //                                           },
+//     //                                         },
+//     //                                       },
+//     //                                     ],
+//     //                                   },
+//     //                                 },
+//     //                               },
+//     //                             ],
+//     //                           },
+//     //                         },
+//     //                       },
+//     //                       as: "flattened",
+//     //                       cond: { $in: ["$$flattened.name", selectedValues] },
+//     //                     },
+//     //                   },
+//     //                 },
+//     //                 0,
+//     //               ],
+//     //             },
+//     //           },
+//     //         },
+//     //       ]
+//     //     : []),
+//     //   {
+//     //     $sort: {
+//     //       distance: 1,
+//     //     },
+//     //   },
+//     //   {
+//     //     $facet: {
+//     //       data: [{ $skip: skip }, { $limit: limit }],
+//     //       totalCount: [{ $count: "count" }],
+//     //     },
+//     //   },
+//     // ]);
 
 
 
+//     // console.log(listings);
+    
+
+//     const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+//   const toRadians = (deg) => deg * (Math.PI / 180);
+//   const R = 6371; // Earth radius in km
+//   const dLat = toRadians(lat2 - lat1);
+//   const dLon = toRadians(lon2 - lon1);
+//   const a =
+//     Math.sin(dLat / 2) ** 2 +
+//     Math.cos(toRadians(lat1)) *
+//     Math.cos(toRadians(lat2)) *
+//     Math.sin(dLon / 2) ** 2;
+//   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//   return R * c;
+// };
 
 
+// // const allListings = JSON.parse(cachedListings);
+
+//     // Step 2: Apply geo filter
+//     let withDistance = allListings
+//       .map(item => {
+//         const [lon, latCoord] = item.location?.coordinates || [];
+//         const distance = calculateDistanceKm(latCoord, lon, parseFloat(lat), parseFloat(lng));
+//         return {
+//           ...item,
+//           distance,
+//           distanceInfo: Math.round(distance * 100) / 100,
+//         };
+//       })
+//       .filter(item => item.distance <= 150); // 150km radius
+
+//     // Step 3: Apply matchStage (example filter)
+//     withDistance = withDistance.filter(item => {
+//       // Add more matchStage logic here if needed
+//       return item.status === "active";
+//     });
+
+//     // Step 4: Apply searchStage (example search by name)
+//     withDistance = withDistance.filter(item => {
+//       return item.name?.toLowerCase().includes(searchQuery.toLowerCase());
+//     });
+
+//     // Step 5: Flatten filter names for subsection/subsubsection match
+//     const flattened = withDistance.map(item => {
+//       const filterNames = [];
+
+//       for (const sub of item.filters?.subsections || []) {
+//         for (const f of sub.filters || []) {
+//           filterNames.push(f.name);
+//         }
+
+//         for (const subsub of sub.subsubsections || []) {
+//           for (const f of subsub.filters || []) {
+//             filterNames.push(f.name);
+//           }
+//         }
+//       }
+
+//       return { ...item, filterNames };
+//     });
+
+//     // Step 6: Match selected filter values
+//     const selectedFiltered = parsedSearchFilters?.selected.length > 0
+//       ? flattened.filter(item =>
+//         item.filterNames.some(name =>  parsedSearchFilters?.selected.includes(name))
+//       )
+//       : flattened;
+
+//     // Step 7: Sort by distance
+//     selectedFiltered.sort((a, b) => a.distance - b.distance);
+
+//     // Step 8: Pagination
+//     const paginated = selectedFiltered.slice(skip, skip + limit);
+//     const totalCount = selectedFiltered.length;
+
+
+//     // const listings = result[0].data;
+//     const total = selectedFiltered.length || 0;
+//     const totalPages = Math.ceil(total / limit) || 1;
+//     const hasMore = page < totalPages;
+//     res.status(200).json({
+//       success: true,
+//       listings: selectedFiltered,
+//       total,
+//       totalPages,
+//       hasMore,
+//     });
+//   } catch (error) {
+//     console.error("Error in getStreamedListings:", error);
+//     res.status(500).json({
+//       success: false,
+//       listings: [],
+//       total: 0,
+//       page: 1,
+//       totalPages: 0,
+//       hasMore: false,
+//       error: error.message,
+//     });
+//   }
+// };
 
 // exports.getStreamedListings = async (req, res, next) => {
 //   try {
@@ -559,7 +643,7 @@ console.log(listings);
 //       priceMax,
 //       searchFilters
 //     } = req.query;
-
+// // storeListingInRedis()
 //     console.log("Search filters:", searchFilters);
 
 //     console.log("Raw filters param:", filtersParam);
@@ -567,33 +651,34 @@ console.log(listings);
 
 //     // Initialize empty filters
 //     let filters = {};
-    
+//     // const allListings = await getStoredListings()
+
 //     // Process filters with careful handling for double-encoded strings
 //     if (filtersParam) {
 //       try {
 //         // Detect if this is a JSON string (already stringified)
 //         // and handle various possible formats
 //         let parsedFilters;
-        
+
 //         if (typeof filtersParam === 'string') {
 //           // Try to clean the string if it looks like it's double-encoded
 //           let cleanedParam = filtersParam;
-          
+
 //           // Remove outer quotes if present
 //           if (cleanedParam.startsWith('"') && cleanedParam.endsWith('"')) {
 //             cleanedParam = cleanedParam.slice(1, -1);
 //           }
-          
+
 //           // Replace escaped quotes if needed
 //           cleanedParam = cleanedParam.replace(/\\"/g, '"');
-          
+
 //           // Try to parse the JSON
 //           parsedFilters = JSON.parse(cleanedParam);
 //         } else {
 //           // If it's already an object
 //           parsedFilters = filtersParam;
 //         }
-        
+
 //         // Ensure we got a proper object
 //         if (parsedFilters && typeof parsedFilters === 'object') {
 //           filters = parsedFilters;
@@ -615,22 +700,22 @@ console.log(listings);
 //     if (people) {
 //       filters.guestCount = parseInt(people);
 //     }
-    
+
 //     if (dogs) {
 //       filters.dogCount = parseInt(dogs);
 //     }
 
 //     // Create a separate priceRange object
 //     let priceRangeObj = {};
-    
+
 //     if (priceMin) {
 //       priceRangeObj.min = parseInt(priceMin);
 //     }
-    
+
 //     if (priceMax) {
 //       priceRangeObj.max = parseInt(priceMax);
 //     }
-    
+
 //     // Only add priceRange if we have either min or max
 //     if (Object.keys(priceRangeObj).length > 0) {
 //       filters.priceRange = priceRangeObj;
@@ -657,7 +742,7 @@ console.log(listings);
 //       try {
 //         const parsedFilters = typeof searchFilters === 'string' ? JSON.parse(searchFilters) : searchFilters;
 //         console.log("Parsed search filters:", parsedFilters);
-        
+
 //         if (parsedFilters.ranges) {
 //           // Filter listings based on ranges
 //           filteredListings = allResults.listings.filter(listing => {
@@ -755,7 +840,7 @@ console.log(listings);
 
 //         // Update total count to reflect filtered results
 //         totalCount = filteredListings.length;
-        
+
 //         console.log("Filtering results:", {
 //           originalTotal: allResults.total,
 //           filteredCount: filteredListings.length,
@@ -773,7 +858,7 @@ console.log(listings);
 
 //     // Calculate total pages based on filtered total
 //     const totalPages = Math.ceil(totalCount / parseInt(limit)) || 1;
-    
+
 //     console.log(`Returning ${paginatedListings.length} listings out of ${totalCount} total (page ${page} of ${totalPages})`);
 
 //     // Return success response with data and pagination info
@@ -800,7 +885,109 @@ console.log(listings);
 //   }
 // };
 
+exports.getStreamedListings = async (req, res, next) => {
+  try {
+    const {
+      limit = 12,
+      skip = 0,
+      page = 1,
+      lat,
+      lng,
+      radius = 500,
+      people,
+      dogs,
+      filters: filtersParam,
+      priceMin,
+      priceMax,
+      searchFilters
+    } = req.query;
+    // await deleteListingInRedis()
+// await storeListingInRedis()
+    console.log("Search filters:", searchFilters);
+    console.log("Raw filters param:", filtersParam);
+    console.log("Pagination params:", { limit, skip, page });
 
+    // Initialize filters
+    let filters = {};
+
+    // Process filters parameter
+    if (filtersParam) {
+      try {
+        let parsedFilters;
+        if (typeof filtersParam === 'string') {
+          let cleanedParam = filtersParam;
+          if (cleanedParam.startsWith('"') && cleanedParam.endsWith('"')) {
+            cleanedParam = cleanedParam.slice(1, -1);
+          }
+          cleanedParam = cleanedParam.replace(/\\"/g, '"');
+          parsedFilters = JSON.parse(cleanedParam);
+        } else {
+          parsedFilters = filtersParam;
+        }
+
+        if (parsedFilters && typeof parsedFilters === 'object') {
+          filters = parsedFilters;
+          console.log("Successfully parsed filters:", filters);
+        }
+      } catch (error) {
+        console.error("Error parsing filters:", error, filtersParam);
+      }
+    }
+
+    // Setup location
+    const location = lat && lng ? {
+      lat: parseFloat(lat),
+      lng: parseFloat(lng)
+    } : null;
+
+    // Add guest and dog count to filters
+    if (people) filters.guestCount = parseInt(people);
+    if (dogs) filters.dogCount = parseInt(dogs);
+
+    // Add price range
+    let priceRangeObj = {};
+    if (priceMin) priceRangeObj.min = parseInt(priceMin);
+    if (priceMax) priceRangeObj.max = parseInt(priceMax);
+    if (Object.keys(priceRangeObj).length > 0) {
+      filters.priceRange = priceRangeObj;
+    }
+
+    console.log("Processed filters:", JSON.stringify(filters, null, 2));
+
+    // Get listings from service
+    const results = await listingService.getStreamedListings({
+      limit: parseInt(limit),
+      skip: parseInt(skip),
+      page: parseInt(page),
+      filters,
+      location,
+      radius: parseFloat(radius),
+      searchFilters
+    });
+
+    // Return response
+    res.status(200).json({
+      success: true,
+      listings: results.listings,
+      total: results.total,
+      page: results.page,
+      totalPages: results.totalPages,
+      hasMore: results.hasMore
+    });
+
+  } catch (error) {
+    console.error("Error fetching streamed listings:", error);
+    res.status(200).json({
+      success: true,
+      listings: [],
+      total: 0,
+      page: 1,
+      totalPages: 0,
+      hasMore: false,
+      error: error.message
+    });
+  }
+};
 /**
  * Get a single listing by ID
  * For individual fetching during stream loading
@@ -808,33 +995,33 @@ console.log(listings);
 exports.getSingleListing = async (req, res, next) => {
   try {
     const { id } = req.params;
-    
+
     if (!id) {
       return res.status(400).json({
         success: false,
-        message: "Listing ID is required"
+        message: "Listing ID is required",
       });
     }
 
     const listing = await listingService.getSingleListing(id);
-    
+
     if (!listing) {
       return res.status(404).json({
         success: false,
-        message: "Listing not found"
+        message: "Listing not found",
       });
     }
 
     res.status(200).json({
       success: true,
-      listing
+      listing,
     });
   } catch (error) {
     console.error(`Error fetching single listing:`, error);
     res.status(500).json({
       success: false,
       message: "Error fetching listing",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -846,113 +1033,116 @@ exports.getSingleListing = async (req, res, next) => {
 exports.getListingsByIds = async (req, res, next) => {
   try {
     const { ids } = req.body;
-    
+
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Valid listing IDs array is required"
+        message: "Valid listing IDs array is required",
       });
     }
 
     const listings = await listingService.getListingsByIds(ids);
-    
+
     res.status(200).json({
       success: true,
-      listings
+      listings,
     });
   } catch (error) {
     console.error("Error fetching listings by IDs:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching listings",
-      error: error.message
+      error: error.message,
     });
   }
 };
-
-
 
 exports.getListingDiagnostics = async (req, res, next) => {
   try {
     const diagnostics = {
       counts: {},
       schema: {},
-      samples: []
+      samples: [],
     };
-    
+
     // Get base counts
     diagnostics.counts.total = await Listing.countDocuments();
-    diagnostics.counts.active = await Listing.countDocuments({ status: "active" });
-    diagnostics.counts.withCoordinates = await Listing.countDocuments({ 
-      "location.coordinates": { $exists: true } 
+    diagnostics.counts.active = await Listing.countDocuments({
+      status: "active",
     });
-    
+    diagnostics.counts.withCoordinates = await Listing.countDocuments({
+      "location.coordinates": { $exists: true },
+    });
+
     // Check for various data issues
-    diagnostics.counts.withCapacity = await Listing.countDocuments({ 
-      "capacity.people": { $exists: true } 
+    diagnostics.counts.withCapacity = await Listing.countDocuments({
+      "capacity.people": { $exists: true },
     });
-    
-    diagnostics.counts.withCapacityAndActive = await Listing.countDocuments({ 
+
+    diagnostics.counts.withCapacityAndActive = await Listing.countDocuments({
       status: "active",
-      "capacity.people": { $exists: true } 
+      "capacity.people": { $exists: true },
     });
-    
-    diagnostics.counts.withCapacityGTE1 = await Listing.countDocuments({ 
-      "capacity.people": { $gte: 1 } 
+
+    diagnostics.counts.withCapacityGTE1 = await Listing.countDocuments({
+      "capacity.people": { $gte: 1 },
     });
-    
-    diagnostics.counts.withActiveAndCapacityGTE1 = await Listing.countDocuments({ 
-      status: "active",
-      "capacity.people": { $gte: 1 } 
-    });
-    
+
+    diagnostics.counts.withActiveAndCapacityGTE1 = await Listing.countDocuments(
+      {
+        status: "active",
+        "capacity.people": { $gte: 1 },
+      }
+    );
+
     // Check price
-    diagnostics.counts.withPrice = await Listing.countDocuments({ 
-      "pricePerNight.price": { $exists: true } 
+    diagnostics.counts.withPrice = await Listing.countDocuments({
+      "pricePerNight.price": { $exists: true },
     });
-    
-    diagnostics.counts.withPriceLTE10000 = await Listing.countDocuments({ 
-      "pricePerNight.price": { $lte: 10000 } 
+
+    diagnostics.counts.withPriceLTE10000 = await Listing.countDocuments({
+      "pricePerNight.price": { $lte: 10000 },
     });
-    
+
     // Get schema information - what fields do listings have?
     try {
       // Get a sample listing
       const sampleListing = await Listing.findOne({ status: "active" }).lean();
-      
+
       if (sampleListing) {
         // Extract schema
         diagnostics.schema.topLevel = Object.keys(sampleListing);
-        
+
         if (sampleListing.capacity) {
           diagnostics.schema.capacity = Object.keys(sampleListing.capacity);
         }
-        
+
         if (sampleListing.location) {
           diagnostics.schema.location = Object.keys(sampleListing.location);
-          
+
           if (sampleListing.location.coordinates) {
-            diagnostics.schema.coordinates = 
-              `Array with ${sampleListing.location.coordinates.length} items: ${sampleListing.location.coordinates}`;
+            diagnostics.schema.coordinates = `Array with ${sampleListing.location.coordinates.length} items: ${sampleListing.location.coordinates}`;
           }
         }
-        
+
         if (sampleListing.pricePerNight) {
-          diagnostics.schema.pricePerNight = Object.keys(sampleListing.pricePerNight);
+          diagnostics.schema.pricePerNight = Object.keys(
+            sampleListing.pricePerNight
+          );
         }
       }
     } catch (error) {
       diagnostics.schemaError = error.message;
     }
-    
+
     // Get a few sample listings for inspection
     try {
       // Get 3 random listings
       const randomListings = await Listing.aggregate([
         { $match: { status: "active" } },
-        { $sample: { size: 3 } }
+        { $sample: { size: 3 } },
       ]);
-      
+
       // Get details of each listing
       for (const listing of randomListings) {
         const simplifiedListing = {
@@ -962,26 +1152,26 @@ exports.getListingDiagnostics = async (req, res, next) => {
           coordinates: listing.location?.coordinates,
           locationType: listing.location?.type,
           capacity: listing.capacity,
-          pricePerNight: listing.pricePerNight
+          pricePerNight: listing.pricePerNight,
         };
-        
+
         diagnostics.samples.push(simplifiedListing);
       }
     } catch (error) {
       diagnostics.samplesError = error.message;
     }
-    
+
     // Return the diagnostic data
     res.status(200).json({
       success: true,
-      diagnostics
+      diagnostics,
     });
   } catch (error) {
     console.error("Error getting listing diagnostics:", error);
     res.status(500).json({
       success: false,
       message: "Error getting listing diagnostics",
-      error: error.message
+      error: error.message,
     });
   }
 };

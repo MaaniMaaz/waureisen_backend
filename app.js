@@ -32,6 +32,7 @@ const { handlePayment } = require("./functions/webhook.js");
 // const reviewRoutes = require("./routes/review.routes.js")
 
 const errorHandler = require("./middlewares/errorHandler");
+const { storeListingInRedis,deleteListingInRedis } = require("./functions/redis.js");
 
 const app = express();
 const server = http.createServer(app); // Create HTTP server
@@ -131,6 +132,20 @@ console.log(event?.data?.receipt_url , event?.data?.object?.receipt_url , "recei
     response.send({ received: true });
   }
 );
+// cron job for redis listing
+const storeListingInRedisJob = new CronJob(
+  "0 1 * * *",
+  async () => {
+    console.log("redis job started");
+    
+    // await deleteListingInRedis()
+await storeListingInRedis()
+  },
+  null,
+  true,
+  "UTC"
+)
+storeListingInRedisJob.start()
 
 // cron job for transfer payment
 const scheduleTransferPaymnetJob = new CronJob(
