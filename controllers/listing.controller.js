@@ -340,6 +340,555 @@ exports.searchListingsByMap = async (req, res, next) => {
  * Get paginated listings with proper total count and page details
  * Supports traditional pagination with page and limit parameters
  */
+
+exports.getStreamedListings = async (req, res) => {
+  try {
+    // await storeListingInRedis()
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+
+    const {
+      lng,
+      lat,
+      radius = 500000,
+      filters = JSON.stringify({
+        dateRange: { start: null, end: null },
+        amenities: [],
+        guestCount: 1,
+        dogCount: 0,
+      }),
+      priceMin,
+      priceMax,
+      searchFilters = JSON.stringify({}),
+    } = req.query;
+
+    const parsedFilters = typeof filters === "string" ? JSON.parse(filters) : filters;
+    const parsedSearchFilters =
+      typeof searchFilters === "string" ? JSON.parse(searchFilters) : searchFilters;
+console.log(parsedSearchFilters)
+    const matchStage = {};
+    const searchStage = {};
+    const postMatchStage = [];
+
+    if (parsedFilters.guestCount) {
+      matchStage.maxGuests = { $gte: parseInt(parsedFilters.guestCount) };
+    }
+
+    if (parsedFilters.dogCount) {
+      matchStage.maxDogs = { $gte: parseInt(parsedFilters.dogCount) };
+    }
+
+    if (parsedSearchFilters?.ranges?.bathrooms) {
+      const min = parseInt(parsedSearchFilters.ranges.bathrooms.min);
+      const max = parseInt(parsedSearchFilters.ranges.bathrooms.max);
+      searchStage.washrooms = { $gte: min, $lte: max };
+    }
+
+    if (parsedSearchFilters?.ranges?.rooms) {
+      const min = parseInt(parsedSearchFilters.ranges.rooms.min);
+      const max = parseInt(parsedSearchFilters.ranges.rooms.max);
+      searchStage["rooms.number"] = { $gte: min, $lte: max };
+    }
+
+    if (parsedSearchFilters?.ranges?.people) {
+      const min = parseInt(parsedSearchFilters.ranges.people.min);
+      const max = parseInt(parsedSearchFilters.ranges.people.max);
+      searchStage.maxGuests = { $gte: min, $lte: max };
+    }
+
+    if (parsedSearchFilters?.ranges?.dogs) {
+      const min = parseInt(parsedSearchFilters.ranges.dogs.min);
+      const max = parseInt(parsedSearchFilters.ranges.dogs.max);
+      searchStage.maxDogs = { $gte: min, $lte: max };
+    }
+
+   if (parsedSearchFilters.ranges?.price) {
+  const { min, max } = parsedSearchFilters.ranges?.price;
+  
+  if (min !== undefined || max !== undefined) {
+    searchStage.price = {};
+    if (min !== undefined) searchStage.price.$gte = parseFloat(min);
+    if (max !== undefined) searchStage.price.$lte = parseFloat(max);
+  }
+}
+
+
+// Add date range filtering
+if (parsedFilters?.dateRange?.start && parsedFilters?.dateRange?.end) {
+  const startDate = parsedFilters.dateRange.start;
+  const endDate = parsedFilters.dateRange.end;
+  const requiredDates = [];
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    requiredDates.push(new Date(d).toISOString().split("T")[0]);
+  }
+
+  postMatchStage.push({
+    $match: {
+      dates: { $all: requiredDates }
+    }
+  });
+}
+
+    const selected = parsedSearchFilters?.selected || {};
+const selectedValues = Object.values(selected).flat();
+
+
+
+    const listingsAgg = await Listing.aggregate([
+     {
+    $geoNear: {
+      near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+      distanceField: "distanceInfo",
+      maxDistance: 150000, // 150 km
+      spherical: true
+    },
+  },
+  ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
+  ...(Object.keys(searchStage).length > 0 ? [{ $match: searchStage }] : []),
+  {
+    $lookup: {
+      from: "filters",            // Name of the filters collection
+      localField: "filters",      // Field in listings (likely an ObjectId or array of ids)
+      foreignField: "_id",        // Field in filters collection
+      as: "filters"
+    }
+  },
+  {
+    $unwind:"$filters"
+  },
+   ...(selectedValues.length > 0 ? [{
+  $match: {
+    $expr: {
+      $gt: [
+        {
+          $size: {
+            $filter: {
+              input: {
+                $reduce: {
+                  input: '$filters.subsections',
+                  initialValue: [],
+                  in: {
+                    $concatArrays: [
+                      '$$value',
+                      {
+                        $reduce: {
+                          input: { $ifNull: ['$$this.filters', []] },
+                          initialValue: [],
+                          in: {
+                            $concatArrays: [
+                              '$$value',
+                              [{ name: '$$this.name' }]
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        $reduce: {
+                          input: { $ifNull: ['$$this.subsubsections', []] },
+                          initialValue: [],
+                          in: {
+                            $concatArrays: [
+                              '$$value',
+                              {
+                                $reduce: {
+                                  input: { $ifNull: ['$$this.filters', []] },
+                                  initialValue: [],
+                                  in: {
+                                    $concatArrays: [
+                                      '$$value',
+                                      [{ name: '$$this.name' }]
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              as: 'flattened',
+              cond: { $in: ['$$flattened.name', selectedValues] }
+            }
+          }
+        },
+        0
+      ]
+    }
+  }
+}] : []),
+...postMatchStage,
+{
+  $sort: {
+    distanceInfo: 1
+  }
+},
+  {
+        $facet: {
+          data: [
+            { $skip: skip },
+            { $limit: limit }
+          ],
+          totalCount: [
+            { $count: 'count' }
+          ]
+        }
+      }
+    ]);
+
+    // const listingsAgg = await Listing.find().limit(600)
+
+    const listings = listingsAgg[0]?.data || [];
+    const total = listingsAgg[0]?.totalCount[0]?.count || 0;
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page < totalPages;
+
+    return res.status(200).json({
+      success: true,
+      listings,
+      total,
+      totalPages,
+      hasMore,
+    });
+  } catch (error) {
+    console.error("Error in getStreamedListings:", error);
+    res.status(500).json({
+      success: false,
+      listings: [],
+      total: 0,
+      page: 1,
+      totalPages: 0,
+      hasMore: false,
+      error: error.message,
+    });
+  }
+};
+
+// claud result
+
+// exports.getStreamedListings = async (req, res) => {
+//   try {
+//     const limit = parseInt(req.query.limit) || 10;
+//     const page = parseInt(req.query.page) || 1;
+//     const skip = (page - 1) * limit;
+
+//     const {
+//       lng,
+//       lat,
+//       radius = 150000, // Changed to 150km as requested
+//       filters = JSON.stringify({
+//         dateRange: { start: null, end: null },
+//         amenities: [],
+//         guestCount: 1,
+//         dogCount: 0,
+//       }),
+//       priceMin,
+//       priceMax,
+//       searchFilters = JSON.stringify({}),
+//     } = req.query;
+
+//     // Validate coordinates
+//     if (!lng || !lat) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Longitude and latitude are required",
+//         listings: [],
+//         total: 0,
+//         totalPages: 0,
+//         hasMore: false,
+//       });
+//     }
+
+//     const parsedFilters = typeof filters === "string" ? JSON.parse(filters) : filters;
+//     const parsedSearchFilters =
+//       typeof searchFilters === "string" ? JSON.parse(searchFilters) : searchFilters;
+
+//     console.log("Search coordinates:", { lng, lat, radius });
+//     console.log("Parsed filters:", parsedFilters);
+//     console.log("Parsed search filters:", parsedSearchFilters);
+
+//     const matchStage = {};
+//     const searchStage = {};
+//     const postMatchStage = [];
+
+//     // Guest count filter
+//     if (parsedFilters["guestCount"] && parsedFilters["guestCount"] > 0) {
+//       matchStage.maxGuests = { $gte: parseInt(parsedFilters["guestCount"]) };
+//     }
+
+//     // Bathroom filter
+//     if (parsedSearchFilters?.ranges?.bathrooms) {
+//       const min = parseInt(parsedSearchFilters.ranges.bathrooms.min);
+//       const max = parseInt(parsedSearchFilters.ranges.bathrooms.max);
+//       if (!isNaN(min) && !isNaN(max)) {
+//         searchStage.washrooms = { $gte: min, $lte: max };
+//       }
+//     }
+
+//     // Rooms filter
+//     if (parsedSearchFilters?.ranges?.rooms) {
+//       const min = parseInt(parsedSearchFilters.ranges.rooms.min);
+//       const max = parseInt(parsedSearchFilters.ranges.rooms.max);
+//       if (!isNaN(min) && !isNaN(max)) {
+//         searchStage["rooms.number"] = { $gte: min, $lte: max };
+//       }
+//     }
+
+//     // People filter
+//     if (parsedSearchFilters?.ranges?.peoples) {
+//       const min = parseInt(parsedSearchFilters.ranges.peoples.min);
+//       const max = parseInt(parsedSearchFilters.ranges.peoples.max);
+//       if (!isNaN(min) && !isNaN(max)) {
+//         searchStage.maxGuests = { $gte: min, $lte: max };
+//       }
+//     }
+
+//     // Dogs filter
+//     if (parsedSearchFilters?.ranges?.dogs) {
+//       const min = parseInt(parsedSearchFilters.ranges.dogs.min);
+//       const max = parseInt(parsedSearchFilters.ranges.dogs.max);
+//       if (!isNaN(min) && !isNaN(max)) {
+//         searchStage.maxDogs = { $gte: min, $lte: max };
+//       }
+//     }
+
+//     // Price filter
+//     if (parsedSearchFilters?.ranges?.price) {
+//       const { min, max } = parsedSearchFilters.ranges.price;
+//       console.log("Price filter:", min, max);
+//       searchStage.price = {};
+//       if (min !== undefined && min !== null && !isNaN(parseFloat(min))) {
+//         searchStage.price.$gte = parseFloat(min);
+//       }
+//       if (max !== undefined && max !== null && !isNaN(parseFloat(max))) {
+//         searchStage.price.$lte = parseFloat(max);
+//       }
+//       // Remove price filter if no valid min/max
+//       if (Object.keys(searchStage.price).length === 0) {
+//         delete searchStage.price;
+//       }
+//     }
+
+//     // Legacy price filters (fallback)
+//     if (priceMin !== undefined && !isNaN(parseFloat(priceMin))) {
+//       if (!searchStage.price) searchStage.price = {};
+//       searchStage.price.$gte = parseFloat(priceMin);
+//     }
+//     if (priceMax !== undefined && !isNaN(parseFloat(priceMax))) {
+//       if (!searchStage.price) searchStage.price = {};
+//       searchStage.price.$lte = parseFloat(priceMax);
+//     }
+
+//     // Date range filtering
+//     if (parsedFilters?.dateRange?.start && parsedFilters?.dateRange?.end) {
+//       const startDate = parsedFilters.dateRange.start;
+//       const endDate = parsedFilters.dateRange.end;
+//       const requiredDates = [];
+
+//       const start = new Date(startDate);
+//       const end = new Date(endDate);
+
+//       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+//         requiredDates.push(new Date(d).toISOString().split("T")[0]);
+//       }
+
+//       if (requiredDates.length > 0) {
+//         postMatchStage.push({
+//           $match: {
+//             dates: { $all: requiredDates }
+//           }
+//         });
+//       }
+//     }
+
+//     const selectedValues = parsedSearchFilters?.selected || [];
+
+//     console.log("Final match stage:", matchStage);
+//     console.log("Final search stage:", searchStage);
+//     console.log("Selected values:", selectedValues);
+
+//     // Build aggregation pipeline
+//     const pipeline = [
+//       {
+//         $geoNear: {
+//           near: { 
+//             type: "Point", 
+//             coordinates: [parseFloat(lng), parseFloat(lat)] 
+//           },
+//           distanceField: "distanceInfo",
+//           maxDistance: parseInt(radius), // Use the radius parameter
+//           spherical: true,
+//           distanceMultiplier: 1 // Distance in meters
+//         }
+//       }
+//     ];
+
+//     // Add match stages only if they have conditions
+//     if (Object.keys(matchStage).length > 0) {
+//       pipeline.push({ $match: matchStage });
+//     }
+
+//     if (Object.keys(searchStage).length > 0) {
+//       pipeline.push({ $match: searchStage });
+//     }
+
+//     // Add filter lookup and matching
+//     pipeline.push(
+//       {
+//         $lookup: {
+//           from: "filters",
+//           localField: "filters",
+//           foreignField: "_id",
+//           as: "filterDetails"
+//         }
+//       }
+//     );
+
+//     // Only add filter matching if we have selected values
+//     if (selectedValues.length > 0) {
+//       pipeline.push(
+//         {
+//           $addFields: {
+//             matchingFilters: {
+//               $reduce: {
+//                 input: "$filterDetails",
+//                 initialValue: [],
+//                 in: {
+//                   $concatArrays: [
+//                     "$$value",
+//                     {
+//                       $reduce: {
+//                         input: { $ifNull: ["$$this.subsections", []] },
+//                         initialValue: [],
+//                         in: {
+//                           $concatArrays: [
+//                             "$$value",
+//                             {
+//                               $reduce: {
+//                                 input: { $ifNull: ["$$this.filters", []] },
+//                                 initialValue: [],
+//                                 in: {
+//                                   $concatArrays: [
+//                                     "$$value",
+//                                     [{ name: "$$this.name" }]
+//                                   ]
+//                                 }
+//                               }
+//                             },
+//                             {
+//                               $reduce: {
+//                                 input: { $ifNull: ["$$this.subsubsections", []] },
+//                                 initialValue: [],
+//                                 in: {
+//                                   $concatArrays: [
+//                                     "$$value",
+//                                     {
+//                                       $reduce: {
+//                                         input: { $ifNull: ["$$this.filters", []] },
+//                                         initialValue: [],
+//                                         in: {
+//                                           $concatArrays: [
+//                                             "$$value",
+//                                             [{ name: "$$this.name" }]
+//                                           ]
+//                                         }
+//                                       }
+//                                     }
+//                                   ]
+//                                 }
+//                               }
+//                             }
+//                           ]
+//                         }
+//                       }
+//                     }
+//                   ]
+//                 }
+//               }
+//             }
+//           }
+//         },
+//         {
+//           $match: {
+//             $expr: {
+//               $gt: [
+//                 {
+//                   $size: {
+//                     $filter: {
+//                       input: "$matchingFilters",
+//                       as: "filter",
+//                       cond: { $in: ["$$filter.name", selectedValues] }
+//                     }
+//                   }
+//                 },
+//                 0
+//               ]
+//             }
+//           }
+//         }
+//       );
+//     }
+
+//     // Add post-match stages (like date filtering)
+//     pipeline.push(...postMatchStage);
+
+//     // Add facet for pagination
+//     pipeline.push({
+//       $facet: {
+//         data: [
+//           { $skip: skip },
+//           { $limit: limit }
+//         ],
+//         totalCount: [
+//           { $count: 'count' }
+//         ]
+//       }
+//     });
+
+//     console.log("Final pipeline:", JSON.stringify(pipeline, null, 2));
+
+//     const listingsAgg = await Listing.aggregate(pipeline);
+
+//     const listings = listingsAgg[0]?.data || [];
+//     const total = listingsAgg[0]?.totalCount[0]?.count || 0;
+//     const totalPages = Math.ceil(total / limit);
+//     const hasMore = page < totalPages;
+
+//     console.log(`Found ${listings.length} listings out of ${total} total`);
+
+//     return res.status(200).json({
+//       success: true,
+//       listings,
+//       total,
+//       totalPages,
+//       hasMore,
+//       page,
+//       limit,
+//       coordinates: { lng: parseFloat(lng), lat: parseFloat(lat) },
+//       radius: parseInt(radius)
+//     });
+
+//   } catch (error) {
+//     console.error("Error in getStreamedListings:", error);
+//     res.status(500).json({
+//       success: false,
+//       listings: [],
+//       total: 0,
+//       page: 1,
+//       totalPages: 0,
+//       hasMore: false,
+//       error: error.message,
+//     });
+//   }
+// };
+
 // exports.getStreamedListings = async (req, res) => {
 //   try {
 //     const limit = parseInt(req.query.limit) || 10;
@@ -360,186 +909,186 @@ exports.searchListingsByMap = async (req, res, next) => {
 //       searchFilters = {},
 //     } = req.query;
 //   //  await storeListingInRedis()
-//    const allListings = await getStoredListings()
+//   //  const allListings = await getStoredListings()
 //     const matchStage = {};
 //     const searchStage = {};
 //     const parsedFilters = JSON.parse(filters);
 //     const parsedSearchFilters = JSON.parse(searchFilters);
 //     console.log(parsedSearchFilters, searchFilters);
 //     // parse filter
-//     // if (parsedFilters["guestCount"]) {
-//     //   matchStage.maxGuests = { $gte: parseInt(parsedFilters["guestCount"]) };
-//     // }
+//     if (parsedFilters["guestCount"]) {
+//       matchStage.maxGuests = { $gte: parseInt(parsedFilters["guestCount"]) };
+//     }
 
 //     // // parse search filter
-//     // if (parsedSearchFilters?.ranges?.bathrooms) {
-//     //   const min = parseInt(parsedSearchFilters.ranges.bathrooms.min);
-//     //   const max = parseInt(parsedSearchFilters.ranges.bathrooms.max);
+//     if (parsedSearchFilters?.ranges?.bathrooms) {
+//       const min = parseInt(parsedSearchFilters.ranges.bathrooms.min);
+//       const max = parseInt(parsedSearchFilters.ranges.bathrooms.max);
 
-//     //   searchStage.washrooms = {
-//     //     $gte: min,
-//     //     $lte: max,
-//     //   };
-//     // }
-//     // if (parsedSearchFilters?.ranges?.rooms) {
-//     //   const min = parseInt(parsedSearchFilters.ranges.rooms.min);
-//     //   const max = parseInt(parsedSearchFilters.ranges.rooms.max);
+//       searchStage.washrooms = {
+//         $gte: min,
+//         $lte: max,
+//       };
+//     }
+//     if (parsedSearchFilters?.ranges?.rooms) {
+//       const min = parseInt(parsedSearchFilters.ranges.rooms.min);
+//       const max = parseInt(parsedSearchFilters.ranges.rooms.max);
 
-//     //   searchStage["rooms.number"] = { $gte: min, $lte: max };
-//     // }
-//     // if (parsedSearchFilters?.ranges?.peoples) {
-//     //   const min = parseInt(parsedSearchFilters.ranges.peoples.min);
-//     //   const max = parseInt(parsedSearchFilters.ranges.peoples.max);
+//       searchStage["rooms.number"] = { $gte: min, $lte: max };
+//     }
+//     if (parsedSearchFilters?.ranges?.peoples) {
+//       const min = parseInt(parsedSearchFilters.ranges.peoples.min);
+//       const max = parseInt(parsedSearchFilters.ranges.peoples.max);
 
-//     //   searchStage.maxGuests = {
-//     //     $gte: min,
-//     //     $lte: max,
-//     //   };
-//     // }
-//     // if (parsedSearchFilters?.ranges?.dogs) {
-//     //   const min = parseInt(parsedSearchFilters.ranges.dogs.min);
-//     //   const max = parseInt(parsedSearchFilters.ranges.dogs.max);
+//       searchStage.maxGuests = {
+//         $gte: min,
+//         $lte: max,
+//       };
+//     }
+//     if (parsedSearchFilters?.ranges?.dogs) {
+//       const min = parseInt(parsedSearchFilters.ranges.dogs.min);
+//       const max = parseInt(parsedSearchFilters.ranges.dogs.max);
 
-//     //   searchStage.maxDogs = {
-//     //     $gte: min,
-//     //     $lte: max,
-//     //   };
-//     // }
+//       searchStage.maxDogs = {
+//         $gte: min,
+//         $lte: max,
+//       };
+//     }
 
-//     // const listings = await Listing.aggregate([
-//     //   {
-//     //     $geoNear: {
-//     //       near: {
-//     //         type: "Point",
-//     //         coordinates: [parseFloat(lng), parseFloat(lat)],
-//     //       },
-//     //       distanceField: "distance",
-//     //       maxDistance: 150000, // 150 km
-//     //       spherical: true,
-//     //     },
-//     //   },
-//     //   {
-//     //     $addFields: {
-//     //       distanceInfo: { $round: [{ $divide: ["$distance", 1000] }, 2] },
-//     //     },
-//     //   },
-//     //   ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
-//     //   ...(Object.keys(searchStage).length > 0 ? [{ $match: searchStage }] : []),
-//     //   {
-//     //     $lookup: {
-//     //       from: "filters", // Name of the filters collection
-//     //       localField: "filters", // Field in listings (likely an ObjectId or array of ids)
-//     //       foreignField: "_id", // Field in filters collection
-//     //       as: "filters",
-//     //     },
-//     //   },
-//     //   {
-//     //     $unwind: "$filters",
-//     //   },
-//     //   ...(selectedValues.length > 0
-//     //     ? [
-//     //         {
-//     //           $match: {
-//     //             $expr: {
-//     //               $gt: [
-//     //                 {
-//     //                   $size: {
-//     //                     $filter: {
-//     //                       input: {
-//     //                         $reduce: {
-//     //                           input: "$filters.subsections",
-//     //                           initialValue: [],
-//     //                           in: {
-//     //                             $concatArrays: [
-//     //                               "$$value",
-//     //                               {
-//     //                                 $reduce: {
-//     //                                   input: {
-//     //                                     $ifNull: ["$$this.filters", []],
-//     //                                   },
-//     //                                   initialValue: [],
-//     //                                   in: {
-//     //                                     $concatArrays: [
-//     //                                       "$$value",
-//     //                                       [{ name: "$$this.name" }],
-//     //                                     ],
-//     //                                   },
-//     //                                 },
-//     //                               },
-//     //                               {
-//     //                                 $reduce: {
-//     //                                   input: {
-//     //                                     $ifNull: ["$$this.subsubsections", []],
-//     //                                   },
-//     //                                   initialValue: [],
-//     //                                   in: {
-//     //                                     $concatArrays: [
-//     //                                       "$$value",
-//     //                                       {
-//     //                                         $reduce: {
-//     //                                           input: {
-//     //                                             $ifNull: ["$$this.filters", []],
-//     //                                           },
-//     //                                           initialValue: [],
-//     //                                           in: {
-//     //                                             $concatArrays: [
-//     //                                               "$$value",
-//     //                                               [{ name: "$$this.name" }],
-//     //                                             ],
-//     //                                           },
-//     //                                         },
-//     //                                       },
-//     //                                     ],
-//     //                                   },
-//     //                                 },
-//     //                               },
-//     //                             ],
-//     //                           },
-//     //                         },
-//     //                       },
-//     //                       as: "flattened",
-//     //                       cond: { $in: ["$$flattened.name", selectedValues] },
-//     //                     },
-//     //                   },
-//     //                 },
-//     //                 0,
-//     //               ],
-//     //             },
-//     //           },
-//     //         },
-//     //       ]
-//     //     : []),
-//     //   {
-//     //     $sort: {
-//     //       distance: 1,
-//     //     },
-//     //   },
-//     //   {
-//     //     $facet: {
-//     //       data: [{ $skip: skip }, { $limit: limit }],
-//     //       totalCount: [{ $count: "count" }],
-//     //     },
-//     //   },
-//     // ]);
+//     const listings = await Listing.aggregate([
+//       {
+//         $geoNear: {
+//           near: {
+//             type: "Point",
+//             coordinates: [parseFloat(lng), parseFloat(lat)],
+//           },
+//           distanceField: "distance",
+//           maxDistance: 150000, // 150 km
+//           spherical: true,
+//         },
+//       },
+//       {
+//         $addFields: {
+//           distanceInfo: { $round: [{ $divide: ["$distance", 1000] }, 2] },
+//         },
+//       },
+//       ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
+//       ...(Object.keys(searchStage).length > 0 ? [{ $match: searchStage }] : []),
+//       {
+//         $lookup: {
+//           from: "filters", // Name of the filters collection
+//           localField: "filters", // Field in listings (likely an ObjectId or array of ids)
+//           foreignField: "_id", // Field in filters collection
+//           as: "filters",
+//         },
+//       },
+//       {
+//         $unwind: "$filters",
+//       },
+//       ...(selectedValues.length > 0
+//         ? [
+//             {
+//               $match: {
+//                 $expr: {
+//                   $gt: [
+//                     {
+//                       $size: {
+//                         $filter: {
+//                           input: {
+//                             $reduce: {
+//                               input: "$filters.subsections",
+//                               initialValue: [],
+//                               in: {
+//                                 $concatArrays: [
+//                                   "$$value",
+//                                   {
+//                                     $reduce: {
+//                                       input: {
+//                                         $ifNull: ["$$this.filters", []],
+//                                       },
+//                                       initialValue: [],
+//                                       in: {
+//                                         $concatArrays: [
+//                                           "$$value",
+//                                           [{ name: "$$this.name" }],
+//                                         ],
+//                                       },
+//                                     },
+//                                   },
+//                                   {
+//                                     $reduce: {
+//                                       input: {
+//                                         $ifNull: ["$$this.subsubsections", []],
+//                                       },
+//                                       initialValue: [],
+//                                       in: {
+//                                         $concatArrays: [
+//                                           "$$value",
+//                                           {
+//                                             $reduce: {
+//                                               input: {
+//                                                 $ifNull: ["$$this.filters", []],
+//                                               },
+//                                               initialValue: [],
+//                                               in: {
+//                                                 $concatArrays: [
+//                                                   "$$value",
+//                                                   [{ name: "$$this.name" }],
+//                                                 ],
+//                                               },
+//                                             },
+//                                           },
+//                                         ],
+//                                       },
+//                                     },
+//                                   },
+//                                 ],
+//                               },
+//                             },
+//                           },
+//                           as: "flattened",
+//                           cond: { $in: ["$$flattened.name", selectedValues] },
+//                         },
+//                       },
+//                     },
+//                     0,
+//                   ],
+//                 },
+//               },
+//             },
+//           ]
+//         : []),
+//       {
+//         $sort: {
+//           distance: 1,
+//         },
+//       },
+//       {
+//         $facet: {
+//           data: [{ $skip: skip }, { $limit: limit }],
+//           totalCount: [{ $count: "count" }],
+//         },
+//       },
+//     ]);
 
 
 
 //     // console.log(listings);
     
 
-//     const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
-//   const toRadians = (deg) => deg * (Math.PI / 180);
-//   const R = 6371; // Earth radius in km
-//   const dLat = toRadians(lat2 - lat1);
-//   const dLon = toRadians(lon2 - lon1);
-//   const a =
-//     Math.sin(dLat / 2) ** 2 +
-//     Math.cos(toRadians(lat1)) *
-//     Math.cos(toRadians(lat2)) *
-//     Math.sin(dLon / 2) ** 2;
-//   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-//   return R * c;
-// };
+// //     const calculateDistanceKm = (lat1, lon1, lat2, lon2) => {
+// //   const toRadians = (deg) => deg * (Math.PI / 180);
+// //   const R = 6371; // Earth radius in km
+// //   const dLat = toRadians(lat2 - lat1);
+// //   const dLon = toRadians(lon2 - lon1);
+// //   const a =
+// //     Math.sin(dLat / 2) ** 2 +
+// //     Math.cos(toRadians(lat1)) *
+// //     Math.cos(toRadians(lat2)) *
+// //     Math.sin(dLon / 2) ** 2;
+// //   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+// //   return R * c;
+// // };
 
 
 // // const allListings = JSON.parse(cachedListings);
@@ -603,12 +1152,12 @@ exports.searchListingsByMap = async (req, res, next) => {
 
 
 //     // const listings = result[0].data;
-//     const total = selectedFiltered.length || 0;
+//     const total = listings.length || 0;
 //     const totalPages = Math.ceil(total / limit) || 1;
 //     const hasMore = page < totalPages;
 //     res.status(200).json({
 //       success: true,
-//       listings: selectedFiltered,
+//       listings: listings,
 //       total,
 //       totalPages,
 //       hasMore,
@@ -885,109 +1434,109 @@ exports.searchListingsByMap = async (req, res, next) => {
 //   }
 // };
 
-exports.getStreamedListings = async (req, res, next) => {
-  try {
-    const {
-      limit = 12,
-      skip = 0,
-      page = 1,
-      lat,
-      lng,
-      radius = 500,
-      people,
-      dogs,
-      filters: filtersParam,
-      priceMin,
-      priceMax,
-      searchFilters
-    } = req.query;
-    // await deleteListingInRedis()
-// await storeListingInRedis()
-    console.log("Search filters:", searchFilters);
-    console.log("Raw filters param:", filtersParam);
-    console.log("Pagination params:", { limit, skip, page });
+// exports.getStreamedListings = async (req, res, next) => {
+//   try {
+//     const {
+//       limit = 12,
+//       skip = 0,
+//       page = 1,
+//       lat,
+//       lng,
+//       radius = 500,
+//       people,
+//       dogs,
+//       filters: filtersParam,
+//       priceMin,
+//       priceMax,
+//       searchFilters
+//     } = req.query;
+//     // await deleteListingInRedis()
+// // await storeListingInRedis()
+//     console.log("Search filters:", searchFilters);
+//     console.log("Raw filters param:", filtersParam);
+//     console.log("Pagination params:", { limit, skip, page });
 
-    // Initialize filters
-    let filters = {};
+//     // Initialize filters
+//     let filters = {};
 
-    // Process filters parameter
-    if (filtersParam) {
-      try {
-        let parsedFilters;
-        if (typeof filtersParam === 'string') {
-          let cleanedParam = filtersParam;
-          if (cleanedParam.startsWith('"') && cleanedParam.endsWith('"')) {
-            cleanedParam = cleanedParam.slice(1, -1);
-          }
-          cleanedParam = cleanedParam.replace(/\\"/g, '"');
-          parsedFilters = JSON.parse(cleanedParam);
-        } else {
-          parsedFilters = filtersParam;
-        }
+//     // Process filters parameter
+//     if (filtersParam) {
+//       try {
+//         let parsedFilters;
+//         if (typeof filtersParam === 'string') {
+//           let cleanedParam = filtersParam;
+//           if (cleanedParam.startsWith('"') && cleanedParam.endsWith('"')) {
+//             cleanedParam = cleanedParam.slice(1, -1);
+//           }
+//           cleanedParam = cleanedParam.replace(/\\"/g, '"');
+//           parsedFilters = JSON.parse(cleanedParam);
+//         } else {
+//           parsedFilters = filtersParam;
+//         }
 
-        if (parsedFilters && typeof parsedFilters === 'object') {
-          filters = parsedFilters;
-          console.log("Successfully parsed filters:", filters);
-        }
-      } catch (error) {
-        console.error("Error parsing filters:", error, filtersParam);
-      }
-    }
+//         if (parsedFilters && typeof parsedFilters === 'object') {
+//           filters = parsedFilters;
+//           console.log("Successfully parsed filters:", filters);
+//         }
+//       } catch (error) {
+//         console.error("Error parsing filters:", error, filtersParam);
+//       }
+//     }
 
-    // Setup location
-    const location = lat && lng ? {
-      lat: parseFloat(lat),
-      lng: parseFloat(lng)
-    } : null;
+//     // Setup location
+//     const location = lat && lng ? {
+//       lat: parseFloat(lat),
+//       lng: parseFloat(lng)
+//     } : null;
 
-    // Add guest and dog count to filters
-    if (people) filters.guestCount = parseInt(people);
-    if (dogs) filters.dogCount = parseInt(dogs);
+//     // Add guest and dog count to filters
+//     if (people) filters.guestCount = parseInt(people);
+//     if (dogs) filters.dogCount = parseInt(dogs);
 
-    // Add price range
-    let priceRangeObj = {};
-    if (priceMin) priceRangeObj.min = parseInt(priceMin);
-    if (priceMax) priceRangeObj.max = parseInt(priceMax);
-    if (Object.keys(priceRangeObj).length > 0) {
-      filters.priceRange = priceRangeObj;
-    }
+//     // Add price range
+//     let priceRangeObj = {};
+//     if (priceMin) priceRangeObj.min = parseInt(priceMin);
+//     if (priceMax) priceRangeObj.max = parseInt(priceMax);
+//     if (Object.keys(priceRangeObj).length > 0) {
+//       filters.priceRange = priceRangeObj;
+//     }
 
-    console.log("Processed filters:", JSON.stringify(filters, null, 2));
+//     console.log("Processed filters:", JSON.stringify(filters, null, 2));
 
-    // Get listings from service
-    const results = await listingService.getStreamedListings({
-      limit: parseInt(limit),
-      skip: parseInt(skip),
-      page: parseInt(page),
-      filters,
-      location,
-      radius: parseFloat(radius),
-      searchFilters
-    });
+//     // Get listings from service
+//     const results = await listingService.getStreamedListings({
+//       limit: parseInt(limit),
+//       skip: parseInt(skip),
+//       page: parseInt(page),
+//       filters,
+//       location,
+//       radius: parseFloat(radius),
+//       searchFilters
+//     });
 
-    // Return response
-    res.status(200).json({
-      success: true,
-      listings: results.listings,
-      total: results.total,
-      page: results.page,
-      totalPages: results.totalPages,
-      hasMore: results.hasMore
-    });
+//     // Return response
+//     res.status(200).json({
+//       success: true,
+//       listings: results.listings,
+//       total: results.total,
+//       page: results.page,
+//       totalPages: results.totalPages,
+//       hasMore: results.hasMore
+//     });
 
-  } catch (error) {
-    console.error("Error fetching streamed listings:", error);
-    res.status(200).json({
-      success: true,
-      listings: [],
-      total: 0,
-      page: 1,
-      totalPages: 0,
-      hasMore: false,
-      error: error.message
-    });
-  }
-};
+//   } catch (error) {
+//     console.error("Error fetching streamed listings:", error);
+//     res.status(200).json({
+//       success: true,
+//       listings: [],
+//       total: 0,
+//       page: 1,
+//       totalPages: 0,
+//       hasMore: false,
+//       error: error.message
+//     });
+//   }
+// };
 /**
  * Get a single listing by ID
  * For individual fetching during stream loading

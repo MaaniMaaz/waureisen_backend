@@ -715,7 +715,7 @@ exports.getStreamedListings = async (params) => {
 
     // Apply location filtering
     if (location && location.lat && location.lng) {
-      const radiusInMeters = parseFloat(500) * 1000;
+      const radiusInMeters = parseFloat(150) * 1000;
       
       filteredListings = filteredListings
         .map(listing => {

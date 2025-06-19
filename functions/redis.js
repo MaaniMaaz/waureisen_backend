@@ -65,22 +65,26 @@ const deleteRedisList = async () => {
 //   }
 // };
 const storeListingInRedis = async () => {
+  const PROGRESS_KEY = "listing:progress"; // Redis key to track progress
+  const LOCK_KEY = "listing:lock";         // Optional Redis lock key
+
+  // Optional locking
   const isLocked = await redis.get(LOCK_KEY);
   if (isLocked) {
     console.log("🚫 Redis update already in progress. Skipping...");
     return;
   }
-
-  await redis.set(LOCK_KEY, "1", "EX", 300); // lock for 5 minutes
+  await redis.set(LOCK_KEY, "1", "EX", 300); // Lock for 5 mins
 
   try {
-    // await redis.del("listings");
-     const total = await Listing.countDocuments();
+    const total = await Listing.countDocuments();
     const totalPages = Math.ceil(total / BATCH_SIZE);
+    const savedPage = parseInt(await redis.get(PROGRESS_KEY)) || 0;
 
     console.log(`📦 Total Listings: ${total}, Pages: ${totalPages}`);
+    console.log(`▶️ Resuming from page: ${savedPage}`);
 
-    for (let page = 0; page < totalPages; page++) {
+    for (let page = savedPage; page < totalPages; page++) {
       const listings = await Listing.find()
         .populate("owner filters")
         .skip(page * BATCH_SIZE)
@@ -98,28 +102,33 @@ const storeListingInRedis = async () => {
             price = item?.pricePerNight?.price || 0;
           }
 
-          return {
-            ...item.toObject(),
-            price,
-            dates,
-          };
+          const updated = await Listing.findByIdAndUpdate(
+            item._id,
+            { $set: { price, dates } },
+            { new: true }
+          );
+
+          if (updated) console.log("✅ Updated:", item._id);
+          return updated;
         })
       );
 
-      // Push each listing into Redis list
-      for (const listing of processedListings) {
-        await redis.rpush(REDIS_KEY, JSON.stringify(listing));
-      }
+      console.log(`✅ Processed ${processedListings.length} listings on page ${page + 1}/${totalPages}`);
 
-      console.log(`✅ Pushed ${processedListings.length} records from page ${page + 1}/${totalPages}`);
+      // ✅ Save progress after successful page
+      await redis.set(PROGRESS_KEY, page + 1);
     }
 
-    console.log("🎉 All listings stored in Redis successfully.");
-    // proceed with storing
+    // ✅ Reset progress when done
+    await redis.del(PROGRESS_KEY);
+    console.log("🎉 All listings updated successfully.");
+  } catch (err) {
+    console.error("❌ Error in storeListingInRedis:", err.message || err);
   } finally {
-    await redis.del(LOCK_KEY); // release lock
+    await redis.del(LOCK_KEY); // Release lock
   }
 };
+
 
 // 📤 Retrieve all stored listings from Redis
 const getStoredListings = async () => {
@@ -163,8 +172,9 @@ const getListingPrices = async (accommodationCode, pax, los) => {
     const allPrices = response.data?.priceList?.prices?.price || [];
 
     const filtered = allPrices.find(
-      (price) => price.duration === 7 && price.checkInDate === formattedDate
+      (price) => price.duration === 7 && price.checkInDate === checkInDate
     );
+
 
     return filtered?.price || 0;
   } catch (err) {
@@ -181,6 +191,21 @@ const getListingAvailableDates = async (accommodationCode) => {
     );
 
     return response?.data?.availableDates?.map(item => item?.checkInDate) || [];
+  } catch (err) {
+    console.error("❌ Error in getListingAvailableDates:", err.message || err);
+    return [];
+  }
+};
+
+// 📅 Fetch listing availability dates from your backend
+const updateListing = async (id , payload) => {
+  try {
+    const response = await axios.get(
+      `http://localhost:5000/api/listings/${id}`,
+      payload
+    );
+
+    return response?.data;
   } catch (err) {
     console.error("❌ Error in getListingAvailableDates:", err.message || err);
     return [];

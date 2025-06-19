@@ -29,13 +29,13 @@ const listingSchema = new mongoose.Schema({
     outside: { type: String },
   },
   
-  checkInTime: { type: Date },
-  checkOutTime: { type: Date },
+  checkInTime: { type: String ,required:false},
+  checkOutTime: { type: String ,required:false},
 
   location: {
     address : {
      type: String,
-     required: true 
+    //  required: true 
     },
 
     // TBD -- Apt, suite, building
@@ -50,8 +50,8 @@ const listingSchema = new mongoose.Schema({
 
 
   pricePerNight: { 
-    price: { type: Number, required: true, default: 0 },
-    currency: { type: String, required: true , default: 'CHF'},
+    price: { type: Number,  default: 0 },
+    currency: { type: String,  default: 'CHF'},
     discount: { type: Number, default: 0 },
     isDiscountActivate: { type: Boolean, default: false },
   }, 
@@ -139,7 +139,7 @@ additionalDoc: {
   status: {
     type: String,
     enum: ['draft','active', 'pending approval', 'rejected', 'closed', 'deleted'],
-    default: 'pending approval'
+    default: 'active'
   },
 houseRules:{},
   // TBD -- As we have all now in filters model -- Set According to the source and according to filters that user will add from the filter model 
@@ -184,8 +184,8 @@ houseRules:{},
     name: {
       type: String,
       enum: ['waureisen', 'interhome', 'europarcs', 'bergkultur'],
-      required: true,
-      default: 'waureisen',
+      // required: true,
+      default: 'interhome',
     },
     redirectLink: { type: String, default: null }, // Store URL if it's from an external platform  
   },
@@ -216,6 +216,12 @@ houseRules:{},
   filters: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Filter'
+  },
+  price:{
+    type:Number
+  },
+  dates:{
+    type:[]
   },
   // Reference to filter model
   // Selected filters for the listing

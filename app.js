@@ -134,7 +134,7 @@ console.log(event?.data?.receipt_url , event?.data?.object?.receipt_url , "recei
 );
 // cron job for redis listing
 const storeListingInRedisJob = new CronJob(
-  "0 1 * * *",
+  "0 3 * * *",
   async () => {
     console.log("redis job started");
     
