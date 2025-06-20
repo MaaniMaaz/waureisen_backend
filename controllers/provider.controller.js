@@ -138,6 +138,7 @@ exports.completeRegistration = async (req, res, next) => {
     res.status(200).json({
       message: "Provider registration completed successfully",
       provider: {
+        ...registrationData,
         id: updatedProvider._id,
         username: updatedProvider.username,
         email: updatedProvider.email,

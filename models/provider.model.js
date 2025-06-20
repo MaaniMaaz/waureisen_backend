@@ -16,7 +16,7 @@ const providerSchema = new mongoose.Schema({
 
   bio: { type: String },
 
-  
+  address:{type:{}},
   payoutDetails: {
 
     providerType: {
@@ -26,6 +26,7 @@ const providerSchema = new mongoose.Schema({
 
     country: { type: String },
   },
+  step: { type: Number },
   
   listings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
 

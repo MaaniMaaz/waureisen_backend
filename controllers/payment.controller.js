@@ -269,16 +269,21 @@ const getCardDetails = async (req, res) => {
 
 const createStripeAccount = async (req, res) => {
   try {
-    const account = await stripe.accounts.create({
-      type: "express",
-      email: req.body.email,
-    });
+    const {accountId} = req.body
+    let account;
+    if(!accountId){
+
+      account = await stripe.accounts.create({
+        type: "express",
+        email: req.body.email,
+      });
+    }
     console.log(account, "account ka data ", account?.details_submitted);
 
     const accountLink = await stripe.accountLinks.create({
-      account: account.id,
+      account: accountId || account.id,
       refresh_url: `https://waureisen.com/provider/registration?account=failed`,
-      return_url: `https://waureisen.com/provider/registration?account=${account.id}`,
+      return_url: `https://waureisen.com/provider/registration?account=${accountId || account.id}`,
       // refresh_url: `http://localhost:5173/provider/registration?account=failed`,
       // return_url: `http://localhost:5173/provider/registration?account=${account.id}`,
       type: "account_onboarding",
