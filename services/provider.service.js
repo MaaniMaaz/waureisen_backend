@@ -315,7 +315,7 @@ exports.completeProviderRegistration = async (providerId, data) => {
     providerId,
     {
       ...data,
-      registrationStatus: data?.step === 4 ? "complete" : "pending",
+      registrationStatus: data?.step === 4 ? "complete" : "incomplete",
       profileStatus: "pending verification",
       profileCompleted:data?.step === 4 ? true : false,
     },
