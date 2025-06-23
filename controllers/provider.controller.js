@@ -34,6 +34,7 @@ exports.signup = async (req, res, next) => {
       firstName,
       lastName,
       profileStatus: "not verified",
+      step:0
     });
 
     // Generate token
