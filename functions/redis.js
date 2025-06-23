@@ -187,7 +187,7 @@ const getListingPrices = async (accommodationCode, pax, los) => {
 const getListingAvailableDates = async (accommodationCode) => {
   try {
     const response = await axios.get(
-      `http://localhost:5000/api/interhome/availability/${accommodationCode}`
+      `https://waureisen-backend-rhp1.onrender.com/api/interhome/availability/${accommodationCode}`
     );
 
     return response?.data?.availableDates?.map(item => item?.checkInDate) || [];
@@ -201,7 +201,7 @@ const getListingAvailableDates = async (accommodationCode) => {
 const updateListing = async (id , payload) => {
   try {
     const response = await axios.get(
-      `http://localhost:5000/api/listings/${id}`,
+      `https://waureisen-backend-rhp1.onrender.com/api/listings/${id}`,
       payload
     );
 
