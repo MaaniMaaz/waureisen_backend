@@ -166,7 +166,7 @@ const endOfDay = moment().endOf("day").utc().toDate();
     for (const booking of bookings) {
       try {
         const response = await axios.post(
-          "http://localhost:5000/api/payment/transfer-payment",
+          "https://waureisen-backend-rhp1.onrender.com/api/payment/transfer-payment",
           {
             connectedAccountId: booking?.providerAccountId,
             amount: booking?.totalPrice,
