@@ -69,6 +69,7 @@ const storeListingInRedis = async () => {
   const LOCK_KEY = "listing:lock";         // Optional Redis lock key
 
   // Optional locking
+  // const isLockedel = await redis.del(LOCK_KEY);
   const isLocked = await redis.get(LOCK_KEY);
   if (isLocked) {
     console.log("🚫 Redis update already in progress. Skipping...");
@@ -96,10 +97,11 @@ const storeListingInRedis = async () => {
           let dates = [];
 
           if (item?.source?.name === "interhome") {
-            price = await getListingPrices(item?.Code, 2, true);
+            price = await getListingPrices(item?.Code, 2, true) / 7;
             dates = await getListingAvailableDates(item?.Code);
           } else {
-            price = item?.pricePerNight?.price || 0;
+            price = item?.pricePerNight?.discount || item?.pricePerNight?.price || 0;
+            dates = []
           }
 
           const updated = await Listing.findByIdAndUpdate(
