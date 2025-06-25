@@ -31,7 +31,8 @@ const userSchema = new mongoose.Schema({
   
   // Newsletter subscription status
   newsletter: {
-    type:Boolean
+    type:Boolean,
+    default:false
   },
   
   // Added dogs array
