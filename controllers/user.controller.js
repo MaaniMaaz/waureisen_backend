@@ -9,7 +9,7 @@ const { sendPasswordResetToken } = require("../services/email.service");
 // Add these new methods at the beginning of the file
 exports.signup = async (req, res, next) => {
   try {
-    const { username, email, password, phoneNumber, firstName, lastName } =
+    const { username, email, password, phoneNumber, firstName, lastName,subscribeNewsletter } =
       req.body;
 
     // Check if user already exists
@@ -35,6 +35,7 @@ exports.signup = async (req, res, next) => {
       terms: ["default_terms"], // Required field as per model
       profileStatus: "verified",
       customerNumber,
+      newsletter:subscribeNewsletter 
     });
 
     // Generate token
