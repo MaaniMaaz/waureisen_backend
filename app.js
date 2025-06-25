@@ -145,7 +145,7 @@ await storeListingInRedis()
   true,
   "UTC"
 )
-storeListingInRedisJob.start()
+// storeListingInRedisJob.start()
 
 // cron job for transfer payment
 const scheduleTransferPaymnetJob = new CronJob(
