@@ -190,6 +190,27 @@ router.get('/availability/:accommodationCode', async (req, res) => {
 
 
 
+router.get("/vacancies/:code" , async (req,res) => {
+  try {
+    let {code} = req.params
+     const response = await axios.get(`https://ws.interhome.com/ih/b2b/V0100/vacancy/${code}`, {
+    
+      headers: {
+        'Token': 'XD1mZXqcC6',
+        'PartnerId': 'CH1002557'
+      }
+    });
+   res.status(200).json({
+  message: "API successful",
+  data: response.data
+});
+
+  }catch (error){
+     console.error('Error fetching Interhome availability:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+})
+
 router.get("/accommodation/all" , async (req,res) => {
   try {
      const response = await axios.get(`https://ws.interhome.com/ih/b2b/V0100/accommodation/list`, {

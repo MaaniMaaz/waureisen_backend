@@ -2,6 +2,7 @@ const listingService = require("../services/listing.service");
 const Listing = require("../models/listing.model");
 const Filter = require("../models/filter.model");
 const {storeListingInRedis,getStoredListings } = require("../functions/redis");
+const UnavailableDate = require("../models/unavailableDate.model");
 
 // Controller methods
 exports.getAllListings = async (req, res, next) => {
@@ -1724,3 +1725,21 @@ exports.getListingDiagnostics = async (req, res, next) => {
     });
   }
 };
+
+exports.getUnavailalbleDates = async (req,res ) => {
+  try{
+    const {id} = req.params
+ const response = await UnavailableDate.find({listing:id }).sort({ date: 1 });
+  res.status(200).json({
+      success: true,
+      data:response,
+    });
+  }catch(error){
+     console.error("Error getting listing diagnostics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error getting listing diagnostics",
+      error: error.message,
+    });
+  }
+}

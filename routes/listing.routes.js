@@ -30,5 +30,6 @@ router.put('/:id', listingController.updateListing);
 router.delete('/:id', listingController.deleteListing);
 
 router.get('/diagnostics', listingController.getListingDiagnostics);
+router.get('/unavailable-dates/:id', listingController.getUnavailalbleDates);
 
 module.exports = router;
