@@ -258,4 +258,32 @@ router.get("/accommodation/detail/:id", async (req, res) => {
   }
 });
 
+router.post("/accommodation/price", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const response = await axios.post(`https://ws.interhome.com/ih/b2b/V0100/booking/checkPrice/final`,req.body, {
+      
+      headers: {
+        'Token': 'XD1mZXqcC6',
+        'PartnerId': 'CH1002557'
+      }
+    });
+
+    console.log(`✅ Detail fetched for ID: ${id}`, response.data);
+
+    res.status(200).json({
+      message: "API successful",
+      data: response.data
+    });
+
+  } catch (error) {
+    console.error(`❌ Error fetching detail for ID: ${req.params.id}`, error.message);
+
+    res.status(500).json({
+      error: error.message || "Unknown error occurred"
+    });
+  }
+});
+
 module.exports = router;
