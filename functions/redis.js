@@ -95,10 +95,11 @@ const storeListingInRedis = async () => {
         listings.map(async (item) => {
           let price = 0;
           let dates = [];
-
+          
           if (item?.source?.name === "interhome") {
-            price = await getListingPrices(item?.Code, 2, true) / 7;
-            dates = await getListingAvailableDates(item?.Code);
+            let response = await getListingAvailableDates(item?.Code);
+           dates= response?.dates
+           price= response?.price
           } else {
             price = item?.pricePerNight?.discount || item?.pricePerNight?.price || 0;
             dates = []
@@ -150,35 +151,19 @@ const getStoredListings = async () => {
 };
 
 // 💰 Fetch listing price from Interhome API
-const getListingPrices = async (accommodationCode, pax, los) => {
+const getListingPrices = async (data) => {
   try {
-    const checkInDate = moment().format("YYYY-MM-DD");
 
-    const response = await axios.get(
-      `https://ws.interhome.com/ih/b2b/V0100/accommodation/pricelistalldur/${accommodationCode}`,
-      {
-        params: {
-          SalesOffice: "0505",
-          Currency: "CHF",
-          Los: los,
-          Pax: pax,
-        },
-        headers: {
-          Token: "XD1mZXqcC6",
-          PartnerId: "CH1002557",
-        },
-      }
+    console.log(data , "price data");
+    const response = await axios.post(
+      `http://192.168.2.104:5002/api/interhome/accommodation/price`,data
+     
     );
+console.log(response?.data);
 
-    const formattedDate = new Date(`${checkInDate}T00:00:00Z`).toISOString().split("T")[0];
-    const allPrices = response.data?.priceList?.prices?.price || [];
+  
 
-    const filtered = allPrices.find(
-      (price) => price.duration === 7 && price.checkInDate === checkInDate
-    );
-
-
-    return filtered?.price || 0;
+    return response?.data?.data?.price?.regularRentalPrice;
   } catch (err) {
     console.error("❌ Error in getListingPrices:", err.message || err);
     return 0;
@@ -189,15 +174,55 @@ const getListingPrices = async (accommodationCode, pax, los) => {
 const getListingAvailableDates = async (accommodationCode) => {
   try {
     const response = await axios.get(
-      `https://waureisen-backend-rhp1.onrender.com/api/interhome/availability/${accommodationCode}`
+      `http://192.168.2.104:5002/api/interhome/vacancies/${accommodationCode}`
     );
 
-    return response?.data?.availableDates?.map(item => item?.checkInDate) || [];
+    const availableDates = response?.data?.data?.calendar?.day || [];
+const filtered = availableDates
+      .filter(
+        (item) =>
+          item?.state === "Y" &&
+          item?.allotment > 0 &&
+          item?.change !== "X"
+      )
+
+    const result = filtered
+      .map((item) => item?.date);
+
+//  price call start
+   const defaultDate = filtered[0]
+
+   console.log(defaultDate ," default date")
+    const firstDate = defaultDate?.date; 
+
+  const secondDate = new Date(defaultDate?.date);
+  secondDate.setDate(secondDate?.getDate() + defaultDate?.minimumStay);
+  const secondDateFormatted = secondDate?.toISOString()?.split('T')[0];
+ const data = {
+      BookingHeader: {
+        SalesOffice: "0505",
+        AccommodationCode: accommodationCode,
+        Adults: 1,
+        CheckIn:  firstDate,
+        CheckOut: 
+           secondDateFormatted,
+        Language: "EN",
+        Currency: "CHF",
+      },
+    };
+
+    const price =  await getListingPrices(data) / defaultDate?.minimumStay
+
+console.log( result,price ,"result dates hai k nahi");
+//  price call end
+      return {price:price,dates:result}
+
   } catch (err) {
     console.error("❌ Error in getListingAvailableDates:", err.message || err);
     return [];
   }
 };
+
 
 // 📅 Fetch listing availability dates from your backend
 const updateListing = async (id , payload) => {
