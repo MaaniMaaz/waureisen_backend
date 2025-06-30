@@ -139,7 +139,7 @@ additionalDoc: {
   status: {
     type: String,
     enum: ['draft','active', 'pending approval', 'rejected', 'closed', 'deleted'],
-    default: 'active'
+    default: 'pending approval'
   },
 houseRules:{},
   // TBD -- As we have all now in filters model -- Set According to the source and according to filters that user will add from the filter model 
