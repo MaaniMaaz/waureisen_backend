@@ -270,7 +270,32 @@ router.post("/accommodation/price", async (req, res) => {
       }
     });
 
-    console.log(`✅ Detail fetched for ID: ${id}`, response.data);
+
+    res.status(200).json({
+      message: "API successful",
+      data: response.data
+    });
+
+  } catch (error) {
+    console.error(`❌ Error fetching detail for ID: ${req.params.id}`, error.message);
+
+    res.status(500).json({
+      error: error.message || "Unknown error occurred"
+    });
+  }
+});
+
+router.post("/booking/check", async (req, res) => {
+  try {
+
+    const response = await axios.get(`https://ws.interhome.com/ih/b2b/V0100/booking/checkPossible`, {
+      params: req.body,
+      headers: {
+        'Token': 'XD1mZXqcC6',
+        'PartnerId': 'CH1002557'
+      }
+    });
+
 
     res.status(200).json({
       message: "API successful",
