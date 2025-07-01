@@ -185,7 +185,7 @@ houseRules:{},
       type: String,
       enum: ['waureisen', 'interhome', 'europarcs', 'bergkultur'],
       // required: true,
-      default: 'interhome',
+      default: 'waureisen',
     },
     redirectLink: { type: String, default: null }, // Store URL if it's from an external platform  
   },

@@ -1,4 +1,5 @@
 // controllers/provider.profile.controller.js
+const mongoose = require("mongoose");
 const Provider = require('../models/provider.model');
 const Booking = require('../models/booking.model');
 const Listing = require('../models/listing.model');
@@ -557,48 +558,71 @@ exports.getProviderTransactions = async (req, res, next) => {
 };
 
 
+
+
 exports.getUnavailableDates = async (req, res, next) => {
   try {
     const { listingId, startDate, endDate, providerId } = req.query;
-    
-    let targetProviderId;
-    
-    // Option 1: If providerId is directly provided in query
+
+    let targetProviderIds = [];
+
+    // If providerId(s) are given
     if (providerId) {
-      targetProviderId = providerId;
+      targetProviderIds = Array.isArray(providerId)
+        ? providerId
+        : providerId.split(',').map(id => id.trim());
     }
-    // Option 2: If listingId is provided, get provider through listing
+
+    // Else extract provider from listing(s)
     else if (listingId) {
-      const listing = await Listing.findById(listingId);
-      if (!listing) {
+      const listingIds = listingId.split(',').map(id => id.trim());
+
+      const listings = await Promise.all(
+        listingIds.map(id => Listing.findById(id))
+      );
+
+      const validListings = listings.filter(listing => listing);
+
+      if (!validListings.length) {
         return res.status(404).json({
           success: false,
-          message: "Listing not found"
+          message: "No listings found"
         });
       }
-      targetProviderId = listing.owner;
-    }
-    // Option 3: No provider identification provided
-    else {
+
+      targetProviderIds = [...new Set(validListings.map(listing => listing.owner.toString()))];
+    } else {
       return res.status(400).json({
         success: false,
         message: "Either providerId or listingId must be provided"
       });
     }
-    
+
+    // 🔑 Fix: Pass listingId as an array of ObjectIds if available
     const filters = {
-      listingId: listingId,
-      startDate: startDate,
-      endDate: endDate
+      listingId: listingId
+        ? listingId.split(',').map(id => new mongoose.Types.ObjectId(id.trim()))
+        : undefined,
+      startDate,
+      endDate
     };
-    
-    const unavailableDates = await providerService.getUnavailableDates(targetProviderId, filters);
-    res.json(unavailableDates);
+
+    const allUnavailableDates = await Promise.all(
+      targetProviderIds.map(pid => providerService.getUnavailableDates(pid, filters))
+    );
+
+    const mergedUnavailableDates = allUnavailableDates.flat();
+
+    res.json(mergedUnavailableDates);
   } catch (err) {
     console.error("Error in getUnavailableDates:", err);
     next(err);
   }
 };
+
+
+
+
   
   /**
    * Block dates for a listing
