@@ -262,7 +262,7 @@ router.post("/accommodation/price", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const response = await axios.post(`https://ws.interhome.com/ih/b2b/V0100/booking/checkPrice/final`,req.body, {
+    const response = await axios.post(`https://ws.interhome.com/ih/b2b/V0100/booking/checkPrice`,req.body, {
       
       headers: {
         'Token': 'XD1mZXqcC6',
