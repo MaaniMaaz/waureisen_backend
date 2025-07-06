@@ -367,7 +367,7 @@ exports.getStreamedListings = async (req, res) => {
     const parsedFilters = typeof filters === "string" ? JSON.parse(filters) : filters;
     const parsedSearchFilters =
       typeof searchFilters === "string" ? JSON.parse(searchFilters) : searchFilters;
-console.log(parsedSearchFilters)
+console.log(parsedSearchFilters , parsedFilters)
     const matchStage = {};
     const searchStage = {};
     const postMatchStage = [];
@@ -405,11 +405,11 @@ console.log(parsedSearchFilters)
     }
 
    if (parsedSearchFilters.ranges?.price) {
-  const { min, max } = parsedSearchFilters.ranges?.price;
+  const { min = 1, max } = parsedSearchFilters.ranges?.price;
   
   if (min !== undefined || max !== undefined) {
     searchStage.price = {};
-    if (min !== undefined) searchStage.price.$gte = parseFloat(min);
+    if (min !== undefined) searchStage.price.$gte = parseFloat(min || 1);
     if (max !== undefined) searchStage.price.$lte = parseFloat(max);
   }
 }
