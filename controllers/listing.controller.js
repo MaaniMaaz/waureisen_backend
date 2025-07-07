@@ -89,6 +89,9 @@ exports.updateListing = async (req, res, next) => {
             provider.email,
             updatedListing
           );
+
+         provider.listings.push(req.params.id);
+provider.save();
           console.log(
             `Listing approval email sent to provider ${provider.email}`
           );
