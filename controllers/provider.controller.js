@@ -200,14 +200,49 @@ exports.login = async (req, res, next) => {
   }
 };
 
+
 exports.getAllProviders = async (req, res, next) => {
   try {
-    const providers = await mongoose.model("Provider").find();
+    const userId = req.user.id; // make sure this is available
+
+    const providers = await mongoose.model("Provider").aggregate([
+      {
+        $lookup: {
+          from: "listings", // collection name in lowercase & plural
+          localField: "_id",
+          foreignField: "owner",
+          as: "allListings",
+        },
+      },
+    {
+    $addFields: {
+      myListing: {
+        $size: {
+          $filter: {
+            input: "$allListings",
+            as: "listing",
+            cond: {
+              $eq: ["$$listing.status", "active"],  // Only count active listings
+            },
+          },
+        },
+      },
+    },
+  },
+
+      // {
+      //   $project: {
+      //     listings: 0, // optionally exclude full listings array
+      //   },
+      // },
+    ]);
+
     res.json(providers);
   } catch (err) {
     next(err);
   }
 };
+
 
 exports.getProviderById = async (req, res, next) => {
   try {
