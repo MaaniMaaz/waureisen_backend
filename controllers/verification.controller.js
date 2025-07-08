@@ -1,4 +1,6 @@
 const emailService = require('../services/email.service');
+const User = require("../models/user.model");
+const Provider = require("../models/provider.model");
 
 // Send verification code to email
 exports.sendVerificationCode = async (req, res, next) => {
@@ -8,6 +10,15 @@ exports.sendVerificationCode = async (req, res, next) => {
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
     }
+
+      const existingProvider = await Provider.findOne({email:email});
+    const existingCustomer = await User.findOne({email:email});
+   
+    if (existingProvider || existingCustomer || email == "hallo@waureisen.com") {
+      return res.status(400).json({ message: "Email already in use, try a different email." });
+    }
+
+    
 
     if (!userType || !['user', 'provider'].includes(userType)) {
       return res.status(400).json({ message: 'Valid user type is required' });

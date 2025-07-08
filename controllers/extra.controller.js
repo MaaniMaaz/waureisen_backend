@@ -67,7 +67,7 @@ const EditListingWithFilter = async (req,res) => {
     
     // Step 1: Update the listing
     const updatedListing = await Listing.findOneAndUpdate(
-      {Code:listingId},
+      {_id:listingId},
       actualListingData,
       { new: true }
     );

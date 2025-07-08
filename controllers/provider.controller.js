@@ -18,8 +18,12 @@ exports.signup = async (req, res, next) => {
 
     // Check if provider already exists
     const existingProvider = await providerService.getProviderByEmail(email);
+    const existingCustomer = await User.findOne({email:email});
     if (existingProvider) {
       return res.status(400).json({ message: "Provider already exists" });
+    }
+    if (existingCustomer || email == "hallo@waureisen.com") {
+      return res.status(400).json({ message: "Email already in use, try a different email." });
     }
 
     // Hash password
