@@ -447,6 +447,11 @@ const listingsAgg = await Listing.aggregate([
       spherical: true
     },
   },
+  {
+$match:{
+  status:"active"
+}
+  },
   ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
   ...(Object.keys(searchStage).length > 0 ? [{ $match: searchStage }] : []),
   {
