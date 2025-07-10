@@ -850,10 +850,10 @@ exports.deleteProvider = async (providerId) => {
       console.log(`Deleted ${unavailableDatesResult.deletedCount} unavailable dates`);
 
       // Step 4: Delete all reviews for these listings
-      const reviewDeleteResult = await Review.deleteMany({
-        listing: { $in: listingIds }
-      });
-      console.log(`Deleted ${reviewDeleteResult.deletedCount} reviews`);
+      // const reviewDeleteResult = await Review.deleteMany({
+      //   listing: { $in: listingIds }
+      // });
+      // console.log(`Deleted ${reviewDeleteResult.deletedCount} reviews`);
 
       // Step 5: Delete all listings
       const listingDeleteResult = await Listing.deleteMany({
