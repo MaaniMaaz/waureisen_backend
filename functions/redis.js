@@ -4,7 +4,6 @@ const moment = require("moment");
 const Listing = require("../models/listing.model");
 
 const redis = new Redis();
-
 const BATCH_SIZE = 500;
 const REDIS_KEY = "listings";
 const LOCK_KEY = "listings_lock";
@@ -15,66 +14,20 @@ const deleteRedisList = async () => {
   console.log(`🗑️ Deleted existing Redis key: ${REDIS_KEY}`);
 };
 
-// 🧠 Store all listings in Redis with pagination
-// const storeListingInRedis = async () => {
-//   try {
-//     await deleteRedisList();
 
-//     const total = await Listing.countDocuments();
-//     const totalPages = Math.ceil(total / BATCH_SIZE);
 
-//     console.log(`📦 Total Listings: ${total}, Pages: ${totalPages}`);
-
-//     for (let page = 0; page < totalPages; page++) {
-//       const listings = await Listing.find()
-//         .populate("owner filters")
-//         .skip(page * BATCH_SIZE)
-//         .limit(BATCH_SIZE);
-
-//       const processedListings = await Promise.all(
-//         listings.map(async (item) => {
-//           let price = 0;
-//           let dates = [];
-
-//           if (item?.source?.name === "interhome") {
-//             price = await getListingPrices(item?.Code, 2, true);
-//             dates = await getListingAvailableDates(item?.Code);
-//           } else {
-//             price = item?.pricePerNight?.price || 0;
-//           }
-
-//           return {
-//             ...item.toObject(),
-//             price,
-//             dates,
-//           };
-//         })
-//       );
-
-//       // Push each listing into Redis list
-//       for (const listing of processedListings) {
-//         await redis.rpush(REDIS_KEY, JSON.stringify(listing));
-//       }
-
-//       console.log(`✅ Pushed ${processedListings.length} records from page ${page + 1}/${totalPages}`);
-//     }
-
-//     console.log("🎉 All listings stored in Redis successfully.");
-//   } catch (err) {
-//     console.error("❌ Error storing listings in Redis:", err.message || err);
-//   }
-// };
 const storeListingInRedis = async () => {
   const PROGRESS_KEY = "listing:progress"; // Redis key to track progress
-  const LOCK_KEY = "listing:lock";         // Optional Redis lock key
+  const LOCK_KEY = "listing:lock";         // Redis lock key
 
-  // Optional locking
-  // const isLockedel = await redis.del(LOCK_KEY);
+  // Check if already locked
   const isLocked = await redis.get(LOCK_KEY);
   if (isLocked) {
     console.log("🚫 Redis update already in progress. Skipping...");
     return;
   }
+
+  // Set lock with expiration
   await redis.set(LOCK_KEY, "1", "EX", 300); // Lock for 5 mins
 
   try {
@@ -83,52 +36,93 @@ const storeListingInRedis = async () => {
     const savedPage = parseInt(await redis.get(PROGRESS_KEY)) || 0;
 
     console.log(`📦 Total Listings: ${total}, Pages: ${totalPages}`);
-    console.log(`▶️ Resuming from page: ${savedPage}`);
+    console.log(`▶️ Resuming from page: ${savedPage + 1}`);
 
+    // Process each page
     for (let page = savedPage; page < totalPages; page++) {
       const listings = await Listing.find()
         .populate("owner filters")
-        .skip(page * BATCH_SIZE)
+        .skip(page * BATCH_SIZE)  // Fixed: use page variable
         .limit(BATCH_SIZE);
 
       const processedListings = await Promise.all(
         listings.map(async (item) => {
-          let price = 0;
-          let dates = [];
+          let price = item?.price || 0;
+          let dates = item?.dates || [];
           
           if (item?.source?.name === "interhome") {
-            let response = await getListingAvailableDates(item?.Code);
-           dates= response?.dates
-           price= response?.price
+            // Retry logic for API calls
+            let retries = 0;
+            let success = false;
+            
+            while (retries < 3 && !success) {
+              try {
+                const response = await getListingAvailableDates(item?.Code);
+                // Only update if response has valid data
+                if (response?.dates !== undefined) {
+                  dates = response.dates;
+                }
+                if (response?.price !== undefined) {
+                  price = response.price;
+                }
+                success = true;
+                console.log(`✅ API success for ${item._id} on attempt ${retries + 1}`);
+              } catch (err) {
+                retries++;
+                console.warn(`⚠️ Retry ${retries}/3 for ${item._id} failed:`, err.message || err);
+                
+                // Add exponential backoff delay
+                if (retries < 3) {
+                  await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retries - 1)));
+                }
+              }
+            }
+            
+            if (!success) {
+              console.warn(`❌ Failed after 3 retries for ${item._id}. Using previous values - price: ${price}, dates: ${dates.length} entries`);
+              // Keep the original values that were set at the beginning
+            }
           } else {
-            price = item?.pricePerNight?.discount || item?.pricePerNight?.price || 0;
-            dates = []
+            // For non-interhome sources
+            price =(item?.pricePerNight?.isDiscountActivate ? item?.pricePerNight?.discount : item?.pricePerNight?.price) || 0;
+            dates = item?.dates || [];
           }
 
-          const updated = await Listing.findByIdAndUpdate(
-            item._id,
-            { $set: { price, dates } },
-            { new: true }
-          );
+          try {
+            const updated = await Listing.findByIdAndUpdate(
+              item._id,
+              { $set: { price, dates } },
+              { new: true }
+            );
 
-          if (updated) console.log("✅ Updated:", item._id);
-          return updated;
+            if (updated) {
+              console.log(`✅ Updated: ${item._id} - Price: ${price}, Dates: ${dates.length}`);
+            }
+            return updated;
+          } catch (dbError) {
+            console.error(`❌ Database update failed for ${item._id}:`, dbError.message);
+            return null;
+          }
         })
       );
 
-      console.log(`✅ Processed ${processedListings.length} listings on page ${page + 1}/${totalPages}`);
+      const successCount = processedListings.filter(item => item !== null).length;
+      console.log(`✅ Processed ${successCount}/${listings.length} listings on page ${page + 1}/${totalPages}`);
 
-      // ✅ Save progress after successful page
+      // Save progress after successful page processing
       await redis.set(PROGRESS_KEY, page + 1);
     }
 
-    // ✅ Reset progress when done
+    // Reset progress when completely done
     await redis.del(PROGRESS_KEY);
     console.log("🎉 All listings updated successfully.");
+    
   } catch (err) {
     console.error("❌ Error in storeListingInRedis:", err.message || err);
+    throw err; // Re-throw to let caller handle if needed
   } finally {
-    await redis.del(LOCK_KEY); // Release lock
+    // Always release lock
+    await redis.del(LOCK_KEY);
   }
 };
 
@@ -190,28 +184,35 @@ const filtered = availableDates
       .map((item) => item?.date);
 
 //  price call start
-   const defaultDate = filtered[0]
+  const lastDateObj = filtered?.[filtered.length - 15];
+let startDateFormatted ;
+let endDateFormatted ;
+if (lastDateObj) {
+  const endDate = lastDateObj?.date;
 
-   console.log(defaultDate ," default date")
-    const firstDate = defaultDate?.date; 
+  const startDateObj = new Date(endDate);
+  startDateObj.setDate(startDateObj.getDate() - lastDateObj?.minimumStay);
 
-  const secondDate = new Date(defaultDate?.date);
-  secondDate.setDate(secondDate?.getDate() + defaultDate?.minimumStay);
-  const secondDateFormatted = secondDate?.toISOString()?.split('T')[0];
+   startDateFormatted = startDateObj.toISOString().split("T")[0];
+   endDateFormatted = new Date(endDate).toISOString().split("T")[0];
+
+  console.log("Start Date:", startDateFormatted);
+  console.log("End Date:", endDateFormatted);
+}
  const data = {
       BookingHeader: {
         SalesOffice: "0505",
         AccommodationCode: accommodationCode,
         Adults: 1,
-        CheckIn:  firstDate,
+        CheckIn:  startDateFormatted,
         CheckOut: 
-           secondDateFormatted,
+           endDateFormatted,
         Language: "EN",
         Currency: "CHF",
       },
     };
 
-    const price =  await getListingPrices(data) / defaultDate?.minimumStay
+    const price =  await getListingPrices(data) / lastDateObj?.minimumStay
 
 console.log( result,price ,"result dates hai k nahi");
 //  price call end
