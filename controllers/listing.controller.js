@@ -348,268 +348,323 @@ exports.searchListingsByMap = async (req, res, next) => {
 exports.getStreamedListings = async (req, res) => {
   try {
     // await storeListingInRedis()
- const limit = parseInt(req.query.limit) || 10;
-const page = parseInt(req.query.page) || 1;
-const skip = (page - 1) * limit;
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
 
-const {
-  lng,
-  lat,
-  radius = 500000,
-  filters = JSON.stringify({
-    dateRange: { start: null, end: null },
-    amenities: [],
-    guestCount: 1,
-    dogCount: 0,
-  }),
-  priceMin,
-  priceMax,
-  searchFilters = JSON.stringify({}),
-} = req.query;
+    const {
+      lng,
+      lat,
+      radius = 500000,
+      code, // New parameter for code-based matching
+      filters = JSON.stringify({
+        dateRange: { start: null, end: null },
+        amenities: [],
+        guestCount: 1,
+        dogCount: 0,
+      }),
+      priceMin,
+      priceMax,
+      searchFilters = JSON.stringify({}),
+    } = req.query;
 
-const parsedFilters = typeof filters === "string" ? JSON.parse(filters) : filters;
-const parsedSearchFilters =
-  typeof searchFilters === "string" ? JSON.parse(searchFilters) : searchFilters;
-console.log(parsedSearchFilters, parsedFilters);
+    const parsedFilters = typeof filters === "string" ? JSON.parse(filters) : filters;
+    const parsedSearchFilters =
+      typeof searchFilters === "string" ? JSON.parse(searchFilters) : searchFilters;
+    console.log(parsedSearchFilters, parsedFilters);
 
-const matchStage = {};
-const searchStage = {};
-const postMatchStage = [];
+    const matchStage = {};
+    const searchStage = {};
+    const postMatchStage = [];
 
-if (parsedFilters.guestCount) {
-  matchStage.maxGuests = { $gte: parseInt(parsedFilters.guestCount) };
-}
-
-if (parsedFilters.dogCount) {
-  matchStage.maxDogs = { $gte: parseInt(parsedFilters.dogCount) };
-}
-
-if (parsedSearchFilters?.ranges?.bathrooms) {
-  const min = parseInt(parsedSearchFilters.ranges.bathrooms.min);
-  const max = parseInt(parsedSearchFilters.ranges.bathrooms.max);
-  searchStage.washrooms = { $gte: min, $lte: max };
-}
-
-if (parsedSearchFilters?.ranges?.rooms) {
-  const min = parseInt(parsedSearchFilters.ranges.rooms.min);
-  const max = parseInt(parsedSearchFilters.ranges.rooms.max);
-  searchStage["rooms.number"] = { $gte: min, $lte: max };
-}
-
-if (parsedSearchFilters?.ranges?.people) {
-  const min = parseInt(parsedSearchFilters.ranges.people.min);
-  const max = parseInt(parsedSearchFilters.ranges.people.max);
-  searchStage.maxGuests = { $gte: min, $lte: max };
-}
-
-if (parsedSearchFilters?.ranges?.dogs) {
-  const min = parseInt(parsedSearchFilters.ranges.dogs.min);
-  const max = parseInt(parsedSearchFilters.ranges.dogs.max);
-  searchStage.maxDogs = { $gte: min, $lte: max };
-}
-
-if (parsedSearchFilters.ranges?.price) {
-  const { min = 1, max } = parsedSearchFilters.ranges?.price;
-  
-  if (min !== undefined || max !== undefined) {
-    searchStage.price = {};
-    if (min !== undefined) searchStage.price.$gte = parseFloat(min || 1);
-    if (max !== undefined) searchStage.price.$lte = parseFloat(max);
-  }
-}
-
-// Generate required dates array for date range filtering
-let requiredDates = [];
-
-if (parsedFilters?.dateRange?.start && parsedFilters?.dateRange?.end) {
-  const start = new Date(parsedFilters.dateRange.start);
-  const end = new Date(parsedFilters.dateRange.end);
-
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    requiredDates.push(
-      d.toLocaleDateString("en-CA") // Format: YYYY-MM-DD
-    );
-  }
-}
-
-
-// console.log(requiredDates);
-
-const selected = parsedSearchFilters?.selected || {};
-const selectedValues = Object.values(selected).flat();
-
-const listingsAgg = await Listing.aggregate([
-  {
-    $geoNear: {
-      near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
-      distanceField: "distanceInfo",
-      maxDistance: 150000, // 150 km
-      spherical: true
-    },
-  },
-  {
-$match:{
-  status:"active"
-}
-  },
-  ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
-  ...(Object.keys(searchStage).length > 0 ? [{ $match: searchStage }] : []),
-  {
-    $lookup: {
-      from: "filters",
-      localField: "filters",
-      foreignField: "_id",
-      as: "filters"
+    if (parsedFilters.guestCount) {
+      matchStage.maxGuests = { $gte: parseInt(parsedFilters.guestCount) };
     }
-  },
-  {
-    $unwind: "$filters"
-  },
-  // Lookup unavailable dates for Waureisen provider
-  {
-    $lookup: {
-      from: "unavailabledates", // Adjust collection name as needed
-      localField: "_id",
-      foreignField: "listing", // Adjust field name as needed
-      as: "unavailableDates"
+
+    if (parsedFilters.dogCount) {
+      matchStage.maxDogs = { $gte: parseInt(parsedFilters.dogCount) };
     }
-  },
-  ...(selectedValues.length > 0 ? [{
-    $match: {
-      $expr: {
-        $gt: [
-          {
-            $size: {
-              $filter: {
-                input: {
-                  $reduce: {
-                    input: '$filters.subsections',
-                    initialValue: [],
-                    in: {
-                      $concatArrays: [
-                        '$$value',
-                        {
-                          $reduce: {
-                            input: { $ifNull: ['$$this.filters', []] },
-                            initialValue: [],
-                            in: {
-                              $concatArrays: [
-                                '$$value',
-                                [{ name: '$$this.name' }]
-                              ]
-                            }
-                          }
-                        },
-                        {
-                          $reduce: {
-                            input: { $ifNull: ['$$this.subsubsections', []] },
-                            initialValue: [],
-                            in: {
-                              $concatArrays: [
-                                '$$value',
-                                {
-                                  $reduce: {
-                                    input: { $ifNull: ['$$this.filters', []] },
-                                    initialValue: [],
-                                    in: {
-                                      $concatArrays: [
-                                        '$$value',
-                                        [{ name: '$$this.name' }]
-                                      ]
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                },
-                as: 'flattened',
-                cond: { $in: ['$$flattened.name', selectedValues] }
-              }
-            }
-          },
-          0
-        ]
+
+    if (parsedSearchFilters?.ranges?.bathrooms) {
+      const min = parseInt(parsedSearchFilters.ranges.bathrooms.min);
+      const max = parseInt(parsedSearchFilters.ranges.bathrooms.max);
+      searchStage.washrooms = { $gte: min, $lte: max };
+    }
+
+    if (parsedSearchFilters?.ranges?.rooms) {
+      const min = parseInt(parsedSearchFilters.ranges.rooms.min);
+      const max = parseInt(parsedSearchFilters.ranges.rooms.max);
+      searchStage["rooms.number"] = { $gte: min, $lte: max };
+    }
+
+    if (parsedSearchFilters?.ranges?.people) {
+      const min = parseInt(parsedSearchFilters.ranges.people.min);
+      const max = parseInt(parsedSearchFilters.ranges.people.max);
+      searchStage.maxGuests = { $gte: min, $lte: max };
+    }
+
+    if (parsedSearchFilters?.ranges?.dogs) {
+      const min = parseInt(parsedSearchFilters.ranges.dogs.min);
+      const max = parseInt(parsedSearchFilters.ranges.dogs.max);
+      searchStage.maxDogs = { $gte: min, $lte: max };
+    }
+
+    if (parsedSearchFilters.ranges?.price) {
+      const { min = 1, max } = parsedSearchFilters.ranges?.price;
+      
+      if (min !== undefined || max !== undefined) {
+        searchStage.price = {};
+        if (min !== undefined) searchStage.price.$gte = parseFloat(min || 1);
+        if (max !== undefined) searchStage.price.$lte = parseFloat(max);
       }
     }
-  }] : []),
-  // Provider-specific date filtering
-  ...(requiredDates.length > 0 ? [{
-    $match: {
-      $expr: {
-        $cond: {
-          if: { $eq: ["$provider", "Interhome"] },
-          then: {
-            // For Interhome: check if all required dates are in the available dates array
-            $setIsSubset: [requiredDates, { $ifNull: ["$dates", []] }]
-          },
-          else: {
-            $cond: {
-              if: { $eq: ["$provider", "Waureisen"] },
-              then: {
-                // For Waureisen: check that none of the required dates are in the booked/unavailable dates
-                $eq: [
-                  {
-                    $size: {
-                      $setIntersection: [
-                        requiredDates,
-                        {
-                          $map: {
-                            input: { $ifNull: ["$unavailableDates", []] },
-                            as: "unavailableDate",
-                            in: {
-      $dateToString: { format: "%Y-%m-%d", date: "$$unavailableDate.date" }
+
+    // Generate required dates array for date range filtering
+    let requiredDates = [];
+
+    if (parsedFilters?.dateRange?.start && parsedFilters?.dateRange?.end) {
+      const start = new Date(parsedFilters.dateRange.start);
+      const end = new Date(parsedFilters.dateRange.end);
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        requiredDates.push(
+          d.toLocaleDateString("en-CA") // Format: YYYY-MM-DD
+        );
+      }
     }
-                          }
+
+    // console.log(requiredDates);
+
+    const selected = parsedSearchFilters?.selected || {};
+    const selectedValues = Object.values(selected).flat();
+
+    // Build the aggregation pipeline
+    const pipeline = [];
+
+    // Add location-based or code-based matching at the beginning
+    if (code) {
+      // If code is provided, match by code instead of coordinates
+      pipeline.push({
+        $match: {
+          Code: code, // Assuming you have a 'code' field in your listings
+          status: "active"
+        }
+      });
+    } else if (lng && lat) {
+      // If coordinates are provided, use geoNear
+      pipeline.push({
+        $geoNear: {
+          near: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+          distanceField: "distanceInfo",
+          maxDistance: 150000, // 150 km
+          spherical: true
+        },
+      });
+      pipeline.push({
+        $match: {
+          status: "active"
+        }
+      });
+    } else {
+      // If neither code nor coordinates, just match active listings
+      pipeline.push({
+        $match: {
+          status: "active"
+        }
+      });
+    }
+
+    // Add other match stages
+    if (Object.keys(matchStage).length > 0) {
+      pipeline.push({ $match: matchStage });
+    }
+
+    if (Object.keys(searchStage).length > 0) {
+      pipeline.push({ $match: searchStage });
+    }
+
+    // Add lookup stages
+    pipeline.push(
+      {
+        $lookup: {
+          from: "filters",
+          localField: "filters",
+          foreignField: "_id",
+          as: "filters"
+        }
+      },
+      {
+        $unwind: "$filters"
+      },
+      // Lookup unavailable dates for Waureisen provider
+      {
+        $lookup: {
+          from: "unavailabledates", // Adjust collection name as needed
+          localField: "_id",
+          foreignField: "listing", // Adjust field name as needed
+          as: "unavailableDates"
+        }
+      }
+    );
+
+    // Add selected values filtering
+    if (selectedValues.length > 0) {
+      pipeline.push({
+        $match: {
+          $expr: {
+            $gt: [
+              {
+                $size: {
+                  $filter: {
+                    input: {
+                      $reduce: {
+                        input: '$filters.subsections',
+                        initialValue: [],
+                        in: {
+                          $concatArrays: [
+                            '$$value',
+                            {
+                              $reduce: {
+                                input: { $ifNull: ['$$this.filters', []] },
+                                initialValue: [],
+                                in: {
+                                  $concatArrays: [
+                                    '$$value',
+                                    [{ name: '$$this.name' }]
+                                  ]
+                                }
+                              }
+                            },
+                            {
+                              $reduce: {
+                                input: { $ifNull: ['$$this.subsubsections', []] },
+                                initialValue: [],
+                                in: {
+                                  $concatArrays: [
+                                    '$$value',
+                                    {
+                                      $reduce: {
+                                        input: { $ifNull: ['$$this.filters', []] },
+                                        initialValue: [],
+                                        in: {
+                                          $concatArrays: [
+                                            '$$value',
+                                            [{ name: '$$this.name' }]
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          ]
                         }
-                      ]
-                    }
-                  },
-                  0
-                ]
+                      }
+                    },
+                    as: 'flattened',
+                    cond: { $in: ['$$flattened.name', selectedValues] }
+                  }
+                }
               },
-              else: true // For other providers, don't filter by date
+              0
+            ]
+          }
+        }
+      });
+    }
+
+    // Provider-specific date filtering
+    if (requiredDates.length > 0) {
+      pipeline.push({
+        $match: {
+          $expr: {
+            $cond: {
+              if: { $eq: ["$provider", "Interhome"] },
+              then: {
+                // For Interhome: check if all required dates are in the available dates array
+                $setIsSubset: [requiredDates, { $ifNull: ["$dates", []] }]
+              },
+              else: {
+                $cond: {
+                  if: { $eq: ["$provider", "Waureisen"] },
+                  then: {
+                    // For Waureisen: check that none of the required dates are in the booked/unavailable dates
+                    $eq: [
+                      {
+                        $size: {
+                          $setIntersection: [
+                            requiredDates,
+                            {
+                              $map: {
+                                input: { $ifNull: ["$unavailableDates", []] },
+                                as: "unavailableDate",
+                                in: {
+                                  $dateToString: { format: "%Y-%m-%d", date: "$$unavailableDate.date" }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      0
+                    ]
+                  },
+                  else: true // For other providers, don't filter by date
+                }
+              }
             }
           }
         }
+      });
+    }
+
+    // Add post match stages
+    pipeline.push(...postMatchStage);
+
+    // Add sorting - only sort by distance if we used geoNear
+    if (!code && lng && lat) {
+      pipeline.push({
+        $sort: {
+          distanceInfo: 1
+        }
+      });
+    } else {
+      // Default sorting when not using geoNear
+      pipeline.push({
+        $sort: {
+          createdAt: -1 // or any other default sort field
+        }
+      });
+    }
+
+    // Add facet for pagination
+    pipeline.push({
+      $facet: {
+        data: [
+          { $skip: skip },
+          { $limit: limit }
+        ],
+        totalCount: [
+          { $count: 'count' }
+        ]
       }
-    }
-  }] : []),
-  ...postMatchStage,
-  {
-    $sort: {
-      distanceInfo: 1
-    }
-  },
-  {
-    $facet: {
-      data: [
-        { $skip: skip },
-        { $limit: limit }
-      ],
-      totalCount: [
-        { $count: 'count' }
-      ]
-    }
-  }
-]);
+    });
 
-const listings = listingsAgg[0]?.data || [];
-const total = listingsAgg[0]?.totalCount[0]?.count || 0;
-const totalPages = Math.ceil(total / limit);
-const hasMore = page < totalPages;
+    const listingsAgg = await Listing.aggregate(pipeline);
 
-return res.status(200).json({
-  success: true,
-  listings,
-  total,
-  totalPages,
-  hasMore,
-});
+    const listings = listingsAgg[0]?.data || [];
+    const total = listingsAgg[0]?.totalCount[0]?.count || 0;
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page < totalPages;
+
+    return res.status(200).json({
+      success: true,
+      listings,
+      total,
+      totalPages,
+      hasMore,
+    });
   } catch (error) {
     console.error("Error in getStreamedListings:", error);
     res.status(500).json({
