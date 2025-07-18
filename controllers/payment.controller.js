@@ -267,35 +267,97 @@ const getCardDetails = async (req, res) => {
   }
 };
 
+
 const createStripeAccount = async (req, res) => {
   try {
-    const {accountId} = req.body
+    const { accountId, email } = req.body;
+    
+    // Validate required fields
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+    
     let account;
-    if(!accountId){
-
+    
+    // Only create new account if accountId doesn't exist
+    if (!accountId) {
+      console.log("Creating new Stripe account for:", email);
+      
       account = await stripe.accounts.create({
         type: "express",
-        email: req.body.email,
+        email: email.trim(), // Ensure no whitespace
+        settings: {
+          payouts: {
+            schedule: {
+              interval: "manual" // or "daily", "weekly", "monthly"
+            }
+          }
+        }
       });
+      
+      console.log("New account created:", account.id);
+    } else {
+      // Verify existing account exists
+      try {
+        account = await stripe.accounts.retrieve(accountId);
+        console.log("Existing account found:", accountId);
+      } catch (error) {
+        console.error("Account verification failed:", error);
+        return res.status(400).json({ 
+          error: "Invalid account ID provided" 
+        });
+      }
     }
-    console.log(account, "account ka data ", account?.details_submitted);
-
+    
+    console.log("Account details submitted:", account?.details_submitted);
+    
+    // Create account link with proper error handling
     const accountLink = await stripe.accountLinks.create({
       account: accountId || account.id,
-      refresh_url: `https://waureisen-neon.vercel.app/provider/registration?account=failed`,
-      return_url: `https://waureisen-neon.vercel.app/provider/registration?account=${accountId || account.id}`,
-
-      // refresh_url: `http://localhost:5173/provider/registration?account=failed`,
-      // return_url: `http://localhost:5173/provider/registration?account=${account.id}`,
+      refresh_url: `${process.env.FRONTEND_URL || 'https://waureisen-neon.vercel.app'}/provider/registration?account=failed&step=banking`,
+      return_url: `${process.env.FRONTEND_URL || 'https://waureisen-neon.vercel.app'}/provider/registration?account=${accountId || account.id}&step=banking&success=true`,
       type: "account_onboarding",
     });
-
-    res.json({ url: accountLink.url });
+    
+    // Ensure URL is returned
+    if (!accountLink.url) {
+      throw new Error("No onboarding URL generated");
+    }
+    
+    console.log("Account link created successfully");
+    
+    res.json({ 
+      url: accountLink.url,
+      accountId: accountId || account.id 
+    });
+    
   } catch (error) {
     console.error("Error creating Stripe Connect onboarding link:", error);
-    res.status(500).json({ error: error.message });
+    
+    // Handle specific Stripe errors
+    if (error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({ 
+        error: "Invalid request to Stripe",
+        details: error.message 
+      });
+    }
+    
+    if (error.type === 'StripeAuthenticationError') {
+      return res.status(500).json({ 
+        error: "Stripe authentication failed",
+        details: "Please check your API keys" 
+      });
+    }
+    
+    // Generic error response
+    res.status(500).json({ 
+      error: "Failed to create Stripe account",
+      details: error.message 
+    });
   }
 };
+
+
 
 const getStripeAccount = async (req, res) => {
   try {
