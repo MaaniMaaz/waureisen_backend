@@ -12,6 +12,7 @@ router.post("/signup", providerController.signup);
 router.post("/login", providerController.login);
 router.post("/forgot-password", providerController.forgotPassword);
 router.post("/reset-password", providerController.resetPassword);
+router.get("/duplicate/:id", extraController.DuplicateListing);
 
 router.post(
   "/complete-registration",

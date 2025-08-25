@@ -81,15 +81,18 @@ const EditListingWithFilter = async (req,res) => {
       if (updatedListing.filters) {
         // Update existing filter
         console.log('Updating existing filter:', updatedListing.filters);
-        await Filter.findByIdAndUpdate(
-          updatedListing.filters,
-          {
-            ...filterData,
-            // listing: listingId,
-            isTemplate: false,
-            updatedAt: new Date()
-          }
-        );
+      await Filter.findByIdAndUpdate(
+  updatedListing.filters,
+  {
+    $set: {
+      subsections: filterData.subsections,
+      isTemplate: false,
+      updatedAt: new Date()
+    }
+  },
+  { new: true }
+);
+
       } else {
         // Create new filter for existing listing
         console.log('Creating new filter for existing listing');
@@ -135,10 +138,71 @@ const GetFilterOfListingById = async (req,res) => {
  } 
 }
 
+const DuplicateListing = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const originalListing = await Listing.findOne({ _id: id });
+    
+    if (!originalListing) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Listing not found' 
+      });
+    }
+
+    const generateUniqueCode = () => {
+      const prefix = 'WR';
+      const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const randomNumber = Math.floor(Math.random() * 9000) + 1000; // 4 digit number
+      return `${prefix}-${randomString}-${randomNumber}`;
+    };
+
+    const generateAndCheckUniqueCode = async () => {
+      let newCode;
+      let isUnique = false;
+      
+      while (!isUnique) {
+        newCode = generateUniqueCode();
+        const existingListing = await Listing.findOne({ Code: newCode });
+        if (!existingListing) {
+          isUnique = true;
+        }
+      }
+      
+      return newCode;
+    };
+
+    const uniqueCode = await generateAndCheckUniqueCode();
+
+    const listingData = originalListing.toObject();
+    
+    delete listingData._id;
+    
+    listingData.Code = uniqueCode;
+
+    const newListing = new Listing(listingData);
+    const savedListing = await newListing.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Listing duplicated successfully',
+      data: savedListing
+    });
+
+  } catch (error) {
+    console.error('Error in duplicating listing:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+};
 
 
 module.exports = {
   AddListingWithFilter,
   GetFilterOfListingById,
-  EditListingWithFilter
+  EditListingWithFilter,
+  DuplicateListing
 };
