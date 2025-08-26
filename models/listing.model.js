@@ -54,8 +54,15 @@ const listingSchema = new mongoose.Schema({
     currency: { type: String,  default: 'CHF'},
     discount: { type: Number, default: 0 },
     isDiscountActivate: { type: Boolean, default: false },
-    specialPrices: { type: Number, default: 0 },
-    specialDuration: {},
+    // specialPrices: { type: Number, default: 0 },
+   special: {
+  type: [
+    {
+      specialPrice: { type: Number, default: 0 },
+      specialDuration: {  }, }
+  ],
+  default: []
+},
     isSpecialActivate: { type: Boolean, default: false },
   }, 
   
