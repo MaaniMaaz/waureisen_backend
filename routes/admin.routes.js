@@ -56,6 +56,28 @@ router.get(
   listingController.getAllListings
 );
 
+// meta setting
+router.post(
+  "/metadata",
+  verifyToken,
+  isAdmin,
+  adminController.createBulkMetaSettings
+);
+
+router.put(
+  "/metadata/:id",
+  verifyToken,
+  isAdmin,
+  adminController.updateMetaSettings
+);
+
+router.get(
+  "/metadata",
+  // verifyToken,
+  // isAdmin,
+  adminController.getMetaSettings
+);
+
 // New paginated route for admin panel
 router.get(
   "/paginated-listings",

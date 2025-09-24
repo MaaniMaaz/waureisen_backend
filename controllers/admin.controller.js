@@ -3,6 +3,75 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 
+exports.getMetaSettings = async (req, res, next) => {
+  try {
+    const metaData = await MetaSetting.findOne();
+    res.status(200).json({
+      success: true,
+      data: metaData,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ✅ Update a meta setting by ID
+exports.updateMetaSettings = async (req, res, next) => {
+  try {
+    const { id } = req.params; // meta setting ID from URL
+     const pages = req.body.pages; // new meta values
+
+    const updatedMeta = await MetaSetting.findByIdAndUpdate(id, { metaData: pages }, {
+      new: true,
+    });
+
+    if (!updatedMeta) {
+      return res.status(404).json({
+        success: false,
+        message: "Meta setting not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: updatedMeta,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ✅ Create a new meta setting
+exports.createBulkMetaSettings = async (req, res, next) => {
+  try {
+    const pages = req.body.pages; // expect { pages: [...] }
+
+    if (!Array.isArray(pages) || !pages.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Pages array is required",
+      });
+    }
+
+    // either create a new doc or replace the existing one
+    let metaDoc = await MetaSetting.findOne();
+
+    if (!metaDoc) {
+      metaDoc = await MetaSetting.create({ metaData: pages });
+    } else {
+      metaDoc.metaData = pages; // overwrite
+      await metaDoc.save();
+    }
+
+    res.status(201).json({
+      success: true,
+      data: metaDoc,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getAllAdmins = async (req, res, next) => {
   try {
     const admins = await adminService.getAllAdmins();
@@ -510,6 +579,7 @@ const Listing = require("../models/listing.model");
 
 // Import User model
 const User = require("../models/user.model");
+const MetaSetting = require("../models/metaSetting.model");
 
 // Get all users for admin panel
 exports.getAllUsers = async (req, res, next) => {
