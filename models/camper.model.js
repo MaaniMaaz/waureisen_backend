@@ -29,6 +29,14 @@ const camperSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
+  metaTitle: { 
+    type: String, 
+    required: true ,
+  },
+  metaDescription: { 
+    type: String, 
+    required: true 
+  },
   category: {
     type: [String],
     required: false
